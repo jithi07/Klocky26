@@ -1,0 +1,26 @@
+.app-container {
+  padding: var(--space-lg);
+}
+
+.grid {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.full-width {
+  width: 100%;
+}

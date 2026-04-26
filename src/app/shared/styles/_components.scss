@@ -1,0 +1,46 @@
+/* Card */
+.app-card {
+  background: var(--card-bg);
+  padding: var(--space-lg);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Button */
+.app-btn {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.app-btn-primary {
+  background: var(--primary);
+  color: white;
+}
+
+.app-btn-secondary {
+  background: var(--secondary);
+  color: white;
+}
+
+/* Table */
+.app-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.app-table th,
+.app-table td {
+  padding: 12px;
+  text-align: left;
+}
+
+.app-table th {
+  color: var(--text-light);
+}
+
+.app-table tr {
+  border-bottom: 1px solid #eee;
+}

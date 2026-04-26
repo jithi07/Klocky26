@@ -1,0 +1,13 @@
+export { IconHomeComponent } from './icon-home.component';
+export { IconEmployeesComponent } from './icon-employees.component';
+export { IconClockComponent } from './icon-clock.component';
+export { IconClockInComponent } from './icon-clock-in.component';
+export { IconClockOutComponent } from './icon-clock-out.component';
+export { IconSettingsComponent } from './icon-settings.component';
+export { IconLogoutComponent } from './icon-logout.component';
+export { IconMenuComponent } from './icon-menu.component';
+export { IconBellComponent } from './icon-bell.component';
+export { IconUserComponent } from './icon-user.component';
+export { IconSearchComponent } from './icon-search.component';
+export { IconPaletteComponent } from './icon-palette.component';
+export { IconKlockyLogoComponent } from './icon-klocky-logo.component';

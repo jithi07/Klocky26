@@ -1,0 +1,103 @@
+<header class="header">
+
+  <!-- LEFT: Hamburger (mobile) + Brand -->
+  <div class="left">
+    <button class="hamburger" (click)="toggleSidebar.emit()" aria-label="Toggle menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <app-brand [size]="'sm'" [orgName]="orgName" [orgLogoUrl]="orgLogoUrl"></app-brand>
+  </div>
+
+  <!-- CENTER: Search -->
+  <div class="search-wrap">
+    <icon-search [size]="15" color="#94a3b8"></icon-search>
+    <input type="text" placeholder="Search..." />
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right">
+
+    <!-- PUNCH IN / OUT icon button -->
+    <div class="punch-wrap">
+      <button
+        class="punch-btn"
+        [class.punched-in]="isClockedIn"
+        (click)="toggleClock()"
+        [attr.aria-label]="isClockedIn ? 'Clock Out' : 'Clock In'"
+      >
+        <!-- Pulse ring when punched in -->
+        @if (isClockedIn) {
+          <span class="punch-pulse"></span>
+        }
+
+        <!-- Stopwatch + Play = Clock In -->
+        @if (!isClockedIn) {
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.8"
+               stroke-linecap="round" stroke-linejoin="round">
+            <!-- crown/button -->
+            <path d="M10 2h4"/>
+            <path d="M12 2v2.5"/>
+            <!-- stopwatch body -->
+            <circle cx="12" cy="13" r="8"/>
+            <!-- play triangle (filled) -->
+            <polygon points="10.5 10.5 16 13 10.5 15.5"
+                     fill="currentColor" stroke="none"/>
+          </svg>
+        }
+
+        <!-- Stopwatch + Stop square = Clock Out -->
+        @if (isClockedIn) {
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.8"
+               stroke-linecap="round" stroke-linejoin="round">
+            <!-- crown/button -->
+            <path d="M10 2h4"/>
+            <path d="M12 2v2.5"/>
+            <!-- stopwatch body -->
+            <circle cx="12" cy="13" r="8"/>
+            <!-- stop square (filled) -->
+            <rect x="9.5" y="10.5" width="5" height="5" rx="0.8"
+                  fill="currentColor" stroke="none"/>
+          </svg>
+        }
+      </button>
+      <span class="punch-tip">{{ isClockedIn ? 'Clock Out' : 'Clock In' }}</span>
+    </div>
+
+    <div class="v-sep"></div>
+
+    <!-- REGISTER ORG -->
+    <div class="punch-wrap">
+      <button class="icon-btn reg-org-btn" (click)="openOrgRegister()" type="button" aria-label="Register Organisation">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+          <circle cx="19" cy="8" r="3" fill="#4f46e5" stroke="none"/>
+          <path d="M19 6.5v3M17.5 8h3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <span class="punch-tip">Register Organization</span>
+    </div>
+
+    <div class="v-sep"></div>
+
+    <!-- BELL -->
+    <button class="icon-btn" title="Notifications">
+      <icon-bell [size]="20" color="#6b7280"></icon-bell>
+      <span class="notif-dot"></span>
+    </button>
+
+    <!-- USER AVATAR Comment Temporary -->
+    <!--  <button class="avatar-btn" title="Profile">
+      <span class="avatar-initials">JR</span>
+      <span class="avatar-status"></span>
+    </button> -->
+
+  </div>
+
+</header>

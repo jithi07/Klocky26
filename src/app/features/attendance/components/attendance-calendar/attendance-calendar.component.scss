@@ -1,0 +1,715 @@
+/* ── Wrapper ─────────────────────────────────────────────────────── */
+.att-wrap {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ── Card ─────────────────────────────────────────────────────────── */
+.cal-card {
+  background: #fffdf7;
+  border-radius: 16px;
+  border: 1.5px solid #f0e9d6;
+  box-shadow: 0 1px 3px rgba(180, 140, 60, 0.08), 0 4px 16px rgba(180, 140, 60, 0.06);
+  padding: 20px 20px 16px;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Nav ──────────────────────────────────────────────────────────── */
+.cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+}
+
+.month-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.3px;
+}
+
+.nav-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.month-nav-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: #6b7280;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.nav-btn:hover {
+  background: #ffffff;
+  color: #111827;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Stats Accordion (floating overlay) ──────────────────────────── */
+.stats-accordion {
+  position: relative;
+  z-index: 50;
+  flex-shrink: 0;
+  margin-bottom: 12px;
+}
+
+/* Transparent backdrop — closes panel on any outside click */
+.summary-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  cursor: default;
+}
+
+.stats-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-radius 0.18s;
+  position: relative;
+  z-index: 51;
+}
+.stats-header:hover { background: #f1f5f9; }
+.stats-accordion.open .stats-header {
+  border-radius: 12px 12px 0 0;
+  border-bottom-color: #f0f0f0;
+}
+
+.stats-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #374151;
+  letter-spacing: 0.2px;
+  flex-shrink: 0;
+}
+
+.stats-preview {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+  overflow: hidden;
+}
+
+.preview-tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 5px;
+  letter-spacing: 0.2px;
+  flex-shrink: 0;
+}
+
+.chevron {
+  color: #9ca3af;
+  flex-shrink: 0;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.stats-accordion.open .chevron {
+  transform: rotate(180deg);
+}
+
+/* Body floats as overlay over the calendar */
+.stats-body {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10), 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.stats-accordion.open .stats-body {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Chips row inside body */
+.summary-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: nowrap;
+  padding: 10px 10px 0;
+}
+
+.chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--chip-bg);
+  flex: 1;
+  min-width: 0;
+}
+
+.chip-count {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--chip-color);
+  line-height: 1.1;
+}
+
+.chip-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--chip-color);
+  opacity: 0.75;
+  white-space: nowrap;
+}
+
+/* Extra stats row: Avg + Overtime */
+.stats-extra {
+  display: flex;
+  align-items: center;
+  padding: 10px 10px 12px;
+  border-top: 1px solid #f1f5f9;
+  margin-top: 10px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  gap: 2px;
+}
+
+.stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1;
+}
+
+.stat-value small {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.stat-ot {
+  color: #6366f1;
+}
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
+  letter-spacing: 0.2px;
+}
+
+.stat-sep {
+  width: 1px;
+  height: 32px;
+  background: #e5e7eb;
+  flex-shrink: 0;
+  margin: 0 4px;
+}
+
+/* ── Grid ─────────────────────────────────────────────────────────── */
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 4px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.cal-hdr {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #9ca3af;
+  letter-spacing: 0.5px;
+  padding: 4px 0 8px;
+}
+
+/* ── Cells ────────────────────────────────────────────────────────── */
+.cal-cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  cursor: pointer;
+  background: transparent;
+  min-height: 0;
+  overflow: visible;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease, z-index 0s;
+  z-index: 0;
+}
+
+/* Magnify on hover (desktop) */
+.cal-cell:not(.cal-empty):hover,
+.cal-cell.active {
+  transform: scale(1.22);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+}
+
+.cal-empty {
+  background: transparent !important;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ── Day number ──────────────────────────────────────────────────── */
+.day-num {
+  font-size: 15px;
+  font-weight: 800;
+  color: #111827;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+/* ── Off / Weekend ────────────────────────────────────────────────── */
+.cal-cell.is-off {
+  background: #fff5f5;
+  border: 1.5px solid #fecaca;
+}
+.cal-cell.is-off .day-num {
+  color: #fca5a5;
+}
+
+/* ── Past with no record ──────────────────────────────────────────── */
+.cal-cell.is-past {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+}
+.cal-cell.is-past .day-num {
+  color: #9ca3af;
+}
+
+/* ── Future working days ──────────────────────────────────────────── */
+.cal-cell.is-future {
+  background: #f8f9ff;
+  border: 1.5px dashed #c7d2fe;
+}
+.cal-cell.is-future .day-num {
+  color: #a5b4fc;
+}
+
+/* ── Has a status ─────────────────────────────────────────────────── */
+.cal-cell.has-status {
+  background: var(--s-bg);
+}
+.cal-cell.has-status .day-num {
+  color: var(--s-color);
+}
+
+/* ── Today ring ───────────────────────────────────────────────────── */
+.cal-cell.is-today {
+  outline: 2.5px solid #4f46e5;
+  outline-offset: -2px;
+}
+.cal-cell.is-today .day-num {
+  color: #4f46e5;
+  font-weight: 800;
+}
+
+/* ── Status pip ───────────────────────────────────────────────────── */
+.status-pip {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--s-color);
+  margin-top: 3px;
+}
+
+/* ── Holiday tag ──────────────────────────────────────────────────── */
+.holiday-tag {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 2px;
+  cursor: default;
+  max-width: 100%;
+}
+
+.holiday-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #7c3aed;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60px;
+  display: block;
+}
+
+/* CSS tooltip */
+.holiday-tag::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 30;
+}
+.holiday-tag:hover::after {
+  opacity: 1;
+}
+
+/* ── Dot working-hours indicator ──────────────────────────────── */
+.dot-bar {
+  display: flex;
+  gap: 2.5px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 9px;
+  flex-wrap: nowrap;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 2px;   /* square tiles */
+  flex-shrink: 0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Filled — green (met) */
+.dot-filled {
+  background: #22c55e;
+  box-shadow: 0 0 4px rgba(34, 197, 94, 0.55);
+}
+
+/* Filled — red (short) */
+.dot-bar.dot-short .dot-filled {
+  background: #ef4444;
+  box-shadow: 0 0 4px rgba(239, 68, 68, 0.55);
+}
+
+/* Empty dot */
+.dot-empty {
+  background: rgba(0, 0, 0, 0.1);
+  box-shadow: none;
+}
+
+/* Extra hours dot — indigo */
+.dot-extra {
+  background: #6366f1;
+  box-shadow: 0 0 4px rgba(99, 102, 241, 0.55);
+}
+
+/* Subtle pop on cell hover */
+.cal-cell:hover .dot-filled,
+.cal-cell.active .dot-filled {
+  transform: scale(1.3);
+}
+
+.hours-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: #16a34a;
+  line-height: 1;
+  letter-spacing: 0.2px;
+  margin-top: 1px;
+}
+
+.hours-label.hours-short {
+  color: #dc2626;
+}
+
+/* ── Legend ───────────────────────────────────────────────────────── */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+  flex-shrink: 0;
+}
+
+.leg-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.leg-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── View Toggle ──────────────────────────────────────────────────── */
+.view-toggle {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 3px;
+  flex-shrink: 0;
+}
+
+.vt-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 28px;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #94a3b8;
+  transition: background 0.15s, color 0.15s;
+}
+
+.vt-btn:hover {
+  color: #475569;
+}
+
+.vt-btn.active {
+  background: #ffffff;
+  color: #4f46e5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* ── List View ────────────────────────────────────────────────────── */
+.list-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Header row */
+.list-hdr {
+  display: grid;
+  grid-template-columns: 44px 48px 1fr 56px 90px;
+  align-items: center;
+  padding: 6px 12px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px 8px 0 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: #9ca3af;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+/* Scrollable body */
+.list-body {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  min-height: 0;
+}
+
+/* Each row */
+.list-row {
+  display: grid;
+  grid-template-columns: 44px 48px 1fr 56px 90px;
+  align-items: center;
+  padding: 9px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 13px;
+  color: #374151;
+  transition: background 0.12s;
+}
+
+.list-row:last-child { border-bottom: none; }
+
+.list-row:hover { background: #fafafa; }
+
+.list-row.row-off {
+  background: #fff8f8;
+  color: #f87171;
+}
+
+.list-row.row-today {
+  background: #eef2ff;
+}
+
+.list-row.row-future {
+  opacity: 0.55;
+}
+
+/* Date cell */
+.lc-date {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.lc-daynum {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+  min-width: 20px;
+}
+
+.lc-daynum.today-num {
+  color: #4f46e5;
+}
+
+/* Day-of-week */
+.lc-day {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+/* Status badge */
+.lc-status {
+  display: flex;
+  align-items: center;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 20px;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.off-badge    { background: #fff5f5; color: #f87171; }
+.future-badge { background: transparent; color: #d1d5db; }
+.no-badge     { background: #f9fafb; color: #d1d5db; font-weight: 500; }
+
+/* Hours */
+.lc-hours {
+  font-size: 13px;
+  font-weight: 700;
+  color: #16a34a;
+  text-align: right;
+  padding-right: 10px;
+}
+
+.lc-hours.hours-short { color: #dc2626; }
+
+/* Progress bar */
+.lc-bar {
+  display: flex;
+  align-items: center;
+}
+
+.prog-track {
+  width: 100%;
+  height: 5px;
+  background: rgba(0, 0, 0, 0.07);
+  border-radius: 3px;
+  overflow: hidden;
+  display: block;
+}
+
+.prog-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: #22c55e;
+  transition: width 0.3s ease;
+}
+
+.prog-fill.fill-short { background: #ef4444; }
+.prog-fill.fill-extra { background: #6366f1; }
+
+/* ── Responsive ≤600px ────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .cal-card {
+    padding: 14px 10px 12px;
+    border-radius: 12px;
+  }
+
+  .month-title { font-size: 16px; }
+
+  .chip { padding: 6px 8px; }
+  .chip-count { font-size: 17px; }
+  .chip-label { font-size: 9px; }
+
+  .cal-hdr { font-size: 10px; padding: 2px 0 6px; }
+  .day-num { font-size: 12px; }
+  .dot { width: 4px; height: 4px; }
+  .hours-label { font-size: 8px; }
+
+  .legend { gap: 6px 10px; margin-top: 8px; padding-top: 8px; }
+  .leg-item { font-size: 10px; }
+}
+
+/* ── Responsive ≤400px ────────────────────────────────────────────── */
+@media (max-width: 400px) {
+  .cal-card { padding: 10px 8px 10px; }
+  .summary-row { gap: 4px; margin-bottom: 10px; }
+  .chip { padding: 4px 5px; }
+  .chip-count { font-size: 14px; }
+  .chip-label { font-size: 8px; }
+  .cal-grid { gap: 2px; }
+  .day-num { font-size: 10px; }
+  .cal-hdr { font-size: 9px; padding: 2px 0 4px; }
+  .cal-cell { border-radius: 6px; }
+  .legend { margin-top: 6px; padding-top: 6px; gap: 5px 8px; }
+}

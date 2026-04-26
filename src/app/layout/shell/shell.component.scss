@@ -1,0 +1,60 @@
+.layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* RIGHT SIDE */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* prevents flex overflow */
+}
+
+/* CONTENT BELOW HEADER */
+.content {
+  flex: 1;
+  padding: 20px;
+  background: #f5f7fb;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-width: 0;
+}
+
+/* MOBILE BACKDROP */
+.mobile-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+@media (max-width: 768px) {
+  .layout {
+    position: relative;
+  }
+
+  .mobile-backdrop {
+    display: block;
+    pointer-events: none;
+  }
+
+  .mobile-backdrop.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .content {
+    padding: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 10px;
+  }
+}

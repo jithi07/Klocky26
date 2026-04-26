@@ -1,0 +1,25 @@
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'icon-logout',
+  standalone: true,
+  template: `
+    <svg
+      [attr.width]="size"
+      [attr.height]="size"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      [attr.fill]="color"
+      aria-hidden="true"
+    >
+      <!-- Exit arrow -->
+      <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5z" />
+      <!-- Door frame (left, top, bottom sides) -->
+      <path d="M4 5h8V3H4C2.9 3 2 3.9 2 5v14c0 1.1.9 2 2 2h8v-2H4V5z" />
+    </svg>
+  `,
+})
+export class IconLogoutComponent {
+  @Input() color = 'currentColor';
+  @Input() size: number | string = 20;
+}

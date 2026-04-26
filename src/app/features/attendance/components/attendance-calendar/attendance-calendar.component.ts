@@ -1,0 +1,388 @@
+import {
+  Component,
+  ChangeDetectionStrategy,
+  computed,
+  signal,
+  Input,
+  HostListener,
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Public types
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type AttendanceStatus =
+  | 'present'
+  | 'half'
+  | 'absent'
+  | 'leave'
+  | 'holiday'
+  | 'off';
+
+export interface AttendanceRecord {
+  /** ISO date string YYYY-MM-DD */
+  date: string;
+  status: AttendanceStatus;
+  /** Actual working hours for the day */
+  hours?: number;
+  /** Holiday name e.g. 'Vishu', 'Christmas' */
+  holidayName?: string;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Internal types
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface DayCell {
+  date: Date;
+  day: number;
+  status: AttendanceStatus | null;
+  isOff: boolean;
+  isToday: boolean;
+  isFuture: boolean;
+  isPast: boolean;
+  hours?: number;
+  hoursMet: boolean;
+  holidayName?: string;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Constants
+// ─────────────────────────────────────────────────────────────────────────────
+
+const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+export const STATUS_META: Record<
+  AttendanceStatus,
+  { label: string; color: string; bg: string }
+> = {
+  present: { label: 'Present',  color: '#16a34a', bg: '#dcfce7' },
+  half:    { label: 'Half Day', color: '#d97706', bg: '#fef3c7' },
+  absent:  { label: 'Absent',   color: '#dc2626', bg: '#fee2e2' },
+  leave:   { label: 'Leave',    color: '#ea580c', bg: '#ffedd5' },
+  holiday: { label: 'Holiday',  color: '#7c3aed', bg: '#ede9fe' },
+  off:     { label: 'Weekend',  color: '#f87171', bg: '#fff5f5' },
+};
+
+const REQUIRED_HOURS: Partial<Record<AttendanceStatus, number>> = {
+  present: 8,
+  half: 4,
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Demo data — replace with API data via @Input() records
+// ─────────────────────────────────────────────────────────────────────────────
+
+const DEMO: AttendanceRecord[] = [
+  { date: '2026-04-01', status: 'present', hours: 13.5 },
+  { date: '2026-04-02', status: 'present', hours: 8.0 },
+  { date: '2026-04-03', status: 'present', hours: 7.2 },
+  { date: '2026-04-06', status: 'present', hours: 8.5 },
+  { date: '2026-04-07', status: 'half',    hours: 4.0 },
+  { date: '2026-04-08', status: 'leave' },
+  { date: '2026-04-09', status: 'present', hours: 9.0 },
+  { date: '2026-04-10', status: 'present', hours: 6.5 },
+  { date: '2026-04-13', status: 'present', hours: 8.0 },
+  { date: '2026-04-14', status: 'absent' },
+  { date: '2026-04-15', status: 'holiday', holidayName: 'Vishu' },
+  { date: '2026-04-16', status: 'present', hours: 8.0 },
+  { date: '2026-04-17', status: 'present', hours: 8.5 },
+  { date: '2026-04-20', status: 'present', hours: 9.0 },
+  { date: '2026-04-21', status: 'present', hours: 7.5 },
+  { date: '2026-04-22', status: 'present', hours: 8.0 },
+  { date: '2026-04-23', status: 'present', hours: 8.3 },
+  { date: '2026-04-24', status: 'present', hours: 8.0 },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Component
+// ─────────────────────────────────────────────────────────────────────────────
+
+@Component({
+  selector: 'app-attendance-calendar',
+  standalone: true,
+  imports: [CommonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './attendance-calendar.component.html',
+  styleUrl: './attendance-calendar.component.scss',
+})
+export class AttendanceCalendarComponent {
+
+  // ── Inputs ────────────────────────────────────────────────────────────────
+
+  @Input() set records(val: AttendanceRecord[]) {
+    this._recordMap.set(this._toMap(val));
+  }
+
+  @Input() set holidays(val: { date: string; name: string }[]) {
+    this._holidayMap.set(val.reduce((a, h) => ({ ...a, [h.date]: h.name }), {}));
+  }
+
+  // ── State ─────────────────────────────────────────────────────────────────
+
+  readonly dayHeaders = DAYS;
+
+  readonly legendItems = Object.entries(STATUS_META).map(([key, v]) => ({
+    key,
+    label: v.label,
+    color: v.color,
+  }));
+
+  readonly today = new Date();
+  readonly viewDate = signal(new Date(this.today.getFullYear(), this.today.getMonth(), 1));
+  readonly _recordMap = signal<Record<string, AttendanceRecord>>(this._toMap(DEMO));
+  readonly _holidayMap = signal<Record<string, string>>({});
+
+  /** Currently "active" cell on mobile (tap to magnify) */
+  activeCell: DayCell | null = null;
+
+  /** Controls the summary accordion open/closed state */
+  summaryOpen = signal(false);
+
+  /** 'calendar' | 'list' */
+  viewMode = signal<'calendar' | 'list'>('calendar');
+
+  // ── Computed ──────────────────────────────────────────────────────────────
+
+  readonly monthYear = computed(() =>
+    this.viewDate().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+  );
+
+  readonly weeks = computed((): (DayCell | null)[][] => {
+    const { year, month } = this._ym();
+    const firstDow = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const map = this._recordMap();
+    const hmap = this._holidayMap();
+
+    const cells: (DayCell | null)[] = Array(firstDow).fill(null);
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = new Date(year, month, d);
+      const dow = date.getDay();
+      const isOff = dow === 0 || dow === 6;
+      const key = this._key(year, month, d);
+      const isFuture = date > this.today;
+      const isToday = this._sameDay(date, this.today);
+      const isPast = !isFuture && !isToday;
+      const rec = map[key];
+      const status: AttendanceStatus | null = isOff ? 'off' : (rec?.status ?? null);
+      const hours = rec?.hours;
+      const holidayName = rec?.holidayName ?? hmap[key];
+      const required = status ? (REQUIRED_HOURS[status] ?? undefined) : undefined;
+      const hoursMet = hours !== undefined && required !== undefined ? hours >= required : true;
+      cells.push({ date, day: d, status, isOff, isToday, isFuture, isPast, hours, hoursMet, holidayName });
+    }
+
+    const weeks: (DayCell | null)[][] = [];
+    for (let i = 0; i < cells.length; i += 7) {
+      const week = cells.slice(i, i + 7);
+      while (week.length < 7) week.push(null);
+      weeks.push(week);
+    }
+    return weeks;
+  });
+
+  readonly summaryChips = computed(() => {
+    const { year, month } = this._ym();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const map = this._recordMap();
+    const counts: Record<string, number> = { present: 0, half: 0, absent: 0, leave: 0, holiday: 0 };
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = new Date(year, month, d);
+      if (date > this.today) continue;
+      const dow = date.getDay();
+      if (dow === 0 || dow === 6) continue;
+      const s = map[this._key(year, month, d)]?.status;
+      if (s && s !== 'off' && counts[s] !== undefined) counts[s]++;
+    }
+
+    return (['present', 'half', 'absent', 'leave', 'holiday'] as AttendanceStatus[]).map(k => ({
+      key: k,
+      count: counts[k],
+      label: STATUS_META[k].label,
+      color: STATUS_META[k].color,
+      bg:    STATUS_META[k].bg,
+    }));
+  });
+
+  readonly workStats = computed(() => {    const { year, month } = this._ym();
+    const map = this._recordMap();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    let totalHours = 0;
+    let workingDays = 0;
+    let overtime = 0;
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const rec = map[this._key(year, month, d)];
+      if (!rec || rec.hours === undefined) continue;
+      const required = REQUIRED_HOURS[rec.status] ?? 0;
+      if (required === 0) continue;
+      totalHours += rec.hours;
+      workingDays++;
+      if (rec.hours > required) overtime += rec.hours - required;
+    }
+
+    return {
+      avgHours: workingDays > 0 ? Math.round((totalHours / workingDays) * 10) / 10 : 0,
+      overtimeHours: Math.round(overtime * 10) / 10,
+    };
+  });
+
+  readonly listRows = computed(() => {
+    const { year, month } = this._ym();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const map = this._recordMap();
+    const hmap = this._holidayMap();
+    const rows: DayCell[] = [];
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = new Date(year, month, d);
+      const dow = date.getDay();
+      const isOff = dow === 0 || dow === 6;
+      const key = this._key(year, month, d);
+      const isFuture = date > this.today;
+      const isToday = this._sameDay(date, this.today);
+      const isPast = !isFuture && !isToday;
+      const rec = map[key];
+      const status: AttendanceStatus | null = isOff ? 'off' : (rec?.status ?? null);
+      const hours = rec?.hours;
+      const holidayName = rec?.holidayName ?? hmap[key];
+      const required = status ? (REQUIRED_HOURS[status] ?? undefined) : undefined;
+      const hoursMet = hours !== undefined && required !== undefined ? hours >= required : true;
+      rows.push({ date, day: d, status, isOff, isToday, isFuture, isPast, hours, hoursMet, holidayName });
+    }
+    return rows;
+  });
+
+  // ── Month navigation ──────────────────────────────────────────────────────
+
+  toggleSummary(): void {
+    this.summaryOpen.update(v => !v);
+  }
+
+  setView(mode: 'calendar' | 'list'): void {
+    this.viewMode.set(mode);
+  }
+
+  private _touchStartY = 0;
+  private _wheelCooldown = false;
+
+  onWheel(e: WheelEvent): void {
+    if (this._wheelCooldown) return;
+    this._wheelCooldown = true;
+    if (e.deltaY > 30) this.nextMonth();
+    else if (e.deltaY < -30) this.prevMonth();
+    setTimeout(() => { this._wheelCooldown = false; }, 600);
+  }
+
+  onTouchStart(e: TouchEvent): void {
+    this._touchStartY = e.touches[0].clientY;
+  }
+
+  onTouchEnd(e: TouchEvent): void {
+    const delta = this._touchStartY - e.changedTouches[0].clientY;
+    if (delta > 40) this.nextMonth();
+    else if (delta < -40) this.prevMonth();
+  }
+
+  prevMonth(): void {
+    const { year, month } = this._ym();
+    this.viewDate.set(new Date(year, month - 1, 1));
+    this.activeCell = null;
+  }
+
+  nextMonth(): void {
+    const { year, month } = this._ym();
+    this.viewDate.set(new Date(year, month + 1, 1));
+    this.activeCell = null;
+  }
+
+  // ── Cell interaction ──────────────────────────────────────────────────────
+
+  /** Toggle active (mobile tap-to-magnify) */
+  toggleActive(cell: DayCell): void {
+    this.activeCell = this.activeCell === cell ? null : cell;
+  }
+
+  /** Dismiss active cell when clicking outside any cell */
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(e: MouseEvent): void {
+    const target = e.target as HTMLElement;
+    if (!target.closest('.cal-cell')) {
+      this.activeCell = null;
+    }
+  }
+
+  // ── Cell display helpers ──────────────────────────────────────────────────
+
+  cellColor(cell: DayCell): string {
+    return cell.status ? STATUS_META[cell.status].color : '';
+  }
+
+  cellBg(cell: DayCell): string {
+    return cell.status ? STATUS_META[cell.status].bg : '';
+  }
+
+  cellTitle(cell: DayCell): string {
+    const ds = cell.date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+    const label = cell.status ? STATUS_META[cell.status].label : 'No record';
+    const holiday = cell.holidayName ? ` — ${cell.holidayName}` : '';
+    const hrs = cell.hours !== undefined ? ` | ${cell.hours}h worked` : '';
+    return `${ds}${holiday} — ${label}${hrs}`;
+  }
+
+  requiredHours(cell: DayCell): number {
+    return cell.status ? (REQUIRED_HOURS[cell.status] ?? 8) : 8;
+  }
+
+  /**
+   * Returns an array of dot states for the hours indicator.
+   * Each dot = 1 hour. Extra time gets an indigo dot.
+   */
+  dotArray(cell: DayCell): Array<'filled' | 'empty' | 'extra'> {
+    if (cell.hours === undefined) return [];
+    const required = this.requiredHours(cell);
+    const result: Array<'filled' | 'empty' | 'extra'> = [];
+    for (let i = 0; i < required; i++) {
+      result.push(cell.hours > i ? 'filled' : 'empty');
+    }
+    if (cell.hours > required) result.push('extra');
+    return result;
+  }
+
+  /**
+   * Returns fill % for cylinder.
+   * Full day = 8h = 100%. Extra time beyond 8h overflows to 100% + purple.
+   * Cap at 100% for the track height, use fill-extra class for colour.
+   */
+  fillPercent(cell: DayCell): number {
+    if (cell.hours === undefined) return 0;
+    const required = this.requiredHours(cell);
+    return Math.min(100, Math.round((cell.hours / required) * 100));
+  }
+
+  // ── Private helpers ───────────────────────────────────────────────────────
+
+  private _ym() {
+    const d = this.viewDate();
+    return { year: d.getFullYear(), month: d.getMonth() };
+  }
+
+  private _key(y: number, m: number, d: number): string {
+    return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  }
+
+  private _sameDay(a: Date, b: Date): boolean {
+    return a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate();
+  }
+
+  private _toMap(records: AttendanceRecord[]): Record<string, AttendanceRecord> {
+    return records.reduce((acc, r) => ({ ...acc, [r.date]: r }), {});
+  }
+}
+

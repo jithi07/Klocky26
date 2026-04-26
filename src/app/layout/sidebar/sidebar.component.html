@@ -1,0 +1,73 @@
+<div class="sidebar" [class.open]="isOpen" [class.is-jv]="isJv" [style.--accent]="accentColor">
+
+  <!-- ── Brand ─────────────────────────────────────────────────── -->
+  <div class="brand">
+    @if (isJv) {
+      <div class="brand-mark" [title]="orgName">
+        @if (orgLogoUrl) {
+          <img class="brand-img" [src]="orgLogoUrl" [alt]="orgName" />
+        } @else {
+          {{ orgName.charAt(0).toUpperCase() }}
+        }
+      </div>
+      <div class="brand-info label">
+        <span class="brand-org">{{ orgName }}</span>
+        <span class="brand-via">via Klock</span>
+      </div>
+    } @else {
+      <div class="brand-mark">
+        <icon-klocky-logo [size]="20"></icon-klocky-logo>
+      </div>
+      <span class="brand-name label">Klock</span>
+    }
+  </div>
+
+  <!-- ── Main Navigation ───────────────────────────────────────── -->
+  <nav class="nav-main">
+
+    <a routerLink="/app/dashboard" routerLinkActive="active" title="Dashboard">
+      <span class="nav-icon"><icon-home [size]="19"></icon-home></span>
+      <span class="nav-text label">Dashboard</span>
+    </a>
+
+    <a routerLink="/app/employees" routerLinkActive="active" title="Employees">
+      <span class="nav-icon"><icon-employees [size]="19"></icon-employees></span>
+      <span class="nav-text label">Employees</span>
+    </a>
+
+    <a routerLink="/app/attendance" routerLinkActive="active" title="Attendance">
+      <span class="nav-icon"><icon-clock [size]="19"></icon-clock></span>
+      <span class="nav-text label">Attendance</span>
+    </a>
+
+    <a routerLink="/app/ui-components" routerLinkActive="active" title="UI Components">
+      <span class="nav-icon"><icon-palette [size]="19"></icon-palette></span>
+      <span class="nav-text label">UI Components</span>
+    </a>
+
+  </nav>
+
+  <!-- ── Bottom ────────────────────────────────────────────────── -->
+  <div class="nav-bottom">
+
+    <a routerLink="/app/settings/org-profile" routerLinkActive="active" title="Settings">
+      <span class="nav-icon"><icon-settings [size]="18"></icon-settings></span>
+      <span class="nav-text label">Settings</span>
+    </a>
+
+    <a routerLink="/login" title="Logout">
+      <span class="nav-icon"><icon-logout [size]="18"></icon-logout></span>
+      <span class="nav-text label">Logout</span>
+    </a>
+
+    <!-- Powered by footer -->
+    <div class="by-klocky">
+      <span class="nav-icon">
+        <span class="klocky-dot"></span>
+      </span>
+      <span class="by-klocky-text label">{{ isJv ? 'Powered by Klock' : 'by Klock' }}</span>
+    </div>
+
+  </div>
+
+</div>

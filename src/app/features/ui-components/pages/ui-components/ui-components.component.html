@@ -1,0 +1,378 @@
+<div class="showcase">
+
+  <!-- ── PAGE HEADER ── -->
+  <div class="page-header">
+    <div class="page-header-icon">
+      <icon-palette [size]="28" color="#4f46e5"></icon-palette>
+    </div>
+    <div>
+      <h1 class="page-title">UI Components</h1>
+      <p class="page-subtitle">All custom components, icons and utilities for Klocky</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SECTION: ICONS                          -->
+  <!-- ═══════════════════════════════════════ -->
+  <section class="section">
+    <h2 class="section-title">Icons</h2>
+    <p class="section-desc">SVG icon components — accept <code>[color]</code> and <code>[size]</code> inputs.</p>
+
+    <div class="icon-grid">
+
+      <div class="icon-item">
+        <icon-home [size]="24" color="#4f46e5"></icon-home>
+        <span>Home</span>
+      </div>
+      <div class="icon-item">
+        <icon-employees [size]="24" color="#4f46e5"></icon-employees>
+        <span>Employees</span>
+      </div>
+      <div class="icon-item">
+        <icon-clock [size]="24" color="#4f46e5"></icon-clock>
+        <span>Clock</span>
+      </div>
+      <div class="icon-item">
+        <icon-clock-in [size]="24" color="#22c55e"></icon-clock-in>
+        <span>Clock In</span>
+      </div>
+      <div class="icon-item">
+        <icon-clock-out [size]="24" color="#ef4444"></icon-clock-out>
+        <span>Clock Out</span>
+      </div>
+      <div class="icon-item">
+        <icon-settings [size]="24" color="#4f46e5"></icon-settings>
+        <span>Settings</span>
+      </div>
+      <div class="icon-item">
+        <icon-logout [size]="24" color="#4f46e5"></icon-logout>
+        <span>Logout</span>
+      </div>
+      <div class="icon-item">
+        <icon-menu [size]="24" color="#4f46e5"></icon-menu>
+        <span>Menu</span>
+      </div>
+      <div class="icon-item">
+        <icon-bell [size]="24" color="#4f46e5"></icon-bell>
+        <span>Bell</span>
+      </div>
+      <div class="icon-item">
+        <icon-user [size]="24" color="#4f46e5"></icon-user>
+        <span>User</span>
+      </div>
+      <div class="icon-item">
+        <icon-search [size]="24" color="#4f46e5"></icon-search>
+        <span>Search</span>
+      </div>
+      <div class="icon-item">
+        <icon-palette [size]="24" color="#4f46e5"></icon-palette>
+        <span>Palette</span>
+      </div>
+
+    </div>
+
+    <!-- Color demo -->
+    <div class="icon-color-demo">
+      <span class="demo-label">Color theming — same icon, different brand colors:</span>
+      <div class="icon-color-row">
+        <icon-home [size]="22" color="#4f46e5"></icon-home>
+        <icon-home [size]="22" color="#f97316"></icon-home>
+        <icon-home [size]="22" color="#22c55e"></icon-home>
+        <icon-home [size]="22" color="#ef4444"></icon-home>
+        <icon-home [size]="22" color="#0ea5e9"></icon-home>
+        <icon-home [size]="22" color="#a855f7"></icon-home>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SECTION: CHIPS                          -->
+  <!-- ═══════════════════════════════════════ -->
+  <section class="section">
+    <h2 class="section-title">Chips / Status Badges</h2>
+    <p class="section-desc">Variants: <code>active · inactive · inprogress · success · danger · warning · info</code></p>
+    <div class="chip-row">
+      <ui-chip *ngFor="let c of chips" [variant]="c.variant" [showDot]="true">
+        {{ c.label }}
+      </ui-chip>
+    </div>
+    <div class="chip-row" style="margin-top: 12px">
+      <span class="demo-label" style="width: 100%; margin-bottom: 6px;">Dismissible chips:</span>
+      <ui-chip variant="active" [dismissible]="true">John Doe</ui-chip>
+      <ui-chip variant="info" [dismissible]="true">Frontend</ui-chip>
+      <ui-chip variant="warning" [dismissible]="true">Pending Review</ui-chip>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SECTION: FORM CONTROLS                  -->
+  <!-- ═══════════════════════════════════════ -->
+  <section class="section">
+    <h2 class="section-title">Form Controls</h2>
+
+    <ui-grid [cols]="2" [colsMd]="2" [colsSm]="1" [gap]="20">
+
+      <!-- Input -->
+      <ui-card title="Text Input" shadow="sm" [bordered]="true">
+        <div class="form-stack">
+          <ui-input label="Employee Name" placeholder="e.g. John Smith"
+                    hint="Full name as per ID" [(ngModel)]="inputVal"></ui-input>
+
+          <ui-input label="Email" type="email" placeholder="john@acme.com"
+                    [(ngModel)]="inputVal"></ui-input>
+
+          <ui-input label="With error" placeholder="Enter value"
+                    error="This field is required" [(ngModel)]="inputVal"></ui-input>
+
+          <ui-input label="Password" type="password" placeholder="Min 8 chars"
+                    [(ngModel)]="inputVal"></ui-input>
+        </div>
+      </ui-card>
+
+      <!-- Textarea -->
+      <ui-card title="Textarea" shadow="sm" [bordered]="true">
+        <div class="form-stack">
+          <ui-textarea label="Notes" placeholder="Enter notes here..."
+                       hint="Max 300 characters" [maxLength]="300"
+                       [(ngModel)]="textareaVal"></ui-textarea>
+
+          <ui-textarea label="Address" placeholder="Full address..." [rows]="3"
+                       [(ngModel)]="textareaVal"></ui-textarea>
+        </div>
+      </ui-card>
+
+      <!-- Dropdown -->
+      <ui-card title="Dropdown" shadow="sm" [bordered]="true">
+        <div class="form-stack">
+          <ui-dropdown label="Department" placeholder="Select department"
+                       [options]="dropdownOptions" [(ngModel)]="dropdownVal"
+                       hint="Select the employee's team"></ui-dropdown>
+
+          <ui-dropdown label="With Error" placeholder="Select..."
+                       [options]="dropdownOptions"
+                       error="Please select a department"></ui-dropdown>
+        </div>
+      </ui-card>
+
+      <!-- Multi-Select -->
+      <ui-card title="Multi-Select Dropdown" shadow="sm" [bordered]="true">
+        <div class="form-stack">
+          <ui-multiselect label="Skills / Technologies"
+                          placeholder="Select skills..."
+                          [options]="multiOptions"
+                          [(ngModel)]="multiVal"></ui-multiselect>
+
+          <div class="preview-row" *ngIf="multiVal.length">
+            <span class="demo-label">Selected:</span>
+            <ui-chip *ngFor="let v of multiVal" variant="default" [showDot]="false">{{ v }}</ui-chip>
+          </div>
+        </div>
+      </ui-card>
+
+      <!-- Radio Group -->
+      <ui-card title="Radio Group" shadow="sm" [bordered]="true">
+        <div class="form-stack">
+          <ui-radio-group label="Billing Cycle" [options]="radioOptions"
+                          [(ngModel)]="radioVal"></ui-radio-group>
+
+          <div class="preview-row">
+            <span class="demo-label">Selected:</span>
+            <ui-chip variant="default" [showDot]="false">{{ radioVal }}</ui-chip>
+          </div>
+
+          <ui-radio-group label="Horizontal layout" direction="horizontal"
+                          [options]="[{label:'Yes',value:'yes'},{label:'No',value:'no'},{label:'Maybe',value:'maybe'}]"
+                          [(ngModel)]="radioVal"></ui-radio-group>
+        </div>
+      </ui-card>
+
+      <!-- Toggle -->
+      <ui-card title="Toggle Switch" shadow="sm" [bordered]="true">
+        <div class="form-stack">
+          <div class="toggle-row">
+            <ui-toggle label="Email notifications" [(ngModel)]="toggle1"></ui-toggle>
+            <ui-chip [variant]="toggle1 ? 'active' : 'inactive'" [showDot]="false">
+              {{ toggle1 ? 'ON' : 'OFF' }}
+            </ui-chip>
+          </div>
+          <div class="toggle-row">
+            <ui-toggle label="Auto clock-out" [(ngModel)]="toggle2"></ui-toggle>
+            <ui-chip [variant]="toggle2 ? 'active' : 'inactive'" [showDot]="false">
+              {{ toggle2 ? 'ON' : 'OFF' }}
+            </ui-chip>
+          </div>
+          <div class="toggle-row">
+            <ui-toggle label="Dark mode (disabled)" [disabled]="true" [(ngModel)]="toggle3"></ui-toggle>
+          </div>
+          <div class="toggle-row" style="gap: 14px">
+            <ui-toggle size="sm" label="Small"></ui-toggle>
+            <ui-toggle size="md" label="Medium" [(ngModel)]="toggle1"></ui-toggle>
+            <ui-toggle size="lg" label="Large"></ui-toggle>
+          </div>
+        </div>
+      </ui-card>
+
+    </ui-grid>
+  </section>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SECTION: SEARCH BAR                     -->
+  <!-- ═══════════════════════════════════════ -->
+  <section class="section">
+    <h2 class="section-title">Search Bar</h2>
+    <div class="search-demo-wrap">
+      <ui-search placeholder="Search employees, records..." (searched)="onSearch($event)"></ui-search>
+      <ui-search placeholder="Search by department..."></ui-search>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SECTION: CARDS + GRID                   -->
+  <!-- ═══════════════════════════════════════ -->
+  <section class="section">
+    <h2 class="section-title">Cards &amp; Grid Layout</h2>
+    <p class="section-desc">Cards with shadow levels inside a responsive grid.</p>
+
+    <ui-grid [cols]="3" [colsMd]="2" [colsSm]="1" [gap]="16">
+
+      <ui-card title="Shadow SM" subtitle="Subtle lift" shadow="sm" [bordered]="false">
+        <p class="card-demo-text">Use for tables or tight sections where you want minimal depth.</p>
+      </ui-card>
+
+      <ui-card title="Shadow MD" subtitle="Default card" shadow="md">
+        <p class="card-demo-text">The default card shadow. Great for dashboard stats and forms.</p>
+      </ui-card>
+
+      <ui-card title="Shadow LG" subtitle="Prominent" shadow="lg">
+        <p class="card-demo-text">Use for modals, featured content, or on-focus panels.</p>
+      </ui-card>
+
+      <ui-card title="Hoverable Card" subtitle="Lifts on hover" shadow="md" [hoverable]="true">
+        <p class="card-demo-text">Hover me! Great for clickable cards in a dashboard grid.</p>
+        <div card-footer>
+          <ui-chip variant="active">Interactive</ui-chip>
+        </div>
+      </ui-card>
+
+      <ui-card title="Bordered Card" subtitle="No shadow" shadow="none" [bordered]="true">
+        <p class="card-demo-text">Clean outlined card — ideal for forms in light environments.</p>
+      </ui-card>
+
+      <ui-card title="Card with Actions" subtitle="Header slot" shadow="md">
+        <div card-actions>
+          <ui-chip variant="inprogress">Draft</ui-chip>
+        </div>
+        <p class="card-demo-text">Use <code>card-actions</code> to place badges or buttons in the header.</p>
+        <div card-footer>
+          <button class="btn-primary-sm">Save</button>
+          <button class="btn-ghost-sm">Discard</button>
+        </div>
+      </ui-card>
+
+    </ui-grid>
+  </section>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SECTION: LOADERS                        -->
+  <!-- ═══════════════════════════════════════ -->
+  <section class="section">
+    <h2 class="section-title">Loaders</h2>
+    <p class="section-desc">Variants: <code>spinner · dots · bar · pulse</code>. Add <code>[overlay]="true"</code> for full-page.</p>
+
+    <div class="loader-grid">
+      <div class="loader-item" *ngFor="let l of loaders">
+        <ui-loader [variant]="l.variant" [size]="36"></ui-loader>
+        <span>{{ l.label }}</span>
+      </div>
+    </div>
+
+    <div class="loader-text-demo">
+      <ui-loader variant="spinner" [size]="20" text="Syncing attendance data..."></ui-loader>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SECTION: TOOLTIP                        -->
+  <!-- ═══════════════════════════════════════ -->
+  <section class="section">
+    <h2 class="section-title">Tooltip</h2>
+    <p class="section-desc">Use the <code>[tooltip]</code> directive on any element. Set <code>[tooltipPosition]</code> to top/bottom/left/right.</p>
+
+    <div class="tooltip-demo">
+      <button class="demo-btn"
+              tooltip="This is a top tooltip"
+              tooltipPosition="top">Top</button>
+      <button class="demo-btn"
+              tooltip="This is a bottom tooltip"
+              tooltipPosition="bottom">Bottom</button>
+      <button class="demo-btn"
+              tooltip="This is a left tooltip"
+              tooltipPosition="left">Left</button>
+      <button class="demo-btn"
+              tooltip="This is a right tooltip"
+              tooltipPosition="right">Right</button>
+      <icon-home [size]="24" color="#4f46e5"
+                 tooltip="Navigate to Dashboard"
+                 tooltipPosition="top"
+                 style="cursor: pointer"></icon-home>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SECTION: TOAST                          -->
+  <!-- ═══════════════════════════════════════ -->
+  <section class="section">
+    <h2 class="section-title">Toast Notifications</h2>
+    <p class="section-desc">Inject <code>ToastService</code> and call <code>.success() .error() .warning() .info()</code>. Auto-dismisses with progress bar.</p>
+
+    <div class="toast-demo">
+      <button class="demo-btn success" (click)="showToast('success')">
+        <icon-clock-in [size]="16" color="#15803d"></icon-clock-in>
+        Success
+      </button>
+      <button class="demo-btn danger" (click)="showToast('error')">
+        <icon-clock-out [size]="16" color="#dc2626"></icon-clock-out>
+        Error
+      </button>
+      <button class="demo-btn warning" (click)="showToast('warning')">
+        <icon-bell [size]="16" color="#b45309"></icon-bell>
+        Warning
+      </button>
+      <button class="demo-btn info" (click)="showToast('info')">
+        <icon-user [size]="16" color="#0369a1"></icon-user>
+        Info
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SECTION: MODALS                         -->
+  <!-- ═══════════════════════════════════════ -->
+  <section class="section">
+    <h2 class="section-title">Modal / Popup</h2>
+    <p class="section-desc">Template-driven <code>&lt;ui-modal&gt;</code> or service-driven via <code>ModalService.confirm()</code>.</p>
+
+    <div class="modal-demo">
+      <button class="demo-btn" (click)="modalOpen = true">Open Custom Modal</button>
+      <button class="demo-btn" (click)="openConfirm()">Service Confirm</button>
+      <button class="demo-btn danger" (click)="openDangerConfirm()">Danger Confirm</button>
+    </div>
+
+    <!-- Template-driven modal -->
+    <ui-modal
+      [open]="modalOpen"
+      title="Employee Details"
+      confirmLabel="Save Changes"
+      cancelLabel="Cancel"
+      (closed)="modalOpen = false"
+    >
+      <div class="modal-form">
+        <ui-input label="Full Name" placeholder="John Smith"></ui-input>
+        <ui-dropdown label="Department" [options]="dropdownOptions"></ui-dropdown>
+        <ui-toggle label="Active Employee" [(ngModel)]="toggle1"></ui-toggle>
+      </div>
+    </ui-modal>
+
+  </section>
+
+</div>

@@ -1,0 +1,253 @@
+<div class="att-wrap" (wheel)="onWheel($event)" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)">
+  <div class="cal-card">
+
+    <!-- ── Top bar: Month title (left) + Controls (right) ─────────── -->
+    <div class="cal-nav">
+      <span class="month-title">{{ monthYear() }}</span>
+
+      <div class="nav-controls">
+        <!-- Prev / Next month as a compact pill group -->
+        <div class="month-nav-group">
+          <button class="nav-btn" (click)="prevMonth()" aria-label="Previous month">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <button class="nav-btn" (click)="nextMonth()" aria-label="Next month">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Calendar / List view toggle -->
+        <div class="view-toggle">
+          <button class="vt-btn" [class.active]="viewMode() === 'calendar'"
+                  (click)="setView('calendar')" title="Calendar view">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </button>
+          <button class="vt-btn" [class.active]="viewMode() === 'list'"
+                  (click)="setView('list')" title="List view">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+              <line x1="8" y1="18" x2="21" y2="18"/>
+              <circle cx="3" cy="6" r="1.2" fill="currentColor" stroke="none"/>
+              <circle cx="3" cy="12" r="1.2" fill="currentColor" stroke="none"/>
+              <circle cx="3" cy="18" r="1.2" fill="currentColor" stroke="none"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Backdrop: click anywhere outside to close summary panel -->
+    @if (summaryOpen()) {
+      <div class="summary-backdrop" (click)="toggleSummary()"></div>
+    }
+
+    <!-- ── Stats Accordion ────────────────────────────────────────── -->
+    <div class="stats-accordion" [class.open]="summaryOpen()">
+
+      <!-- Header / toggle bar -->
+      <button class="stats-header" (click)="toggleSummary()" type="button">
+        <span class="stats-title">Summary</span>
+        <!-- mini count pills preview -->
+        <span class="stats-preview">
+          @for (chip of summaryChips(); track chip.key) {
+            @if (chip.count > 0) {
+              <span class="preview-tag"
+                [style.background]="chip.bg"
+                [style.color]="chip.color"
+                [title]="chip.label">{{ chip.count }}</span>
+            }
+          }
+        </span>
+        <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+
+      <!-- Collapsible body -->
+      <div class="stats-body">
+        <!-- Status chips -->
+        <div class="summary-row">
+          @for (chip of summaryChips(); track chip.key) {
+            <div class="chip" [style.--chip-color]="chip.color" [style.--chip-bg]="chip.bg">
+              <span class="chip-count">{{ chip.count }}</span>
+              <span class="chip-label">{{ chip.label }}</span>
+            </div>
+          }
+        </div>
+
+        <!-- Avg hours + Overtime -->
+        <div class="stats-extra">
+          <div class="stat-item">
+            <span class="stat-value">{{ workStats().avgHours }}<small>h</small></span>
+            <span class="stat-label">Avg / day</span>
+          </div>
+          <div class="stat-sep"></div>
+          <div class="stat-item">
+            <span class="stat-value stat-ot">{{ workStats().overtimeHours }}<small>h</small></span>
+            <span class="stat-label">Overtime</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── CALENDAR VIEW ─────────────────────────────────────────── -->
+    @if (viewMode() === 'calendar') {
+
+    <div class="cal-grid">
+        @for (d of dayHeaders; track d) {
+          <div class="cal-hdr">{{ d }}</div>
+        }
+
+        @for (week of weeks(); track $index) {
+          @for (cell of week; track $index) {
+            @if (cell) {
+              <div
+                class="cal-cell"
+                [class.is-off]="cell.isOff"
+                [class.is-today]="cell.isToday"
+                [class.is-future]="cell.isFuture && !cell.isOff"
+                [class.is-past]="cell.isPast && !cell.isOff && !cell.status"
+                [class.has-status]="!!cell.status && !cell.isOff"
+                [class.active]="activeCell === cell"
+                [style.--s-color]="cellColor(cell)"
+                [style.--s-bg]="cellBg(cell)"
+                [title]="cellTitle(cell)"
+                (click)="toggleActive(cell)"
+              >
+                <span class="day-num">{{ cell.day }}</span>
+
+                @if (cell.holidayName) {
+                  <span class="holiday-tag" [attr.data-tooltip]="cell.holidayName">
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="#7c3aed" stroke="none">
+                      <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+                    </svg>
+                    <span class="holiday-name">{{ cell.holidayName }}</span>
+                  </span>
+                }
+
+                @if (!cell.isOff && !cell.isFuture && cell.hours !== undefined) {
+                  <div class="dot-bar" [class.dot-short]="!cell.hoursMet"
+                       [title]="cell.hours + 'h / ' + requiredHours(cell) + 'h'">
+                    @for (d of dotArray(cell); track $index) {
+                      <span class="dot"
+                        [class.dot-filled]="d === 'filled'"
+                        [class.dot-empty]="d === 'empty'"
+                        [class.dot-extra]="d === 'extra'"
+                      ></span>
+                    }
+                  </div>
+                  <span class="hours-label" [class.hours-short]="!cell.hoursMet">{{ cell.hours }}h</span>
+                } @else if (!cell.isOff && !cell.isFuture && cell.status && !cell.holidayName) {
+                  <span class="status-pip"></span>
+                }
+              </div>
+            } @else {
+              <div class="cal-cell cal-empty"></div>
+            }
+          }
+        }
+      </div>
+
+      <!-- Legend (calendar only) -->
+      <div class="legend">
+        @for (entry of legendItems; track entry.key) {
+          <span class="leg-item">
+            <span class="leg-dot" [style.background]="entry.color"></span>
+            {{ entry.label }}
+          </span>
+        }
+      </div>
+    }
+
+    <!-- ── LIST VIEW ──────────────────────────────────────────────── -->
+    @if (viewMode() === 'list') {
+      <div class="list-view">
+
+        <!-- Table header -->
+        <div class="list-hdr">
+          <span class="lh-date">Date</span>
+          <span class="lh-day">Day</span>
+          <span class="lh-status">Status</span>
+          <span class="lh-hours">Hours</span>
+          <span class="lh-bar">Progress</span>
+        </div>
+
+        <!-- Rows -->
+        <div class="list-body">
+          @for (row of listRows(); track row.day) {
+            <div class="list-row"
+                 [class.row-off]="row.isOff"
+                 [class.row-today]="row.isToday"
+                 [class.row-future]="row.isFuture && !row.isOff">
+
+              <!-- Date -->
+              <span class="lc-date">
+                <span class="lc-daynum" [class.today-num]="row.isToday">{{ row.day }}</span>
+                @if (row.holidayName) {
+                  <svg width="8" height="8" viewBox="0 0 24 24" fill="#7c3aed" stroke="none" style="flex-shrink:0">
+                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+                  </svg>
+                }
+              </span>
+
+              <!-- Day of week -->
+              <span class="lc-day">{{ row.date.toLocaleDateString('en-US', { weekday: 'short' }) }}</span>
+
+              <!-- Status badge -->
+              <span class="lc-status">
+                @if (row.status && row.status !== 'off') {
+                  <span class="status-badge"
+                        [style.background]="cellBg(row)"
+                        [style.color]="cellColor(row)">
+                    {{ row.holidayName ?? (row.status | titlecase) }}
+                  </span>
+                } @else if (row.isOff) {
+                  <span class="status-badge off-badge">Weekend</span>
+                } @else if (row.isFuture) {
+                  <span class="status-badge future-badge">—</span>
+                } @else {
+                  <span class="status-badge no-badge">No record</span>
+                }
+              </span>
+
+              <!-- Hours -->
+              <span class="lc-hours" [class.hours-short]="!row.hoursMet && row.hours !== undefined">
+                {{ row.hours !== undefined ? row.hours + 'h' : '—' }}
+              </span>
+
+              <!-- Hours progress bar -->
+              <span class="lc-bar">
+                @if (!row.isOff && !row.isFuture && row.hours !== undefined) {
+                  <span class="prog-track">
+                    <span class="prog-fill"
+                      [class.fill-short]="!row.hoursMet"
+                      [class.fill-extra]="row.hours > requiredHours(row)"
+                      [style.width.%]="fillPercent(row)">
+                    </span>
+                  </span>
+                }
+              </span>
+
+            </div>
+          }
+        </div>
+
+      </div>
+    }
+
+  </div>
+</div>
+

@@ -1,0 +1,973 @@
+<div class="op-page">
+
+  <!-- ── Page Header ─────────────────────────────────────────────── -->
+  <div class="op-page-header">
+    <div>
+      <h1 class="op-title">Organization Profile</h1>
+      <p class="op-subtitle">Manage your organization identity, branding, offices, and preferences</p>
+    </div>
+  </div>
+
+  <!-- ── Mobile tab strip (hidden on desktop) ──────────────────── -->
+  <nav class="op-mobile-tabs">
+    <button class="op-mobile-tab" [class.active]="activeSection() === 'identity'" (click)="setSection('identity')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      </svg>
+      Identity
+    </button>
+    <button class="op-mobile-tab" [class.active]="activeSection() === 'branding'" (click)="setSection('branding')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>
+      </svg>
+      Branding
+    </button>
+    <button class="op-mobile-tab" [class.active]="activeSection() === 'contact'" (click)="setSection('contact')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+      </svg>
+      Contact
+    </button>
+    <button class="op-mobile-tab" [class.active]="activeSection() === 'offices'" (click)="setSection('offices')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+      </svg>
+      Offices
+    </button>
+    <button class="op-mobile-tab" [class.active]="activeSection() === 'team'" (click)="setSection('team')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+      </svg>
+      Team
+    </button>
+    <button class="op-mobile-tab" [class.active]="activeSection() === 'localisation'" (click)="setSection('localisation')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+      </svg>
+      Locale
+    </button>
+    <button class="op-mobile-tab" [class.active]="activeSection() === 'attendance'" (click)="setSection('attendance')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+      </svg>
+      Attendance
+    </button>
+    <button class="op-mobile-tab" [class.active]="activeSection() === 'leave'" (click)="setSection('leave')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+      Leave
+    </button>
+  </nav>
+
+  <!-- ── Body ────────────────────────────────────────────────────── -->
+  <div class="op-body">
+
+    <!-- Left nav -->
+    <nav class="op-sidenav">
+      <button class="op-nav-item" [class.active]="activeSection() === 'identity'" (click)="setSection('identity')">
+        <span class="op-nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </span>
+        Identity
+      </button>
+
+      <button class="op-nav-item" [class.active]="activeSection() === 'branding'" (click)="setSection('branding')">
+        <span class="op-nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/>
+            <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2"/>
+          </svg>
+        </span>
+        Branding
+      </button>
+
+      <button class="op-nav-item" [class.active]="activeSection() === 'contact'" (click)="setSection('contact')">
+        <span class="op-nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+          </svg>
+        </span>
+        Contact
+      </button>
+
+      <button class="op-nav-item" [class.active]="activeSection() === 'offices'" (click)="setSection('offices')">
+        <span class="op-nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+          </svg>
+        </span>
+        Offices
+      </button>
+
+      <button class="op-nav-item" [class.active]="activeSection() === 'team'" (click)="setSection('team')">
+        <span class="op-nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </span>
+        Team
+      </button>
+
+      <button class="op-nav-item" [class.active]="activeSection() === 'localisation'" (click)="setSection('localisation')">
+        <span class="op-nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+        </span>
+        Localization
+      </button>
+
+      <button class="op-nav-item" [class.active]="activeSection() === 'attendance'" (click)="setSection('attendance')">
+        <span class="op-nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </span>
+        Attendance
+      </button>
+
+      <button class="op-nav-item" [class.active]="activeSection() === 'leave'" (click)="setSection('leave')">
+        <span class="op-nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </span>
+        Leave &amp; Holidays
+      </button>
+    </nav>
+
+    <!-- Content area -->
+    <div class="op-content">
+
+      <!-- ── IDENTITY ──────────────────────────────────────────── -->
+      @if (activeSection() === 'identity') {
+      <section class="op-section">
+        <div class="op-section-header">
+          <h2>Identity</h2>
+          <p>Official company names and public-facing information</p>
+        </div>
+        <div class="op-card">
+          <div class="op-form-row">
+            <ui-input label="Company Name" [required]="true"
+              placeholder="e.g. Acme Technologies"
+              [(ngModel)]="companyName" (ngModelChange)="markDirty()">
+            </ui-input>
+            <ui-input label="Legal / Registered Name"
+              placeholder="As on official documents"
+              [(ngModel)]="legalName" (ngModelChange)="markDirty()">
+            </ui-input>
+          </div>
+          <div class="op-form-row">
+            <ui-select label="Company Type"
+              [options]="companyTypes"
+              [(ngModel)]="companyType" (ngModelChange)="markDirty()">
+            </ui-select>
+            <ui-input label="Year Founded" [maxlength]="4"
+              placeholder="e.g. 2015"
+              [(ngModel)]="foundedYear" (ngModelChange)="markDirty()">
+            </ui-input>
+          </div>
+          <div class="op-form-row">
+            <ui-input label="Registration / CIN Number"
+              placeholder="e.g. U72200MH2020PTC123456"
+              [(ngModel)]="regNumber" (ngModelChange)="markDirty()">
+            </ui-input>
+            <ui-input label="Website" type="url"
+              placeholder="https://yourcompany.com"
+              [(ngModel)]="website" (ngModelChange)="markDirty()">
+            </ui-input>
+          </div>
+
+          <!-- Compliance IDs -->
+          <div class="op-field-group-label">Compliance &amp; Tax IDs</div>
+          <div class="op-form-row">
+            <ui-input label="GST / VAT Number"
+              placeholder="e.g. 27AAPFU0939F1ZV"
+              [(ngModel)]="gstNumber" (ngModelChange)="markDirty()">
+            </ui-input>
+            <ui-input label="PAN / Tax ID"
+              placeholder="e.g. AAPFU0939F"
+              [(ngModel)]="panNumber" (ngModelChange)="markDirty()">
+            </ui-input>
+          </div>
+          <div class="op-form-row">
+            <ui-input label="ESIC Registration Number"
+              placeholder="17-digit ESIC code"
+              [(ngModel)]="esicNumber" (ngModelChange)="markDirty()">
+            </ui-input>
+            <ui-input label="PF Account Number"
+              placeholder="e.g. MH/BAN/0012345/000/0001234"
+              [(ngModel)]="pfAccount" (ngModelChange)="markDirty()">
+            </ui-input>
+          </div>
+
+          <div class="op-field-sep">
+            <ui-textarea label="Short Description" [rows]="3"
+              placeholder="Brief description of what your organisation does…"
+              hint="Displayed on employee-facing pages"
+              [(ngModel)]="description" (ngModelChange)="markDirty()">
+            </ui-textarea>
+          </div>
+        </div>
+      </section>
+      }
+
+      <!-- ── BRANDING ──────────────────────────────────────────── -->
+      @if (activeSection() === 'branding') {
+      <section class="op-section">
+        <div class="op-section-header">
+          <h2>Branding</h2>
+          <p>Logo and accent color used across the entire Klock workspace</p>
+        </div>
+        <div class="op-card">
+
+          <!-- Logo -->
+          <div class="op-field">
+            <label>Organisation Logo</label>
+            <div class="op-logo-upload">
+              <div class="op-logo-avatar" [style.background]="accentColor">
+                @if (logoPreview()) {
+                  <img [src]="logoPreview()" alt="Logo preview" />
+                } @else {
+                  {{ companyName.charAt(0).toUpperCase() || '?' }}
+                }
+              </div>
+              <div class="op-logo-meta">
+                <div class="op-logo-actions">
+                  <button type="button" class="op-btn-outline" (click)="triggerLogo()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    Upload Logo
+                  </button>
+                  @if (logoPreview()) {
+                    <button type="button" class="op-btn-ghost-red" (click)="removeLogo()">Remove</button>
+                  }
+                </div>
+                <span class="op-hint">PNG, SVG, or JPG · Recommended 200×200 px</span>
+              </div>
+            </div>
+            <input #logoInput type="file" accept="image/png,image/svg+xml,image/jpeg" class="op-hidden" (change)="onLogoSelect($event)" />
+          </div>
+
+          <!-- Accent color -->
+          <div class="op-field op-field-sep">
+            <label>JV Accent Color</label>
+            <p class="op-field-desc">Applied to sidebar, badges, and interactive elements across the app</p>
+            <div class="op-swatch-row">
+              @for (color of accentPresets; track color) {
+                <button type="button" class="op-swatch" [style.background]="color"
+                        [class.selected]="accentColor === color"
+                        [title]="color"
+                        (click)="setAccentColor(color)">
+                  @if (accentColor === color) {
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  }
+                </button>
+              }
+              <!-- Custom color -->
+              <button type="button" class="op-swatch op-swatch-custom" title="Custom colour" (click)="openColorPicker()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+                </svg>
+              </button>
+              <input #colorInput type="color" class="op-hidden" (change)="onCustomColor($event)" />
+            </div>
+
+            <!-- Live preview -->
+            <div class="op-brand-preview">
+              <div class="op-bp-label">Preview</div>
+              <div class="op-bp-sidebar" [style.background]="accentColor">
+                <div class="op-bp-dot">{{ companyName.charAt(0).toUpperCase() || '?' }}</div>
+              </div>
+              <div class="op-bp-badge" [style.background]="accentColor + '22'" [style.color]="accentColor">
+                {{ companyName || 'Your Organisation' }}
+              </div>
+              <div class="op-bp-btn" [style.background]="accentColor">Button</div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+      }
+
+      <!-- ── CONTACT ───────────────────────────────────────────── -->
+      @if (activeSection() === 'contact') {
+      <section class="op-section">
+        <div class="op-section-header">
+          <h2>Contact</h2>
+          <p>Email addresses and phone number for communications and billing</p>
+        </div>
+        <div class="op-card">
+
+          <div class="op-form-row">
+            <ui-input label="Primary Email" [required]="true" type="email"
+              placeholder="admin@yourcompany.com"
+              hint="Used for system notifications and account recovery"
+              [(ngModel)]="primaryEmail" (ngModelChange)="markDirty()">
+            </ui-input>
+            <ui-input label="Billing Email" type="email"
+              placeholder="billing@yourcompany.com"
+              hint="Invoices and payment receipts go here"
+              [(ngModel)]="billingEmail" (ngModelChange)="markDirty()">
+            </ui-input>
+          </div>
+
+          <ui-input label="Phone Number" type="tel"
+            placeholder="+91 98765 43210"
+            [(ngModel)]="phone" (ngModelChange)="markDirty()">
+          </ui-input>
+
+          <div class="op-field op-field-sep">
+            <label>Secondary / Notify Emails</label>
+            <p class="op-field-desc">Additional recipients for alerts, reports, and announcements</p>
+            <div class="op-email-list">
+              @for (email of secondaryEmails; track $index; let i = $index) {
+                <div class="op-email-row">
+                  <input type="email" [(ngModel)]="secondaryEmails[i]" (ngModelChange)="markDirty()"
+                         placeholder="notify@yourcompany.com" [name]="'sec-email-' + i" />
+                  <button type="button" class="op-icon-remove" (click)="removeSecondaryEmail(i)" aria-label="Remove email">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+                      <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                  </button>
+                </div>
+              }
+              <button type="button" class="op-add-btn" (click)="addSecondaryEmail()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+                  <path d="M12 5v14M5 12h14"/>
+                </svg>
+                Add Email
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+      }
+
+      <!-- ── OFFICES ───────────────────────────────────────────── -->
+      @if (activeSection() === 'offices') {
+      <section class="op-section">
+        <div class="op-section-header">
+          <h2>Offices &amp; Locations</h2>
+          <p>Add multiple offices, each with its own address and timezone for accurate attendance tracking</p>
+        </div>
+
+        @for (office of offices; track office.id; let i = $index) {
+          <div class="op-card op-office-card">
+            <div class="op-office-hdr">
+              <span class="op-office-tag">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                </svg>
+                Office {{ i + 1 }}
+              </span>
+              @if (offices.length > 1) {
+                <button type="button" class="op-remove-office" (click)="removeOffice(office.id)">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
+                  </svg>
+                  Remove
+                </button>
+              }
+            </div>
+
+            <div class="op-form-row">
+              <ui-input label="Office Name"
+                placeholder="e.g. HQ, London Branch, R&amp;D Centre"
+                [(ngModel)]="offices[i].name" (ngModelChange)="markDirty()">
+              </ui-input>
+              <ui-input label="City"
+                placeholder="e.g. Mumbai"
+                [(ngModel)]="offices[i].city" (ngModelChange)="markDirty()">
+              </ui-input>
+            </div>
+
+            <ui-input label="Street Address"
+              placeholder="Building, street, area…"
+              [(ngModel)]="offices[i].address" (ngModelChange)="markDirty()">
+            </ui-input>
+
+            <div class="op-form-row">
+              <ui-select label="Country" placeholder="Select country…"
+                [options]="countries"
+                [(ngModel)]="offices[i].country" (ngModelChange)="markDirty()">
+              </ui-select>
+              <ui-select label="Timezone" placeholder="Select timezone…"
+                [options]="timezones"
+                [(ngModel)]="offices[i].timezone" (ngModelChange)="markDirty()">
+              </ui-select>
+            </div>
+          </div>
+        }
+
+        <button type="button" class="op-add-office-btn" (click)="addOffice()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          Add Another Office
+        </button>
+      </section>
+      }
+
+      <!-- ── TEAM ──────────────────────────────────────────────── -->
+      @if (activeSection() === 'team') {
+      <section class="op-section">
+        <div class="op-section-header">
+          <h2>Team</h2>
+          <p>Organisation size and industry help tailor Klock to your needs</p>
+        </div>
+        <div class="op-card">
+
+          <div class="op-field">
+            <label>Number of Employees</label>
+            <div class="op-band-grid">
+              @for (band of employeeBands; track band) {
+                <button type="button" class="op-band-btn"
+                        [class.selected]="employeeCount === band"
+                        (click)="employeeCount = band; markDirty()">
+                  {{ band }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="op-field op-field-sep">
+            <label>Industry</label>
+            <ui-select [options]="industries"
+              [(ngModel)]="industry" (ngModelChange)="markDirty()">
+            </ui-select>
+          </div>
+
+          <div class="op-field op-field-sep">
+            <div class="op-field-group-label" style="margin-bottom:12px">HR Contact</div>
+            <div class="op-form-row">
+              <ui-input label="HR Contact Name"
+                placeholder="e.g. Priya Sharma"
+                [(ngModel)]="hrContactName" (ngModelChange)="markDirty()">
+              </ui-input>
+              <ui-input label="HR Contact Email" type="email"
+                placeholder="hr@yourcompany.com"
+                hint="Employees will see this for HR queries"
+                [(ngModel)]="hrContactEmail" (ngModelChange)="markDirty()">
+              </ui-input>
+            </div>
+          </div>
+
+        </div>
+      </section>
+      }
+
+      <!-- ── LOCALISATION ──────────────────────────────────────── -->
+      @if (activeSection() === 'localisation') {
+      <section class="op-section">
+        <div class="op-section-header">
+          <h2>Localisation</h2>
+          <p>Set your default timezone, date format, currency, and week settings</p>
+        </div>
+        <div class="op-card">
+
+          <div class="op-form-row">
+            <ui-select label="Default Timezone"
+              [options]="timezones"
+              hint="Used for reports and notifications when no office timezone is set"
+              [(ngModel)]="defaultTimezone" (ngModelChange)="markDirty()">
+            </ui-select>
+            <ui-select label="Currency"
+              [options]="currencies"
+              [(ngModel)]="currency" (ngModelChange)="markDirty()">
+            </ui-select>
+          </div>
+
+          <div class="op-form-row">
+            <div class="op-field">
+              <label>Date Format</label>
+              <div class="op-band-grid op-band-grid-sm">
+                @for (fmt of dateFormats; track fmt) {
+                  <button type="button" class="op-band-btn"
+                          [class.selected]="dateFormat === fmt"
+                          (click)="dateFormat = fmt; markDirty()">
+                    {{ fmt }}
+                  </button>
+                }
+              </div>
+            </div>
+            <div class="op-field">
+              <label>Week Starts On</label>
+              <div class="op-band-grid op-band-grid-sm">
+                @for (w of weekStarts; track w) {
+                  <button type="button" class="op-band-btn"
+                          [class.selected]="weekStart === w"
+                          (click)="weekStart = w; markDirty()">
+                    {{ w }}
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+      }
+
+      <!-- ── ATTENDANCE POLICY ──────────────────────────────────── -->
+      @if (activeSection() === 'attendance') {
+      <section class="op-section">
+        <div class="op-section-header">
+          <h2>Attendance Policy</h2>
+          <p>Configure work hours, grace periods, overtime, and check-in rules</p>
+        </div>
+
+        <!-- Work schedule -->
+        <div class="op-card">
+          <div class="op-field-group-label">Work Schedule</div>
+          <div class="op-form-row">
+            <div class="op-field">
+              <label>Standard Work Hours / Day</label>
+              <div class="op-number-wrap">
+                <input type="number" [(ngModel)]="workHoursPerDay" (ngModelChange)="markDirty()"
+                       name="workHoursPerDay" min="1" max="24" />
+                <span class="op-number-unit">hrs</span>
+              </div>
+            </div>
+            <div class="op-field">
+              <label>Working Days</label>
+              <div class="op-band-grid op-band-grid-sm">
+                @for (opt of workingDayOptions; track opt.value) {
+                  <button type="button" class="op-band-btn"
+                          [class.selected]="workingDays === opt.value"
+                          (click)="workingDays = opt.value; markDirty()">
+                    {{ opt.label }}
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="op-form-row">
+            <ui-select label="Grace Period for Late Arrival"
+              [options]="gracePeriodOptions"
+              hint="Employees arriving within this window are not marked late"
+              [(ngModel)]="gracePeriodMins" (ngModelChange)="markDirty()">
+            </ui-select>
+            <ui-select label="Half-Day Threshold"
+              [options]="halfDayOptions"
+              hint="Sessions shorter than this are counted as half-day"
+              [(ngModel)]="halfDayThresholdHrs" (ngModelChange)="markDirty()">
+            </ui-select>
+          </div>
+        </div>
+
+        <!-- Overtime -->
+        <div class="op-card">
+          <div class="op-field-group-label">Overtime</div>
+          <ui-toggle [row]="true"
+            label="Enable Overtime Tracking"
+            hint="Track and record extra hours beyond standard work time"
+            [(ngModel)]="overtimeEnabled" (ngModelChange)="markDirty()">
+          </ui-toggle>
+          @if (overtimeEnabled) {
+            <div class="op-field op-toggle-sub">
+              <label>Overtime Starts After</label>
+              <div class="op-number-wrap">
+                <input type="number" [(ngModel)]="overtimeAfterHrs" (ngModelChange)="markDirty()"
+                       name="overtimeAfterHrs" min="1" max="24" style="max-width:120px" />
+                <span class="op-number-unit">hrs / day</span>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Check-in rules -->
+        <div class="op-card">
+          <div class="op-field-group-label">Check-In Rules</div>
+
+          <ui-toggle [row]="true"
+            label="Allow Remote Check-In"
+            hint="Employees can punch in from any location"
+            [(ngModel)]="remoteCheckinEnabled" (ngModelChange)="markDirty()">
+          </ui-toggle>
+
+          <ui-toggle [row]="true"
+            label="Geo-Fencing"
+            hint="Restrict check-in to within the office perimeter"
+            [(ngModel)]="geoFencingEnabled" (ngModelChange)="markDirty()">
+          </ui-toggle>
+
+          <ui-toggle [row]="true"
+            label="Require Selfie on Check-In"
+            hint="Capture a selfie photo when clocking in for verification"
+            [(ngModel)]="selfieCheckinEnabled" (ngModelChange)="markDirty()">
+          </ui-toggle>
+
+          <ui-toggle [row]="true"
+            label="Auto Check-Out"
+            hint="Automatically clock out employees at a set time if they forget"
+            [(ngModel)]="autoCheckoutEnabled" (ngModelChange)="markDirty()">
+          </ui-toggle>
+          @if (autoCheckoutEnabled) {
+            <div class="op-field op-toggle-sub">
+              <label>Auto Check-Out Time</label>
+              <input type="time" [(ngModel)]="autoCheckoutTime" (ngModelChange)="markDirty()"
+                     name="autoCheckoutTime" style="max-width:160px" />
+            </div>
+          }
+        </div>
+      </section>
+      }
+
+      <!-- ── LEAVE & HOLIDAYS ───────────────────────────────────── -->
+      @if (activeSection() === 'leave') {
+      <section class="op-section">
+        <div class="op-section-header">
+          <h2>Leave &amp; Holidays</h2>
+          <p>Define leave entitlements, carry-forward rules, and holiday policies</p>
+        </div>
+
+        <!-- Leave year & entitlements -->
+        <div class="op-card">
+          <div class="op-field-group-label">Leave Year</div>
+          <div class="op-field">
+            <label>Leave Year Starts In</label>
+            <div class="op-band-grid op-band-grid-sm">
+              @for (m of leaveYearMonths; track m) {
+                <button type="button" class="op-band-btn"
+                        [class.selected]="leaveYearStart === m"
+                        (click)="leaveYearStart = m; markDirty()">
+                  {{ m }}
+                </button>
+              }
+            </div>
+            <span class="op-hint">Leave balances reset at the start of this month each year</span>
+          </div>
+        </div>
+
+        <!-- Entitlements -->
+        <div class="op-card">
+          <div class="op-field-group-label">Annual Leave Entitlements</div>
+          <div class="op-form-row">
+            <div class="op-field">
+              <label>Annual / Earned Leave</label>
+              <div class="op-number-wrap">
+                <input type="number" [(ngModel)]="annualLeaveDays" (ngModelChange)="markDirty()"
+                       name="annualLeaveDays" min="0" max="365" />
+                <span class="op-number-unit">days / year</span>
+              </div>
+            </div>
+            <div class="op-field">
+              <label>Sick Leave</label>
+              <div class="op-number-wrap">
+                <input type="number" [(ngModel)]="sickLeaveDays" (ngModelChange)="markDirty()"
+                       name="sickLeaveDays" min="0" max="365" />
+                <span class="op-number-unit">days / year</span>
+              </div>
+            </div>
+          </div>
+          <div class="op-form-row">
+            <div class="op-field">
+              <label>Casual Leave</label>
+              <div class="op-number-wrap">
+                <input type="number" [(ngModel)]="casualLeaveDays" (ngModelChange)="markDirty()"
+                       name="casualLeaveDays" min="0" max="365" />
+                <span class="op-number-unit">days / year</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom leave types -->
+        <div class="op-card">
+          <div class="op-field-group-label">Custom Leave Types</div>
+          <p class="op-field-desc" style="margin-bottom:16px">Add organisation-specific leave types like Maternity, Paternity, Bereavement, etc.</p>
+
+          <!-- Column headers -->
+          <div class="op-lt-header">
+            <span class="op-lt-col op-lt-name">Leave Type</span>
+            <span class="op-lt-col op-lt-days">Days / Year</span>
+            <span class="op-lt-col op-lt-applies">Applies To</span>
+            <span class="op-lt-col op-lt-paid">Paid</span>
+            <span class="op-lt-col op-lt-carry">Carry Fwd</span>
+            <span class="op-lt-col op-lt-action"></span>
+          </div>
+
+          <div class="op-lt-list">
+            @for (lt of customLeaveTypes; track lt.id; let i = $index) {
+              <div class="op-lt-row">
+                <!-- Name -->
+                <div class="op-lt-col op-lt-name">
+                  <input type="text"
+                         [(ngModel)]="customLeaveTypes[i].name"
+                         (ngModelChange)="markDirty()"
+                         placeholder="e.g. Maternity Leave"
+                         [name]="'lt-name-' + i"
+                         class="op-lt-input" />
+                </div>
+
+                <!-- Days -->
+                <div class="op-lt-col op-lt-days">
+                  <input type="number"
+                         [(ngModel)]="customLeaveTypes[i].daysPerYear"
+                         (ngModelChange)="markDirty()"
+                         [name]="'lt-days-' + i"
+                         class="op-lt-input op-lt-num"
+                         min="0" max="365" />
+                </div>
+
+                <!-- Applies To -->
+                <div class="op-lt-col op-lt-applies">
+                  <div class="op-lt-seg">
+                    <button type="button"
+                            [class.active]="customLeaveTypes[i].applicableTo === 'all'"
+                            (click)="customLeaveTypes[i].applicableTo = 'all'; markDirty()">All</button>
+                    <button type="button"
+                            [class.active]="customLeaveTypes[i].applicableTo === 'male'"
+                            (click)="customLeaveTypes[i].applicableTo = 'male'; markDirty()">Male</button>
+                    <button type="button"
+                            [class.active]="customLeaveTypes[i].applicableTo === 'female'"
+                            (click)="customLeaveTypes[i].applicableTo = 'female'; markDirty()">Female</button>
+                  </div>
+                </div>
+
+                <!-- Paid toggle -->
+                <div class="op-lt-col op-lt-paid">
+                  <label class="op-toggle">
+                    <input type="checkbox"
+                           [(ngModel)]="customLeaveTypes[i].isPaid"
+                           (ngModelChange)="markDirty()"
+                           [name]="'lt-paid-' + i" />
+                    <span class="op-toggle-track"><span class="op-toggle-thumb"></span></span>
+                  </label>
+                </div>
+
+                <!-- Carry forward toggle -->
+                <div class="op-lt-col op-lt-carry">
+                  <label class="op-toggle">
+                    <input type="checkbox"
+                           [(ngModel)]="customLeaveTypes[i].carryForward"
+                           (ngModelChange)="markDirty()"
+                           [name]="'lt-carry-' + i" />
+                    <span class="op-toggle-track"><span class="op-toggle-thumb"></span></span>
+                  </label>
+                </div>
+
+                <!-- Remove -->
+                <div class="op-lt-col op-lt-action">
+                  <button type="button" class="op-lt-remove" (click)="removeCustomLeave(lt.id)" aria-label="Remove leave type">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+                      <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            }
+
+            @if (customLeaveTypes.length === 0) {
+              <div class="op-lt-empty">No custom leave types added yet</div>
+            }
+          </div>
+
+          <button type="button" class="op-add-btn" style="margin-top:14px" (click)="addCustomLeave()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            Add Leave Type
+          </button>
+        </div>
+
+        <!-- Carry-forward & policies -->
+        <div class="op-card">
+          <div class="op-field-group-label">Leave Policies</div>
+
+          <ui-toggle [row]="true"
+            label="Carry Forward Unused Leave"
+            hint="Allow unused annual leave to roll over to the next year"
+            [(ngModel)]="carryForwardEnabled" (ngModelChange)="markDirty()">
+          </ui-toggle>
+          @if (carryForwardEnabled) {
+            <div class="op-field op-toggle-sub">
+              <label>Max Carry-Forward Days</label>
+              <div class="op-number-wrap">
+                <input type="number" [(ngModel)]="carryForwardMaxDays" (ngModelChange)="markDirty()"
+                       name="carryForwardMaxDays" min="1" max="365" style="max-width:120px" />
+                <span class="op-number-unit">days</span>
+              </div>
+            </div>
+          }
+
+          <ui-toggle [row]="true"
+            label="Compensatory Off (Comp-Off)"
+            hint="Grant compensatory leave for working on holidays or weekends"
+            [(ngModel)]="compOffEnabled" (ngModelChange)="markDirty()">
+          </ui-toggle>
+
+          <ui-toggle [row]="true"
+            label="Loss of Pay (LOP) for Unauthorised Absence"
+            hint="Automatically flag unmarked absence days as LOP for payroll"
+            [(ngModel)]="lopEnabled" (ngModelChange)="markDirty()">
+          </ui-toggle>
+
+          <ui-toggle [row]="true"
+            label="Leave Encashment"
+            hint="Allow employees to encash unused earned leave balance"
+            [(ngModel)]="encashmentEnabled" (ngModelChange)="markDirty()">
+          </ui-toggle>
+        </div>
+
+        <!-- ── Holiday Calendar ─────────────────────────────────── -->
+        <div class="op-card">
+          <div class="op-field-group-label">Holiday Calendar</div>
+          <p class="op-field-desc" style="margin-bottom:16px">
+            Configure public, optional, and restricted holidays for each month.
+            These are used for attendance and leave calculations.
+          </p>
+
+          <!-- Month tabs -->
+          <div class="op-hol-months">
+            @for (m of allMonths; track m; let mi = $index) {
+              <button type="button"
+                      class="op-hol-month-tab"
+                      [class.active]="holidayMonth() === mi + 1"
+                      (click)="holidayMonth.set(mi + 1)">
+                {{ m.slice(0, 3) }}
+                @if (totalHolidaysForMonth(mi + 1) > 0) {
+                  <span class="op-hol-badge">{{ totalHolidaysForMonth(mi + 1) }}</span>
+                }
+              </button>
+            }
+          </div>
+
+          <!-- Column headers -->
+          <div class="op-hol-header">
+            <span class="op-hol-col op-hol-day">Day</span>
+            <span class="op-hol-col op-hol-name">Holiday Name</span>
+            <span class="op-hol-col op-hol-type">Type</span>
+            <span class="op-hol-col op-hol-action"></span>
+          </div>
+
+          <!-- Rows for selected month -->
+          <div class="op-hol-list">
+            @for (h of holidaysForMonth(holidayMonth()); track h.id) {
+              <div class="op-hol-row">
+                <!-- Day picker -->
+                <div class="op-hol-col op-hol-day">
+                  <div class="op-select-wrap" style="max-width:72px">
+                    <select [(ngModel)]="h.day" (ngModelChange)="markDirty()" [name]="'hol-day-' + h.id">
+                      @for (d of daysInMonth(holidayMonth()); track d) {
+                        <option [value]="d">{{ d }}</option>
+                      }
+                    </select>
+                    <svg class="op-sel-chevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                  </div>
+                </div>
+
+                <!-- Holiday name -->
+                <div class="op-hol-col op-hol-name">
+                  <input type="text"
+                         [(ngModel)]="h.name" (ngModelChange)="markDirty()"
+                         placeholder="e.g. Republic Day"
+                         [name]="'hol-name-' + h.id"
+                         class="op-lt-input" />
+                </div>
+
+                <!-- Type -->
+                <div class="op-hol-col op-hol-type">
+                  <div class="op-hol-type-seg">
+                    <button type="button"
+                            [class.active-national]="h.type === 'national'"
+                            [class.active]="h.type === 'national'"
+                            (click)="h.type = 'national'; markDirty()">National</button>
+                    <button type="button"
+                            [class.active-optional]="h.type === 'optional'"
+                            [class.active]="h.type === 'optional'"
+                            (click)="h.type = 'optional'; markDirty()">Optional</button>
+                    <button type="button"
+                            [class.active-restricted]="h.type === 'restricted'"
+                            [class.active]="h.type === 'restricted'"
+                            (click)="h.type = 'restricted'; markDirty()">Restricted</button>
+                  </div>
+                </div>
+
+                <!-- Remove -->
+                <div class="op-hol-col op-hol-action">
+                  <button type="button" class="op-lt-remove" (click)="removeHoliday(h.id)" aria-label="Remove holiday">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+                      <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            }
+
+            @if (holidaysForMonth(holidayMonth()).length === 0) {
+              <div class="op-hol-empty">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                No holidays set for {{ allMonths[holidayMonth() - 1] }}
+              </div>
+            }
+          </div>
+
+          <button type="button" class="op-add-btn" style="margin-top:14px" (click)="addHoliday()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            Add Holiday to {{ allMonths[holidayMonth() - 1] }}
+          </button>
+        </div>
+      </section>
+      }
+
+    </div><!-- /op-content -->
+  </div><!-- /op-body -->
+
+  <!-- ── Discard Confirmation Modal ─────────────────────────────────── -->
+  @if (showDiscardConfirm()) {
+    <div class="op-confirm-backdrop" (click)="cancelDiscard()">
+      <div class="op-confirm-box" (click)="$event.stopPropagation()">
+        <div class="op-confirm-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+        <h3 class="op-confirm-title">Discard changes?</h3>
+        <p class="op-confirm-body">All unsaved changes will be permanently lost. This cannot be undone.</p>
+        <div class="op-confirm-actions">
+          <button type="button" class="op-confirm-keep" (click)="cancelDiscard()">Keep Editing</button>
+          <button type="button" class="op-confirm-discard" (click)="confirmDiscard()">Yes, Discard</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Floating Save Bar ───────────────────────────────────────── -->
+  @if (isDirty()) {
+    <div class="op-save-bar">
+      <span class="op-save-msg">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        Unsaved changes
+      </span>
+      <div class="op-save-actions">
+        <button type="button" class="op-discard-btn" (click)="discard()">Discard</button>
+        <button type="button" class="op-save-btn" (click)="save()" [disabled]="saving()">
+          @if (saving()) {
+            <span class="op-spinner"></span> Saving…
+          } @else {
+            Save Changes
+          }
+        </button>
+      </div>
+    </div>
+  }
+
+</div>

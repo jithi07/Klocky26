@@ -1,11 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { AttendanceCalendarComponent } from '../../components/attendance-calendar/attendance-calendar.component';
 
 @Component({
   selector: 'app-attendance',
-  imports: [],
+  standalone: true,
+  imports: [AttendanceCalendarComponent],
   templateUrl: './attendance.component.html',
-  styleUrl: './attendance.component.scss'
+  styleUrl: './attendance.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AttendanceComponent {
-
-}
+export class AttendanceComponent {}

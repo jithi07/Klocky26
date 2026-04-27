@@ -397,6 +397,7 @@
             <div class="op-form-row">
               <ui-select label="Country" placeholder="Select country…"
                 [options]="countries"
+                [searchable]="true"
                 [(ngModel)]="offices[i].country" (ngModelChange)="markDirty()">
               </ui-select>
               <ui-select label="Timezone" placeholder="Select timezone…"
@@ -531,9 +532,18 @@
             <div class="op-field">
               <label>Standard Work Hours / Day</label>
               <div class="op-number-wrap">
-                <input type="number" [(ngModel)]="workHoursPerDay" (ngModelChange)="markDirty()"
-                       name="workHoursPerDay" min="1" max="24" />
-                <span class="op-number-unit">hrs</span>
+                <div class="op-stepper">
+                  <button type="button" class="op-stepper-btn op-stepper-minus"
+                          (click)="workHoursPerDay = workHoursPerDay > 1 ? workHoursPerDay - 1 : 1; markDirty()"
+                          [disabled]="workHoursPerDay <= 1">&#8722;</button>
+                  <input type="number" class="op-stepper-val"
+                         [(ngModel)]="workHoursPerDay" (ngModelChange)="markDirty()"
+                         name="workHoursPerDay" min="1" max="24" />
+                  <button type="button" class="op-stepper-btn op-stepper-plus"
+                          (click)="workHoursPerDay = workHoursPerDay < 24 ? workHoursPerDay + 1 : 24; markDirty()"
+                          [disabled]="workHoursPerDay >= 24">&#43;</button>
+                </div>
+                <span class="op-number-unit">hrs / day</span>
               </div>
             </div>
             <div class="op-field">
@@ -574,12 +584,23 @@
           </ui-toggle>
           @if (overtimeEnabled) {
             <div class="op-field op-toggle-sub">
+            <div class="op-field">
               <label>Overtime Starts After</label>
               <div class="op-number-wrap">
-                <input type="number" [(ngModel)]="overtimeAfterHrs" (ngModelChange)="markDirty()"
-                       name="overtimeAfterHrs" min="1" max="24" style="max-width:120px" />
+                <div class="op-stepper">
+                  <button type="button" class="op-stepper-btn op-stepper-minus"
+                          (click)="overtimeAfterHrs = overtimeAfterHrs > 1 ? overtimeAfterHrs - 1 : 1; markDirty()"
+                          [disabled]="overtimeAfterHrs <= 1">&#8722;</button>
+                  <input type="number" class="op-stepper-val"
+                         [(ngModel)]="overtimeAfterHrs" (ngModelChange)="markDirty()"
+                         name="overtimeAfterHrs" min="1" max="24" />
+                  <button type="button" class="op-stepper-btn op-stepper-plus"
+                          (click)="overtimeAfterHrs = overtimeAfterHrs < 24 ? overtimeAfterHrs + 1 : 24; markDirty()"
+                          [disabled]="overtimeAfterHrs >= 24">&#43;</button>
+                </div>
                 <span class="op-number-unit">hrs / day</span>
               </div>
+            </div>
             </div>
           }
         </div>
@@ -655,16 +676,34 @@
             <div class="op-field">
               <label>Annual / Earned Leave</label>
               <div class="op-number-wrap">
-                <input type="number" [(ngModel)]="annualLeaveDays" (ngModelChange)="markDirty()"
-                       name="annualLeaveDays" min="0" max="365" />
+                <div class="op-stepper">
+                  <button type="button" class="op-stepper-btn op-stepper-minus"
+                          (click)="annualLeaveDays = annualLeaveDays > 0 ? annualLeaveDays - 1 : 0; markDirty()"
+                          [disabled]="annualLeaveDays <= 0">&#8722;</button>
+                  <input type="number" class="op-stepper-val"
+                         [(ngModel)]="annualLeaveDays" (ngModelChange)="markDirty()"
+                         name="annualLeaveDays" min="0" max="365" />
+                  <button type="button" class="op-stepper-btn op-stepper-plus"
+                          (click)="annualLeaveDays = annualLeaveDays < 365 ? annualLeaveDays + 1 : 365; markDirty()"
+                          [disabled]="annualLeaveDays >= 365">&#43;</button>
+                </div>
                 <span class="op-number-unit">days / year</span>
               </div>
             </div>
             <div class="op-field">
               <label>Sick Leave</label>
               <div class="op-number-wrap">
-                <input type="number" [(ngModel)]="sickLeaveDays" (ngModelChange)="markDirty()"
-                       name="sickLeaveDays" min="0" max="365" />
+                <div class="op-stepper">
+                  <button type="button" class="op-stepper-btn op-stepper-minus"
+                          (click)="sickLeaveDays = sickLeaveDays > 0 ? sickLeaveDays - 1 : 0; markDirty()"
+                          [disabled]="sickLeaveDays <= 0">&#8722;</button>
+                  <input type="number" class="op-stepper-val"
+                         [(ngModel)]="sickLeaveDays" (ngModelChange)="markDirty()"
+                         name="sickLeaveDays" min="0" max="365" />
+                  <button type="button" class="op-stepper-btn op-stepper-plus"
+                          (click)="sickLeaveDays = sickLeaveDays < 365 ? sickLeaveDays + 1 : 365; markDirty()"
+                          [disabled]="sickLeaveDays >= 365">&#43;</button>
+                </div>
                 <span class="op-number-unit">days / year</span>
               </div>
             </div>
@@ -673,8 +712,17 @@
             <div class="op-field">
               <label>Casual Leave</label>
               <div class="op-number-wrap">
-                <input type="number" [(ngModel)]="casualLeaveDays" (ngModelChange)="markDirty()"
-                       name="casualLeaveDays" min="0" max="365" />
+                <div class="op-stepper">
+                  <button type="button" class="op-stepper-btn op-stepper-minus"
+                          (click)="casualLeaveDays = casualLeaveDays > 0 ? casualLeaveDays - 1 : 0; markDirty()"
+                          [disabled]="casualLeaveDays <= 0">&#8722;</button>
+                  <input type="number" class="op-stepper-val"
+                         [(ngModel)]="casualLeaveDays" (ngModelChange)="markDirty()"
+                         name="casualLeaveDays" min="0" max="365" />
+                  <button type="button" class="op-stepper-btn op-stepper-plus"
+                          (click)="casualLeaveDays = casualLeaveDays < 365 ? casualLeaveDays + 1 : 365; markDirty()"
+                          [disabled]="casualLeaveDays >= 365">&#43;</button>
+                </div>
                 <span class="op-number-unit">days / year</span>
               </div>
             </div>
@@ -699,7 +747,6 @@
           <div class="op-lt-list">
             @for (lt of customLeaveTypes; track lt.id; let i = $index) {
               <div class="op-lt-row">
-                <!-- Name -->
                 <div class="op-lt-col op-lt-name">
                   <input type="text"
                          [(ngModel)]="customLeaveTypes[i].name"
@@ -709,7 +756,6 @@
                          class="op-lt-input" />
                 </div>
 
-                <!-- Days -->
                 <div class="op-lt-col op-lt-days">
                   <input type="number"
                          [(ngModel)]="customLeaveTypes[i].daysPerYear"
@@ -719,7 +765,6 @@
                          min="0" max="365" />
                 </div>
 
-                <!-- Applies To -->
                 <div class="op-lt-col op-lt-applies">
                   <div class="op-lt-seg">
                     <button type="button"
@@ -734,7 +779,6 @@
                   </div>
                 </div>
 
-                <!-- Paid toggle -->
                 <div class="op-lt-col op-lt-paid">
                   <label class="op-toggle">
                     <input type="checkbox"
@@ -745,7 +789,6 @@
                   </label>
                 </div>
 
-                <!-- Carry forward toggle -->
                 <div class="op-lt-col op-lt-carry">
                   <label class="op-toggle">
                     <input type="checkbox"
@@ -756,7 +799,6 @@
                   </label>
                 </div>
 
-                <!-- Remove -->
                 <div class="op-lt-col op-lt-action">
                   <button type="button" class="op-lt-remove" (click)="removeCustomLeave(lt.id)" aria-label="Remove leave type">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
@@ -793,8 +835,17 @@
             <div class="op-field op-toggle-sub">
               <label>Max Carry-Forward Days</label>
               <div class="op-number-wrap">
-                <input type="number" [(ngModel)]="carryForwardMaxDays" (ngModelChange)="markDirty()"
-                       name="carryForwardMaxDays" min="1" max="365" style="max-width:120px" />
+                <div class="op-stepper">
+                  <button type="button" class="op-stepper-btn op-stepper-minus"
+                          (click)="carryForwardMaxDays = carryForwardMaxDays > 1 ? carryForwardMaxDays - 1 : 1; markDirty()"
+                          [disabled]="carryForwardMaxDays <= 1">&#8722;</button>
+                  <input type="number" class="op-stepper-val"
+                         [(ngModel)]="carryForwardMaxDays" (ngModelChange)="markDirty()"
+                         name="carryForwardMaxDays" min="1" max="365" />
+                  <button type="button" class="op-stepper-btn op-stepper-plus"
+                          (click)="carryForwardMaxDays = carryForwardMaxDays < 365 ? carryForwardMaxDays + 1 : 365; markDirty()"
+                          [disabled]="carryForwardMaxDays >= 365">&#43;</button>
+                </div>
                 <span class="op-number-unit">days</span>
               </div>
             </div>
@@ -854,7 +905,6 @@
           <div class="op-hol-list">
             @for (h of holidaysForMonth(holidayMonth()); track h.id) {
               <div class="op-hol-row">
-                <!-- Day picker -->
                 <div class="op-hol-col op-hol-day">
                   <div class="op-select-wrap" style="max-width:72px">
                     <select [(ngModel)]="h.day" (ngModelChange)="markDirty()" [name]="'hol-day-' + h.id">
@@ -866,7 +916,6 @@
                   </div>
                 </div>
 
-                <!-- Holiday name -->
                 <div class="op-hol-col op-hol-name">
                   <input type="text"
                          [(ngModel)]="h.name" (ngModelChange)="markDirty()"
@@ -875,7 +924,6 @@
                          class="op-lt-input" />
                 </div>
 
-                <!-- Type -->
                 <div class="op-hol-col op-hol-type">
                   <div class="op-hol-type-seg">
                     <button type="button"
@@ -893,7 +941,6 @@
                   </div>
                 </div>
 
-                <!-- Remove -->
                 <div class="op-hol-col op-hol-action">
                   <button type="button" class="op-lt-remove" (click)="removeHoliday(h.id)" aria-label="Remove holiday">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">

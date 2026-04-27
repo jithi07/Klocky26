@@ -3,9 +3,11 @@
   <!-- LEFT: Hamburger (mobile) + Brand -->
   <div class="left">
     <button class="hamburger" (click)="toggleSidebar.emit()" aria-label="Toggle menu">
-      <span></span>
-      <span></span>
-      <span></span>
+      <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0 1.5 Q10 4 20 1.5"   stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <line x1="0" y1="8" x2="20" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M0 14.5 Q10 12 20 14.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
     </button>
     <app-brand [size]="'sm'" [orgName]="orgName" [orgLogoUrl]="orgLogoUrl"></app-brand>
   </div>

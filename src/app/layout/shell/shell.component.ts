@@ -18,9 +18,9 @@ export class ShellComponent implements OnInit, OnDestroy {
 
   // Joint-venture branding — set orgName (and optionally orgLogoUrl + orgAccentColor) to activate JV mode.
   // Leave empty for default Klocky-only branding.
-  orgName = 'Experion Technologies';
+  orgName = 'TEST Company';
   orgLogoUrl = '';
-  orgAccentColor = '#c41f35';  // e.g. '#10b981' for green, '#c41f35' for amber
+  orgAccentColor = '#28dcaf';  // e.g. '#10b981' for green
 
   constructor(private router: Router) {}
 

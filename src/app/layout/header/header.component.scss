@@ -64,22 +64,34 @@
 /* ─── Hamburger ──────────────────────────────────────────────────── */
 .hamburger {
   display: none;
-  flex-direction: column;
-  gap: 4.5px;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
   background: none;
-  border: none;
+  border: 1.5px solid transparent;
   cursor: pointer;
-  padding: 6px;
-  border-radius: 8px;
-  transition: background 0.15s;
+  padding: 0;
+  border-radius: 10px;
+  color: #475569;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
 }
-.hamburger:hover { background: #f1f5f9; }
-.hamburger span {
+.hamburger:hover {
+  background: color-mix(in srgb, var(--accent, #6366f1) 8%, transparent);
+  border-color: color-mix(in srgb, var(--accent, #6366f1) 20%, transparent);
+  color: var(--accent, #6366f1);
+}
+.hamburger:active {
+  background: color-mix(in srgb, var(--accent, #6366f1) 14%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, #6366f1) 12%, transparent);
+}
+.hamburger svg {
   display: block;
-  width: 20px;
-  height: 2px;
-  background: #475569;
-  border-radius: 2px;
+  transition: transform 0.2s ease;
+}
+.hamburger:hover svg {
+  transform: scale(1.08);
 }
 
 /* ─── Search ─────────────────────────────────────────────────────── */

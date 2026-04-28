@@ -76,8 +76,8 @@ export interface DropdownOption {
     }
     .ui-select:focus { outline: none; }
     .ui-select.open {
-      border-color: #4f46e5;
-      box-shadow: 0 0 0 3px rgba(79,70,229,.12);
+      border-color: var(--accent, #0d9488);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, #0d9488) 12%, transparent);
     }
     .ui-select.disabled { background: #f9fafb; opacity: .6; pointer-events: none; }
     .has-error .ui-select { border-color: #ef4444; }
@@ -98,10 +98,10 @@ export interface DropdownOption {
       padding: 9px 12px; border-radius: 7px; font-size: 14px;
       color: #374151; cursor: pointer; transition: background .12s;
     }
-    .ui-option:hover { background: #f5f3ff; }
-    .ui-option.selected { background: #ede9fe; color: #4f46e5; font-weight: 600; }
+    .ui-option:hover { background: color-mix(in srgb, var(--accent, #0d9488) 6%, transparent); }
+    .ui-option.selected { background: color-mix(in srgb, var(--accent, #0d9488) 10%, transparent); color: var(--accent, #0d9488); font-weight: 600; }
     .ui-option.disabled { opacity: .4; pointer-events: none; }
-    .checkmark { display: flex; color: #4f46e5; }
+    .checkmark { display: flex; color: var(--accent, #0d9488); }
     .ui-empty { padding: 10px 12px; font-size: 13px; color: #9ca3af; text-align: center; }
 
     .ui-hint { font-size: 12px; color: #6b7280; }

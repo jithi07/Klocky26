@@ -18,4 +18,31 @@
 
   /* Radius */
   --radius: 12px;
+
+  /* ── Primary UI accent (used by ui-input, ui-select, ui-toggle, ui-dropdown etc.) ── */
+  /* Mirrors --th-accent so all shared components automatically theme with the app     */
+  --accent: var(--th-accent);
+  --accent-light: var(--th-text-accent);
+
+  /* ── Page accent theme ────────────────────────────────────────────────
+   * Change ONLY these 11 variables to retheme the auth / onboarding /
+   * org-profile pages across the entire app.
+   *
+   * Current theme: Deep Teal / Viridian
+   * ─────────────────────────────────────────────────────────────────── */
+  --th-page-bg:          #060d0c;   /* dark page background (tinted to accent)  */
+  --th-accent:           #0d9488;   /* main accent — solid colour uses           */
+  --th-accent-dark:      #0a6b63;   /* darker variant — button gradient end      */
+  --th-text-accent:      #5eead4;   /* light accent — icons, links, caret        */
+  --th-text-accent-pale: #99f6e4;   /* pale accent — heading gradients           */
+
+  /* RGB channels of --th-accent  (#0d9488 = 13 148 136) */
+  --th-ar: 13;
+  --th-ag: 148;
+  --th-ab: 136;
+
+  /* RGB channels of --th-text-accent (#5eead4 = 94 234 212) */
+  --th-lr: 94;
+  --th-lg: 234;
+  --th-lb: 212;
 }

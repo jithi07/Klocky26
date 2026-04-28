@@ -20,7 +20,7 @@ export class ShellComponent implements OnInit, OnDestroy {
   // Leave empty for default Klocky-only branding.
   orgName = 'TEST Company';
   orgLogoUrl = '';
-  orgAccentColor = '#28dcaf';  // e.g. '#10b981' for green
+  orgAccentColor = '#958427e5';  // e.g. '#10b981' for green
 
   constructor(private router: Router) {}
 

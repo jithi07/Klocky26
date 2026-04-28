@@ -224,9 +224,9 @@ export type SelectOption = string | { label: string; value: any };
     }
     :host(.dark) .ui-trigger:focus-visible,
     :host(.dark) .ui-trigger.open {
-      border-color: rgba(99,102,241,.65);
-      background: rgba(99,102,241,.06);
-      box-shadow: 0 0 0 4px rgba(99,102,241,.12);
+      border-color: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .65);
+      background: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .06);
+      box-shadow: 0 0 0 4px rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .12);
     }
     :host(.dark) .ui-trigger.placeholder .ui-trigger-text { color: rgba(255,255,255,.25); }
     :host(.dark) .ui-trigger.disabled { background: rgba(255,255,255,.04); opacity: .4; }
@@ -246,7 +246,7 @@ export type SelectOption = string | { label: string; value: any };
     :host(.dark) .ui-search::placeholder { color: rgba(255,255,255,.2); }
     :host(.dark) .ui-search-clear { color: rgba(255,255,255,.3); }
     :host(.dark) .ui-search-clear:hover { color: rgba(255,255,255,.6); background: rgba(255,255,255,.06); }
-    :host(.dark) .ui-options-list { scrollbar-color: rgba(99,102,241,.4) transparent; }
+    :host(.dark) .ui-options-list { scrollbar-color: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .4) transparent; }
     :host(.dark) .ui-option {
       color: rgba(255,255,255,.8); font-size: 14px;
       border-bottom-color: rgba(255,255,255,.05);
@@ -254,10 +254,10 @@ export type SelectOption = string | { label: string; value: any };
     :host(.dark) .ui-option:not(:last-child) { border-bottom-color: rgba(255,255,255,.05); }
     :host(.dark) .ui-option:hover { background: rgba(255,255,255,.06); }
     :host(.dark) .ui-option.selected {
-      background: rgba(99,102,241,.15);
-      color: #818cf8; font-weight: 600;
+      background: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .15);
+      color: var(--th-text-accent); font-weight: 600;
     }
-    :host(.dark) .ui-option.selected svg { color: #818cf8; }
+    :host(.dark) .ui-option.selected svg { color: var(--th-text-accent); }
     :host(.dark) .ui-option-placeholder { color: rgba(255,255,255,.25); }
     :host(.dark) .ui-no-results { color: rgba(255,255,255,.3); }
     :host(.dark) .ui-hint  { color: rgba(255,255,255,.28); }

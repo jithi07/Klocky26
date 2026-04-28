@@ -1,26 +1,42 @@
-<div class="lp">
+<div class="lp" [class.menu-open]="mobileMenuOpen()">
 
   <!-- ─── NAV ───────────────────────────────────────────────── -->
   <nav class="lp-nav">
     <div class="lp-nav-inner">
       <div class="lp-logo">
-        <span class="lp-logo-icon">⏱</span>
-        <span class="lp-logo-name">Klocky</span>
+        <span class="lp-logo-icon"></span>
+        <span class="lp-logo-name">Klock</span>
       </div>
+
+      <!-- Desktop actions -->
       <div class="lp-nav-actions">
         <button class="lp-btn-ghost" (click)="goLogin()">Sign In</button>
-        <button class="lp-btn-primary" (click)="goLogin()">Get Started Free</button>
-        <!-- Dev preview toggle -->
-        <button class="lp-btn-preview" (click)="goDashboard()" title="Preview dashboard">
+        <button class="lp-btn-ghost" (click)="goDemo()">Request a Demo</button>
+        <button class="lp-btn-primary" (click)="goTrial()">Start Free Trial</button>
+      </div>
+
+      <!-- Mobile hamburger -->
+      <button class="lp-hamburger" (click)="toggleMenu()"
+              [attr.aria-label]="mobileMenuOpen() ? 'Close menu' : 'Open menu'"
+              [class.is-open]="mobileMenuOpen()">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <!-- Mobile drawer -->
+    @if (mobileMenuOpen()) {
+      <div class="lp-mobile-menu">
+        <button class="lp-mm-item lp-mm-signin" (click)="goLogin()">Sign In</button>
+        <button class="lp-mm-item" (click)="goDemo()">Request a Demo</button>
+        <button class="lp-mm-cta" (click)="goTrial()">
+          Start Free Trial
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-            <rect x="3" y="3" width="18" height="18" rx="3"/>
-            <path d="M9 3v18M3 9h6M3 15h6"/>
+               stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
           </svg>
-          Preview Dashboard
         </button>
       </div>
-    </div>
+    }
   </nav>
 
   <!-- ─── HERO ──────────────────────────────────────────────── -->
@@ -32,25 +48,25 @@
         <span class="lp-gradient-text">Made effortless</span>
       </h1>
       <p class="lp-hero-sub">
-        Klocky brings employee management, attendance tracking, leave
+        Klock brings employee management, attendance tracking, leave
         approvals and org insights into one elegant platform.
         No spreadsheets. No chaos.
       </p>
       <div class="lp-hero-ctas">
-        <button class="lp-cta-primary" (click)="goLogin()">
-          Start for free
+        <button class="lp-cta-primary" (click)="goTrial()">
+          Start Free Trial
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
             <path d="M5 12h14M12 5l7 7-7 7"/>
           </svg>
         </button>
-        <button class="lp-cta-ghost" (click)="goDashboard()">
+        <button class="lp-cta-ghost" (click)="goDemo()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-            <circle cx="12" cy="12" r="10"/>
-            <polygon points="10 8 16 12 10 16" fill="currentColor" stroke="none"/>
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <path d="M8 21h8M12 17v4"/>
           </svg>
-          See live demo
+          Request a Demo
         </button>
       </div>
       <!-- Floating mock stats -->
@@ -90,16 +106,16 @@
   <section class="lp-cta-banner">
     <div class="lp-section-inner lp-cta-inner">
       <h2 class="lp-cta-title">Ready to simplify your HR?</h2>
-      <p class="lp-cta-sub">Join 500+ organisations already running on Klocky.</p>
+      <p class="lp-cta-sub">Join 500+ organizations already running on Klock.</p>
       <div class="lp-cta-actions">
-        <button class="lp-cta-primary light" (click)="goLogin()">
-          Create free account
+        <button class="lp-cta-primary light" (click)="goTrial()">
+          Start Free Trial
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
                stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
             <path d="M5 12h14M12 5l7 7-7 7"/>
           </svg>
         </button>
-        <button class="lp-cta-ghost light" (click)="goDashboard()">Explore dashboard →</button>
+        <button class="lp-cta-ghost light" (click)="goDemo()">Request a Demo →</button>
       </div>
     </div>
     <div class="lp-blob lp-blob-3"></div>
@@ -109,10 +125,9 @@
   <footer class="lp-footer">
     <div class="lp-footer-inner">
       <div class="lp-logo">
-        <span class="lp-logo-icon">⏱</span>
-        <span class="lp-logo-name">Klocky</span>
+        <span class="lp-logo-name">Klock</span>
       </div>
-      <p class="lp-footer-copy">© 2026 Klocky. All rights reserved.</p>
+      <p class="lp-footer-copy">© 2026 Klock. All rights reserved.</p>
     </div>
   </footer>
 

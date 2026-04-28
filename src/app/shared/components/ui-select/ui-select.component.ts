@@ -1,6 +1,6 @@
 ﻿import {
   Component, Input, forwardRef, ChangeDetectionStrategy,
-  ChangeDetectorRef, HostListener, ElementRef, signal, computed,
+  ChangeDetectorRef, HostListener, HostBinding, ElementRef, signal, computed,
   OnDestroy, NgZone
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
@@ -203,6 +203,66 @@ export type SelectOption = string | { label: string; value: any };
 
     .ui-hint  { font-size: 12px; color: #6b7280; }
     .ui-error { font-size: 12px; color: #ef4444; }
+
+    /* ── Dark theme ──────────────────────────────────────────── */
+    :host(.dark) .ui-label {
+      font-size: 12px; font-weight: 600; color: rgba(255,255,255,.45);
+      text-transform: uppercase; letter-spacing: .7px;
+    }
+    :host(.dark) .required { color: rgba(248,113,113,.8); }
+
+    :host(.dark) .ui-trigger {
+      background: rgba(255,255,255,.06);
+      border: 1.5px solid rgba(255,255,255,.1);
+      border-radius: 12px;
+      height: 52px; padding: 0 14px;
+      color: rgba(255,255,255,.88); font-size: 15px;
+    }
+    :host(.dark) .ui-trigger:hover:not(.disabled) {
+      border-color: rgba(255,255,255,.2);
+      background: rgba(255,255,255,.08);
+    }
+    :host(.dark) .ui-trigger:focus-visible,
+    :host(.dark) .ui-trigger.open {
+      border-color: rgba(99,102,241,.65);
+      background: rgba(99,102,241,.06);
+      box-shadow: 0 0 0 4px rgba(99,102,241,.12);
+    }
+    :host(.dark) .ui-trigger.placeholder .ui-trigger-text { color: rgba(255,255,255,.25); }
+    :host(.dark) .ui-trigger.disabled { background: rgba(255,255,255,.04); opacity: .4; }
+    :host(.dark) .ui-chevron { color: rgba(255,255,255,.3); }
+
+    :host(.dark) .ui-panel {
+      background: #161623;
+      border: 1.5px solid rgba(255,255,255,.1);
+      box-shadow: 0 16px 48px rgba(0,0,0,.6), 0 4px 16px rgba(0,0,0,.4);
+    }
+    :host(.dark) .ui-search-wrap {
+      border-bottom-color: rgba(255,255,255,.08);
+      background: rgba(255,255,255,.03);
+    }
+    :host(.dark) .ui-search-wrap svg { color: rgba(255,255,255,.3); }
+    :host(.dark) .ui-search { color: rgba(255,255,255,.88); }
+    :host(.dark) .ui-search::placeholder { color: rgba(255,255,255,.2); }
+    :host(.dark) .ui-search-clear { color: rgba(255,255,255,.3); }
+    :host(.dark) .ui-search-clear:hover { color: rgba(255,255,255,.6); background: rgba(255,255,255,.06); }
+    :host(.dark) .ui-options-list { scrollbar-color: rgba(99,102,241,.4) transparent; }
+    :host(.dark) .ui-option {
+      color: rgba(255,255,255,.8); font-size: 14px;
+      border-bottom-color: rgba(255,255,255,.05);
+    }
+    :host(.dark) .ui-option:not(:last-child) { border-bottom-color: rgba(255,255,255,.05); }
+    :host(.dark) .ui-option:hover { background: rgba(255,255,255,.06); }
+    :host(.dark) .ui-option.selected {
+      background: rgba(99,102,241,.15);
+      color: #818cf8; font-weight: 600;
+    }
+    :host(.dark) .ui-option.selected svg { color: #818cf8; }
+    :host(.dark) .ui-option-placeholder { color: rgba(255,255,255,.25); }
+    :host(.dark) .ui-no-results { color: rgba(255,255,255,.3); }
+    :host(.dark) .ui-hint  { color: rgba(255,255,255,.28); }
+    :host(.dark) .ui-error { color: #f87171; }
+    :host(.dark) .has-error .ui-trigger { border-color: rgba(239,68,68,.6); box-shadow: 0 0 0 4px rgba(239,68,68,.1); }
   `],
 })
 export class UiSelectComponent implements ControlValueAccessor, OnDestroy {
@@ -215,6 +275,9 @@ export class UiSelectComponent implements ControlValueAccessor, OnDestroy {
   @Input() disabled = false;
   @Input() name = '';
   @Input() searchable = false;
+  @Input() dark = false;
+
+  @HostBinding('class.dark') get isDark() { return this.dark; }
 
   value: any = '';
   isOpen = signal(false);
@@ -241,9 +304,15 @@ export class UiSelectComponent implements ControlValueAccessor, OnDestroy {
   });
 
   constructor(private cdr: ChangeDetectorRef, private el: ElementRef, private zone: NgZone) {
-    // Use capture:true so we catch scroll on ANY element (shell .content, modals, etc.)
-    this._scrollHandler = () => {
-      if (this.isOpen()) this.close();
+    // Close on scroll only when the scroll happens OUTSIDE the panel itself.
+    this._scrollHandler = (e: Event) => {
+      if (!this.isOpen()) return;
+      const target = e.target as Node;
+      // If the scroll originated inside the host element (options list, search box), ignore it.
+      if (this.el.nativeElement.contains(target)) return;
+      // Also ignore scroll events on the fixed panel element (matched by class).
+      if (target instanceof Element && target.closest('.ui-panel')) return;
+      this.zone.run(() => this.close());
     };
     this._resizeHandler = () => {
       if (this.isOpen()) this.computePosition();
@@ -259,7 +328,7 @@ export class UiSelectComponent implements ControlValueAccessor, OnDestroy {
     window.removeEventListener('resize', this._resizeHandler);
   }
 
-  private _scrollHandler: () => void;
+  private _scrollHandler: (e: Event) => void;
   private _resizeHandler: () => void;
 
   @HostListener('document:click', ['$event'])

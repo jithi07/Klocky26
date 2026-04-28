@@ -1,0 +1,140 @@
+<div class="lk-step">
+
+  @if (!success) {
+
+    <button type="button" class="lk-back-btn" (click)="back.emit()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.5"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      Back
+    </button>
+
+    <div class="lk-otp-icon">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+        <polyline points="22,6 12,13 2,6"/>
+      </svg>
+    </div>
+
+    <h1 class="lk-heading lk-heading-sm">
+      Check your<br>
+      <span class="lk-heading-accent">inbox.</span>
+    </h1>
+    <p class="lk-subtext">
+      We sent a 6-digit code to<br>
+      <strong class="lk-email-pill">{{ maskedEmail }}</strong>
+    </p>
+
+    <div class="lk-otp-grid">
+      @for (digit of otp; track $index; let i = $index) {
+        <input
+          #otpBox
+          class="lk-otp-box"
+          [class.filled]="digit !== ''"
+          [class.lk-otp-error]="error"
+          type="text"
+          inputmode="numeric"
+          maxlength="1"
+          autocomplete="one-time-code"
+          [value]="digit"
+          (input)="onOtpInput($event, i)"
+          (keydown)="onOtpKeydown($event, i)"
+          (paste)="onOtpPaste($event)"
+        />
+      }
+    </div>
+
+    @if (error) {
+      <p class="lk-error-msg lk-error-center">{{ error }}</p>
+    }
+
+    <button
+      class="lk-btn"
+      type="button"
+      [disabled]="!otpComplete || loading"
+      (click)="verifyOtp()"
+    >
+      @if (loading) {
+        <span class="lk-spinner"></span>
+        Verifying…
+      } @else {
+        Verify &amp; Sign In
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      }
+    </button>
+
+    <div class="lk-resend">
+      @if (resendSeconds > 0) {
+        Resend code in <span class="lk-resend-timer">{{ resendSeconds }}s</span>
+      } @else {
+        Didn't receive it?
+        <button type="button" class="lk-resend-btn" (click)="resendOtp()">Resend</button>
+      }
+    </div>
+
+  } @else {
+
+    <!-- ── SUCCESS STATE ──────────────────────────────────────── -->
+    <div class="lk-success-body">
+
+      <div class="lk-success-ring">
+        <div class="lk-success-ring-inner">
+          <svg class="lk-success-check" width="32" height="32" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="3"
+               stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+      </div>
+
+      <h1 class="lk-success-title">You're in!</h1>
+
+      @if (orgName || state.orgDisplayName()) {
+        <div class="lk-success-org-badge">
+          <div class="lk-success-org-icon">
+            {{ (orgName || state.orgDisplayName() | slice:0:1).toUpperCase() }}
+          </div>
+          <div class="lk-success-org-info">
+            <span class="lk-success-org-name">{{ orgName || state.orgDisplayName() }}</span>
+            <span class="lk-success-org-sub">{{ isRegistration ? 'Redirecting you to complete registration…' : 'Taking you to your workspace…' }}</span>
+          </div>
+          <svg class="lk-success-org-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </div>
+      } @else {
+        <p class="lk-success-sub">{{ isRegistration ? 'Redirecting you to complete registration…' : 'Taking you to your workspace…' }}</p>
+      }
+
+      <div class="lk-success-meta">
+        <div class="lk-success-avatar">
+          {{ (state.email() | slice:0:1).toUpperCase() }}
+        </div>
+        <div class="lk-success-meta-info">
+          <span class="lk-success-meta-label">Signed in as</span>
+          <span class="lk-success-email">{{ state.email() }}</span>
+        </div>
+        <div class="lk-success-meta-check">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.8"
+               stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+      </div>
+
+    </div>
+
+  }
+
+</div>

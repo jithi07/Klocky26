@@ -1,0 +1,230 @@
+<div class="ob-tab-head">
+  <h2 class="ob-tab-title">
+    Attendance <span class="ob-tab-accent">Setup</span>
+  </h2>
+  <p class="ob-tab-sub">Configure how your team clocks in, work schedules, and location policies.</p>
+</div>
+
+<!-- ── Clock-in Methods (multi-select chips) ──────────────────────── -->
+<p class="ob-section-label">Clock-in Methods</p>
+
+<div class="ob-field">
+  <p class="ob-label">Select all that apply <span class="ob-required">*</span></p>
+  <div class="ob-chip-group">
+    @for (m of allClockInMethods; track m.label) {
+      <button
+        type="button"
+        class="ob-chip"
+        [class.ob-chip-active]="isMethodSelected(m.label)"
+        (click)="toggleMethod(m.label)"
+      >
+        @if (isMethodSelected(m.label)) {
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="3"
+               stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        }
+        {{ m.label }}
+      </button>
+    }
+  </div>
+  <p class="ob-hint">Choose one or more methods. You can change this anytime.</p>
+</div>
+
+<!-- ── Work Schedule ──────────────────────────────────────────────── -->
+<p class="ob-section-label">Work Schedule</p>
+
+<div class="ob-grid-2">
+
+  <!-- Work Week -->
+  <div class="ob-field ob-col-full">
+    <p class="ob-label">Work Week</p>
+    <div class="ob-row-fields">
+      <ui-select
+        [dark]="true"
+        [options]="weekdays"
+        [(ngModel)]="workWeekStart"
+        name="workWeekStart"
+        (ngModelChange)="emit()"
+      />
+      <span class="ob-row-sep">to</span>
+      <ui-select
+        [dark]="true"
+        [options]="weekdays"
+        [(ngModel)]="workWeekEnd"
+        name="workWeekEnd"
+        (ngModelChange)="emit()"
+      />
+    </div>
+  </div>
+
+  <!-- Work Hours -->
+  <div class="ob-field ob-col-full">
+    <p class="ob-label">Work Hours</p>
+    <div class="ob-hours-row">
+      <!-- Start -->
+      <div class="ob-hours-block">
+        <p class="ob-hours-block-label">Start</p>
+        <div class="ob-hours-selects">
+          <ui-select
+            [dark]="true"
+            [options]="hours"
+            [(ngModel)]="startHour"
+            name="startHour"
+            (ngModelChange)="emit()"
+          />
+          <span class="ob-hours-colon">:</span>
+          <ui-select
+            [dark]="true"
+            [options]="minutes"
+            [(ngModel)]="startMinute"
+            name="startMinute"
+            (ngModelChange)="emit()"
+          />
+        </div>
+      </div>
+      <span class="ob-hours-dash">—</span>
+      <!-- End -->
+      <div class="ob-hours-block">
+        <p class="ob-hours-block-label">End</p>
+        <div class="ob-hours-selects">
+          <ui-select
+            [dark]="true"
+            [options]="hours"
+            [(ngModel)]="endHour"
+            name="endHour"
+            (ngModelChange)="emit()"
+          />
+          <span class="ob-hours-colon">:</span>
+          <ui-select
+            [dark]="true"
+            [options]="minutes"
+            [(ngModel)]="endMinute"
+            name="endMinute"
+            (ngModelChange)="emit()"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Check-in Rules ─────────────────────────────────────────────── -->
+<p class="ob-section-label">Check-in Rules</p>
+
+<div class="ob-grid-2">
+
+  <!-- Grace Period — chip presets + custom -->
+  <div class="ob-field ob-col-full">
+    <p class="ob-label">Grace Period</p>
+    <div class="ob-chip-group">
+      @for (gp of gracePresets; track gp) {
+        <button
+          type="button"
+          class="ob-chip"
+          [class.ob-chip-active]="gracePeriod === gp"
+          (click)="setGrace(gp)"
+        >{{ gp }}</button>
+      }
+    </div>
+    @if (showCustomGrace) {
+      <div class="ob-custom-input-wrap">
+        <input
+          class="ob-custom-input"
+          type="number"
+          min="1"
+          max="120"
+          placeholder="Enter minutes"
+          [(ngModel)]="customGrace"
+          name="customGrace"
+          (ngModelChange)="emit()"
+        />
+        <span class="ob-custom-suffix">minutes</span>
+      </div>
+    }
+    <p class="ob-hint">Buffer time before marking an employee as late.</p>
+  </div>
+
+  <!-- Late Threshold -->
+  <div class="ob-field ob-col-full">
+    <ui-select
+      [dark]="true"
+      label="Late Threshold"
+      placeholder="Select threshold"
+      [options]="lateThresholds"
+      [(ngModel)]="lateThreshold"
+      name="lateThreshold"
+      (ngModelChange)="emit()"
+    />
+    <p class="ob-hint">When a late clock-in is flagged as absent.</p>
+  </div>
+
+</div>
+
+<!-- ── Location Rules ─────────────────────────────────────────────── -->
+<p class="ob-section-label">Location Rules</p>
+
+<div class="ob-field">
+  <ui-select
+    [dark]="true"
+    label="Location Policy *"
+    placeholder="Select location rule"
+    [options]="locationRules"
+    [(ngModel)]="locationRule"
+    name="locationRule"
+    (ngModelChange)="emit()"
+  />
+  <p class="ob-hint">Where employees are allowed to clock in from.</p>
+</div>
+
+<!-- ── Validations & Restrictions ────────────────────────────────── -->
+<p class="ob-section-label">Validations & Restrictions</p>
+
+<div class="ob-toggles">
+
+  <div class="ob-toggle-row">
+    <div class="ob-toggle-info">
+      <p class="ob-toggle-title">Require Photo on Clock-in</p>
+      <p class="ob-toggle-desc">Employees must take a selfie when clocking in.</p>
+    </div>
+    <button
+      type="button"
+      class="ob-toggle"
+      [class.is-on]="requirePhoto"
+      (click)="toggle('requirePhoto')"
+      [attr.aria-label]="'Require photo: ' + (requirePhoto ? 'on' : 'off')"
+    ></button>
+  </div>
+
+  <div class="ob-toggle-row">
+    <div class="ob-toggle-info">
+      <p class="ob-toggle-title">IP Restriction</p>
+      <p class="ob-toggle-desc">Only allow clock-ins from the organisation's network.</p>
+    </div>
+    <button
+      type="button"
+      class="ob-toggle"
+      [class.is-on]="ipRestriction"
+      (click)="toggle('ipRestriction')"
+      [attr.aria-label]="'IP restriction: ' + (ipRestriction ? 'on' : 'off')"
+    ></button>
+  </div>
+
+  <div class="ob-toggle-row">
+    <div class="ob-toggle-info">
+      <p class="ob-toggle-title">Selfie Verification (AI)</p>
+      <p class="ob-toggle-desc">Verify employee identity using facial recognition on clock-in.</p>
+    </div>
+    <button
+      type="button"
+      class="ob-toggle"
+      [class.is-on]="selfieVerification"
+      (click)="toggle('selfieVerification')"
+      [attr.aria-label]="'Selfie verification: ' + (selfieVerification ? 'on' : 'off')"
+    ></button>
+  </div>
+
+</div>
+

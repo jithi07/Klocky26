@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
 @Component({
@@ -53,6 +53,13 @@ export class LandingComponent {
     { value: '4.9 ★', label: 'Customer rating' },
   ];
 
-  goLogin()     { this.router.navigate(['/login']); }
-  goDashboard() { this.router.navigate(['/app/dashboard']); }
+  mobileMenuOpen = signal(false);
+  toggleMenu(): void { this.mobileMenuOpen.update(v => !v); }
+  closeMenu(): void  { this.mobileMenuOpen.set(false); }
+
+  goLogin()     { this.closeMenu(); this.router.navigate(['/login']); }
+  goRegister()  { this.closeMenu(); this.router.navigate(['/register']); }
+  goTrial()     { this.closeMenu(); this.router.navigate(['/free-trial']); }
+  goDemo()      { this.closeMenu(); this.router.navigate(['/free-trial'], { queryParams: { mode: 'demo' } }); }
+  goDashboard() { this.closeMenu(); this.router.navigate(['/app/dashboard']); }
 }

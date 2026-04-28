@@ -267,23 +267,23 @@ export class AttendanceCalendarComponent {
     this.viewMode.set(mode);
   }
 
-  private _touchStartY = 0;
+  private _touchStartX = 0;
   private _wheelCooldown = false;
 
   onWheel(e: WheelEvent): void {
     if (this._wheelCooldown) return;
     this._wheelCooldown = true;
-    if (e.deltaY > 30) this.nextMonth();
-    else if (e.deltaY < -30) this.prevMonth();
+    if (e.deltaX > 30) this.nextMonth();
+    else if (e.deltaX < -30) this.prevMonth();
     setTimeout(() => { this._wheelCooldown = false; }, 600);
   }
 
   onTouchStart(e: TouchEvent): void {
-    this._touchStartY = e.touches[0].clientY;
+    this._touchStartX = e.touches[0].clientX;
   }
 
   onTouchEnd(e: TouchEvent): void {
-    const delta = this._touchStartY - e.changedTouches[0].clientY;
+    const delta = this._touchStartX - e.changedTouches[0].clientX;
     if (delta > 40) this.nextMonth();
     else if (delta < -40) this.prevMonth();
   }

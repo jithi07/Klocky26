@@ -63,11 +63,11 @@ export interface RadioOption {
       display: flex; align-items: center; justify-content: center;
       transition: border-color .15s;
     }
-    .radio-dot.checked { border-color: #4f46e5; }
+    .radio-dot.checked { border-color: var(--accent, #0d9488); }
 
     .inner-dot {
       width: 8px; height: 8px; border-radius: 50%;
-      background: #4f46e5; transform: scale(0);
+      background: var(--accent, #0d9488); transform: scale(0);
       transition: transform .15s cubic-bezier(.34,1.56,.64,1);
     }
     .radio-dot.checked .inner-dot { transform: scale(1); }

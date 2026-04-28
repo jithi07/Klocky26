@@ -35,7 +35,7 @@ export type ChipVariant = 'active' | 'inactive' | 'inprogress' | 'default' |
     .chip-active    { background: #dcfce7; color: #15803d; }
     .chip-inactive  { background: #f3f4f6; color: #6b7280; }
     .chip-inprogress{ background: #fef3c7; color: #b45309; }
-    .chip-default   { background: #ede9fe; color: #4f46e5; }
+    .chip-default   { background: color-mix(in srgb, var(--accent, #0d9488) 12%, white); color: var(--accent, #0d9488); }
     .chip-success   { background: #dcfce7; color: #15803d; }
     .chip-danger    { background: #fee2e2; color: #dc2626; }
     .chip-warning   { background: #fef3c7; color: #d97706; }
@@ -51,7 +51,7 @@ export type ChipVariant = 'active' | 'inactive' | 'inprogress' | 'default' |
       background: #f59e0b;
       animation: pulse 1.4s ease-in-out infinite;
     }
-    .chip-default .dot   { background: #4f46e5; }
+    .chip-default .dot   { background: var(--accent, #0d9488); }
     .chip-success .dot   { background: #15803d; }
     .chip-danger .dot    { background: #dc2626; }
     .chip-warning .dot   { background: #d97706; }

@@ -22,7 +22,7 @@ import { CommonModule } from '@angular/common';
                     stroke-linecap="round" stroke-linejoin="round"/>
               <defs>
                 <linearGradient id="lg-shell" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-                  <stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/>
+                  <stop stop-color="#0a6b63"/><stop offset="1" stop-color="#0d9488"/>
                 </linearGradient>
               </defs>
             </svg>

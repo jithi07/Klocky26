@@ -8,6 +8,7 @@ import {
   IconLogoutComponent,
   IconPaletteComponent,
   IconKlockyLogoComponent,
+  IconUserComponent,
 } from '../../shared/icons';
 
 @Component({
@@ -22,6 +23,7 @@ import {
     IconLogoutComponent,
     IconPaletteComponent,
     IconKlockyLogoComponent,
+    IconUserComponent,
   ],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss'

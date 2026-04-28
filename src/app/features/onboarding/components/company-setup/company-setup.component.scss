@@ -1,0 +1,6 @@
+@use '../_onboarding' as *;
+
+:host { display: block; height: 100dvh; overflow: hidden; }
+
+// Extra header slot width balance
+.ob-header-meta { width: 120px; }

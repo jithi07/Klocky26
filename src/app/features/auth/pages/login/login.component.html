@@ -28,9 +28,9 @@
       <span class="lk-logo-name">klock</span>
     </div>
 
-    <!-- ── EMAIL STEP ──────────────────────────────────────────── -->
-    @if (step === 'email') {
-      <div class="lk-step lk-step-email">
+    <!-- ── ORG STEP ──────────────────────────────────────────── -->
+    @if (step === 'org') {
+      <div class="lk-step lk-step-org">
 
         <div class="lk-eyebrow">
           <span class="lk-dot"></span>
@@ -38,15 +38,103 @@
         </div>
 
         <h1 class="lk-heading">
-          Welcome<br>
-          <span class="lk-heading-accent">back.</span>
+          Find your<br>
+          <span class="lk-heading-accent">workspace.</span>
+        </h1>
+        <p class="lk-subtext">
+          Enter your organization's workspace URL, ID, or work email to continue.
+        </p>
+
+        <div class="lk-field">
+          <label class="lk-label" for="org-input">Organization workspace</label>
+          <div class="lk-input-wrap lk-input-domain" [class.lk-input-error]="orgError">
+            <svg class="lk-input-icon" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            <input
+              id="org-input"
+              class="lk-input"
+              type="text"
+              autocomplete="organization"
+              placeholder="yourcompany"
+              [(ngModel)]="orgIdentifier"
+              (keydown.enter)="proceedToLogin()"
+            />
+            <span class="lk-domain-suffix">.klock</span>
+          </div>
+          <p class="lk-field-hint">Or enter your organization ID or work email</p>
+          @if (orgError) {
+            <p class="lk-error-msg">{{ orgError }}</p>
+          }
+        </div>
+
+        <button
+          class="lk-btn"
+          type="button"
+          [disabled]="!orgIdentifier || orgLoading"
+          (click)="proceedToLogin()"
+        >
+          @if (orgLoading) {
+            <span class="lk-spinner"></span>
+            Looking up…
+          } @else {
+            Continue
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          }
+        </button>
+
+        <p class="lk-legal">
+          New to Klocky?
+          <a href="#">Register your organization</a>
+        </p>
+
+      </div>
+    }
+
+    <!-- ── EMAIL STEP ──────────────────────────────────────────── -->
+    @if (step === 'email') {
+      <div class="lk-step lk-step-email">
+
+        <button type="button" class="lk-back-btn" (click)="goBack()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          Back
+        </button>
+
+        <div class="lk-org-context">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          </svg>
+          {{ orgIdentifier }}
+        </div>
+
+        <div class="lk-eyebrow">
+          <span class="lk-dot"></span>
+          Attendance &amp; HR Platform
+        </div>
+
+        <h1 class="lk-heading">
+          Sign in to<br>
+          <span class="lk-heading-accent">Klocky.</span>
         </h1>
         <p class="lk-subtext">
           Enter your work email and we'll send you a one-time code.
         </p>
 
         <div class="lk-field">
-          <label class="lk-label">Work email</label>
+          <label class="lk-label" for="email-input">Work email</label>
           <div class="lk-input-wrap" [class.lk-input-error]="error">
             <svg class="lk-input-icon" width="16" height="16" viewBox="0 0 24 24"
                  fill="none" stroke="currentColor" stroke-width="2"
@@ -55,6 +143,7 @@
               <polyline points="22,6 12,13 2,6"/>
             </svg>
             <input
+              id="email-input"
               class="lk-input"
               type="email"
               autocomplete="email"

@@ -9,7 +9,7 @@
   </div>
 
   <!-- ── Mobile tab strip (hidden on desktop) ──────────────────── -->
-  <nav class="op-mobile-tabs">
+  <nav class="op-mobile-tabs" aria-label="Settings sections">
     <button class="op-mobile-tab" [class.active]="activeSection() === 'identity'" (click)="setSection('identity')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
@@ -64,7 +64,7 @@
   <div class="op-body">
 
     <!-- Left nav -->
-    <nav class="op-sidenav">
+    <nav class="op-sidenav" aria-label="Settings sections">
       <button class="op-nav-item" [class.active]="activeSection() === 'identity'" (click)="setSection('identity')">
         <span class="op-nav-icon">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -161,7 +161,7 @@
             </ui-input>
           </div>
           <div class="op-form-row">
-            <ui-select label="Company Type"
+            <ui-select [dark]="true" label="Company Type"
               [options]="companyTypes"
               [(ngModel)]="companyType" (ngModelChange)="markDirty()">
             </ui-select>
@@ -226,7 +226,7 @@
 
           <!-- Logo -->
           <div class="op-field">
-            <label>Organisation Logo</label>
+            <p class="op-field-label">Organisation Logo</p>
             <div class="op-logo-upload">
               <div class="op-logo-avatar" [style.background]="accentColor">
                 @if (logoPreview()) {
@@ -255,7 +255,7 @@
 
           <!-- Accent color -->
           <div class="op-field op-field-sep">
-            <label>JV Accent Color</label>
+            <p class="op-field-label">Accent Color</p>
             <p class="op-field-desc">Applied to sidebar, badges, and interactive elements across the app</p>
             <div class="op-swatch-row">
               @for (color of accentPresets; track color) {
@@ -324,7 +324,7 @@
           </ui-input>
 
           <div class="op-field op-field-sep">
-            <label>Secondary / Notify Emails</label>
+            <p class="op-field-label">Secondary / Notify Emails</p>
             <p class="op-field-desc">Additional recipients for alerts, reports, and announcements</p>
             <div class="op-email-list">
               @for (email of secondaryEmails; track $index; let i = $index) {
@@ -395,12 +395,12 @@
             </ui-input>
 
             <div class="op-form-row">
-              <ui-select label="Country" placeholder="Select country…"
+              <ui-select [dark]="true" label="Country" placeholder="Select country…"
                 [options]="countries"
                 [searchable]="true"
                 [(ngModel)]="offices[i].country" (ngModelChange)="markDirty()">
               </ui-select>
-              <ui-select label="Timezone" placeholder="Select timezone…"
+              <ui-select [dark]="true" label="Timezone" placeholder="Select timezone…"
                 [options]="timezones"
                 [(ngModel)]="offices[i].timezone" (ngModelChange)="markDirty()">
               </ui-select>
@@ -427,7 +427,7 @@
         <div class="op-card">
 
           <div class="op-field">
-            <label>Number of Employees</label>
+            <p class="op-field-label">Number of Employees</p>
             <div class="op-band-grid">
               @for (band of employeeBands; track band) {
                 <button type="button" class="op-band-btn"
@@ -440,8 +440,8 @@
           </div>
 
           <div class="op-field op-field-sep">
-            <label>Industry</label>
-            <ui-select [options]="industries"
+            <p class="op-field-label">Industry</p>
+            <ui-select [dark]="true" [options]="industries"
               [(ngModel)]="industry" (ngModelChange)="markDirty()">
             </ui-select>
           </div>
@@ -475,12 +475,12 @@
         <div class="op-card">
 
           <div class="op-form-row">
-            <ui-select label="Default Timezone"
+            <ui-select [dark]="true" label="Default Timezone"
               [options]="timezones"
               hint="Used for reports and notifications when no office timezone is set"
               [(ngModel)]="defaultTimezone" (ngModelChange)="markDirty()">
             </ui-select>
-            <ui-select label="Currency"
+            <ui-select [dark]="true" label="Currency"
               [options]="currencies"
               [(ngModel)]="currency" (ngModelChange)="markDirty()">
             </ui-select>
@@ -488,7 +488,7 @@
 
           <div class="op-form-row">
             <div class="op-field">
-              <label>Date Format</label>
+              <p class="op-field-label">Date Format</p>
               <div class="op-band-grid op-band-grid-sm">
                 @for (fmt of dateFormats; track fmt) {
                   <button type="button" class="op-band-btn"
@@ -500,7 +500,7 @@
               </div>
             </div>
             <div class="op-field">
-              <label>Week Starts On</label>
+              <p class="op-field-label">Week Starts On</p>
               <div class="op-band-grid op-band-grid-sm">
                 @for (w of weekStarts; track w) {
                   <button type="button" class="op-band-btn"
@@ -530,7 +530,7 @@
           <div class="op-field-group-label">Work Schedule</div>
           <div class="op-form-row">
             <div class="op-field">
-              <label>Standard Work Hours / Day</label>
+              <p class="op-field-label">Standard Work Hours / Day</p>
               <div class="op-number-wrap">
                 <div class="op-stepper">
                   <button type="button" class="op-stepper-btn op-stepper-minus"
@@ -547,7 +547,7 @@
               </div>
             </div>
             <div class="op-field">
-              <label>Working Days</label>
+              <p class="op-field-label">Working Days</p>
               <div class="op-band-grid op-band-grid-sm">
                 @for (opt of workingDayOptions; track opt.value) {
                   <button type="button" class="op-band-btn"
@@ -561,12 +561,12 @@
           </div>
 
           <div class="op-form-row">
-            <ui-select label="Grace Period for Late Arrival"
+            <ui-select [dark]="true" label="Grace Period for Late Arrival"
               [options]="gracePeriodOptions"
               hint="Employees arriving within this window are not marked late"
               [(ngModel)]="gracePeriodMins" (ngModelChange)="markDirty()">
             </ui-select>
-            <ui-select label="Half-Day Threshold"
+            <ui-select [dark]="true" label="Half-Day Threshold"
               [options]="halfDayOptions"
               hint="Sessions shorter than this are counted as half-day"
               [(ngModel)]="halfDayThresholdHrs" (ngModelChange)="markDirty()">
@@ -585,7 +585,7 @@
           @if (overtimeEnabled) {
             <div class="op-field op-toggle-sub">
             <div class="op-field">
-              <label>Overtime Starts After</label>
+              <p class="op-field-label">Overtime Starts After</p>
               <div class="op-number-wrap">
                 <div class="op-stepper">
                   <button type="button" class="op-stepper-btn op-stepper-minus"
@@ -634,7 +634,7 @@
           </ui-toggle>
           @if (autoCheckoutEnabled) {
             <div class="op-field op-toggle-sub">
-              <label>Auto Check-Out Time</label>
+              <p class="op-field-label">Auto Check-Out Time</p>
               <input type="time" [(ngModel)]="autoCheckoutTime" (ngModelChange)="markDirty()"
                      name="autoCheckoutTime" style="max-width:160px" />
             </div>
@@ -655,7 +655,7 @@
         <div class="op-card">
           <div class="op-field-group-label">Leave Year</div>
           <div class="op-field">
-            <label>Leave Year Starts In</label>
+            <p class="op-field-label">Leave Year Starts In</p>
             <div class="op-band-grid op-band-grid-sm">
               @for (m of leaveYearMonths; track m) {
                 <button type="button" class="op-band-btn"
@@ -674,7 +674,7 @@
           <div class="op-field-group-label">Annual Leave Entitlements</div>
           <div class="op-form-row">
             <div class="op-field">
-              <label>Annual / Earned Leave</label>
+              <p class="op-field-label">Annual / Earned Leave</p>
               <div class="op-number-wrap">
                 <div class="op-stepper">
                   <button type="button" class="op-stepper-btn op-stepper-minus"
@@ -691,7 +691,7 @@
               </div>
             </div>
             <div class="op-field">
-              <label>Sick Leave</label>
+              <p class="op-field-label">Sick Leave</p>
               <div class="op-number-wrap">
                 <div class="op-stepper">
                   <button type="button" class="op-stepper-btn op-stepper-minus"
@@ -710,7 +710,7 @@
           </div>
           <div class="op-form-row">
             <div class="op-field">
-              <label>Casual Leave</label>
+              <p class="op-field-label">Casual Leave</p>
               <div class="op-number-wrap">
                 <div class="op-stepper">
                   <button type="button" class="op-stepper-btn op-stepper-minus"
@@ -780,7 +780,7 @@
                 </div>
 
                 <div class="op-lt-col op-lt-paid">
-                  <label class="op-toggle">
+                  <label class="op-toggle" aria-label="Is paid leave">
                     <input type="checkbox"
                            [(ngModel)]="customLeaveTypes[i].isPaid"
                            (ngModelChange)="markDirty()"
@@ -790,7 +790,7 @@
                 </div>
 
                 <div class="op-lt-col op-lt-carry">
-                  <label class="op-toggle">
+                  <label class="op-toggle" aria-label="Allow carry forward">
                     <input type="checkbox"
                            [(ngModel)]="customLeaveTypes[i].carryForward"
                            (ngModelChange)="markDirty()"
@@ -833,7 +833,7 @@
           </ui-toggle>
           @if (carryForwardEnabled) {
             <div class="op-field op-toggle-sub">
-              <label>Max Carry-Forward Days</label>
+              <p class="op-field-label">Max Carry-Forward Days</p>
               <div class="op-number-wrap">
                 <div class="op-stepper">
                   <button type="button" class="op-stepper-btn op-stepper-minus"

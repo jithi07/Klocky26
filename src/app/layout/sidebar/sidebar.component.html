@@ -25,9 +25,15 @@
   <!-- ── Main Navigation ───────────────────────────────────────── -->
   <nav class="nav-main">
 
-    <a routerLink="/app/dashboard" routerLinkActive="active" title="Dashboard">
+    <a routerLink="/app/dashboard" routerLinkActive="active"
+       [routerLinkActiveOptions]="{exact:true}" title="Dashboard">
       <span class="nav-icon"><icon-home [size]="19"></icon-home></span>
       <span class="nav-text label">Dashboard</span>
+    </a>
+
+    <a routerLink="/app/dashboard/employee" routerLinkActive="active" title="Employee Dashboard">
+      <span class="nav-icon"><icon-user [size]="19"></icon-user></span>
+      <span class="nav-text label">My Dashboard</span>
     </a>
 
     <a routerLink="/app/employees" routerLinkActive="active" title="Employees">

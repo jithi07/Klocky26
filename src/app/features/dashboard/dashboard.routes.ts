@@ -8,4 +8,11 @@ export const routes: Routes = [
         m => m.DashboardComponent
       ),
   },
+  {
+    path: 'employee',
+    loadComponent: () =>
+      import('./pages/employee-dashboard/employee-dashboard.component').then(
+        m => m.EmployeeDashboardComponent
+      ),
+  },
 ];

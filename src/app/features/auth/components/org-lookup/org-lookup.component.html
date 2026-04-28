@@ -1,0 +1,61 @@
+<div class="lk-step">
+
+  <h1 class="lk-heading">
+    Find your<br>
+    <span class="lk-heading-accent">workspace.</span>
+  </h1>
+  <p class="lk-subtext">
+    Enter your organization's workspace name, ID, or work email to continue.
+  </p>
+
+  <div class="lk-field">
+    <label class="lk-label" for="org-input">Organization workspace</label>
+    <div class="lk-input-wrap lk-input-domain" [class.lk-input-error]="error">
+      <svg class="lk-input-icon" width="16" height="16" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      <input
+        id="org-input"
+        class="lk-input"
+        type="text"
+        autocomplete="organization"
+        placeholder="yourcompany"
+        [(ngModel)]="orgInput"
+        (keydown.enter)="proceed()"
+      />
+      <span class="lk-domain-suffix">.klock</span>
+    </div>
+    <p class="lk-field-hint">Or enter your organization ID or work email</p>
+    @if (error) {
+      <p class="lk-error-msg">{{ error }}</p>
+    }
+  </div>
+
+  <button
+    class="lk-btn"
+    type="button"
+    [disabled]="!orgInput.trim() || loading"
+    (click)="proceed()"
+  >
+    @if (loading) {
+      <span class="lk-spinner"></span>
+      Looking up…
+    } @else {
+      Continue
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.5"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    }
+  </button>
+
+  <p class="lk-legal">
+    New to Klocky?
+    <a href="#" (click)="$event.preventDefault(); register.emit()">Create your organization</a>
+  </p>
+
+</div>

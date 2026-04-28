@@ -1,0 +1,397 @@
+<klocky-auth-shell [orgName]="authState.orgDisplayName()">
+
+  <!-- ── Progress bar ──────────────────────────────────────────── -->
+  <div class="lk-progress">
+    <div class="lk-progress-step" [class.done]="stepIndex() > 1" [class.active]="stepIndex() === 1"></div>
+    <div class="lk-progress-step" [class.done]="stepIndex() > 2" [class.active]="stepIndex() === 2"></div>
+    <div class="lk-progress-step" [class.done]="stepIndex() > 3" [class.active]="stepIndex() === 3"></div>
+    <div class="lk-progress-step" [class.done]="stepIndex() > 4" [class.active]="stepIndex() === 4"></div>
+    <div class="lk-progress-step" [class.done]="stepIndex() > 5" [class.active]="stepIndex() === 5"></div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       STEP 1 — Organisation Info
+  ════════════════════════════════════════════════════════════ -->
+  @if (step === 'org-info') {
+    <div class="lk-step">
+
+      <h1 class="lk-heading">
+        Create your<br>
+        <span class="lk-heading-accent">workspace.</span>
+      </h1>
+      <p class="lk-subtext">Set up your organisation on Klocky in minutes.</p>
+
+      <div class="lk-field">
+        <label class="lk-label" for="org-name">Organisation name</label>
+        <div class="lk-input-wrap" [class.lk-input-error]="error">
+          <svg class="lk-input-icon" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          <input
+            id="org-name"
+            class="lk-input"
+            type="text"
+            placeholder="Acme Corporation"
+            [(ngModel)]="orgName"
+            (ngModelChange)="onOrgNameChange()"
+            (keydown.enter)="submitOrgInfo()"
+          />
+        </div>
+      </div>
+
+      <div class="lk-field">
+        <label class="lk-label" for="org-slug">Workspace URL</label>
+        <div class="lk-input-wrap lk-input-domain">
+          <svg class="lk-input-icon" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          <input
+            id="org-slug"
+            class="lk-input"
+            type="text"
+            placeholder="acme"
+            [(ngModel)]="orgSlug"
+            (focus)="orgSlugTouched = true"
+            (keydown.enter)="submitOrgInfo()"
+          />
+          <span class="lk-domain-suffix">.klock</span>
+        </div>
+        <p class="lk-field-hint">Only lowercase letters, numbers and hyphens</p>
+      </div>
+
+      @if (error) { <p class="lk-error-msg">{{ error }}</p> }
+
+      <button
+        class="lk-btn"
+        type="button"
+        [disabled]="!orgName.trim() || !orgSlug.trim() || loading"
+        (click)="submitOrgInfo()"
+      >
+        @if (loading) {
+          <span class="lk-spinner"></span> Creating workspace…
+        } @else {
+          Next — Add Admin
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        }
+      </button>
+
+      <p class="lk-legal">
+        Already have an account?
+        <a href="#" (click)="$event.preventDefault(); goLogin()">Sign in</a>
+      </p>
+
+    </div>
+  }
+
+  <!-- ════════════════════════════════════════════════════════════
+       STEP 2 — Admin details
+  ════════════════════════════════════════════════════════════ -->
+  @if (step === 'admin-email') {
+    <div class="lk-step">
+
+      <div class="lk-top-bar">
+        <button type="button" class="lk-back-btn" (click)="goBack()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          Back
+        </button>
+        <div class="lk-org-context">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          </svg>
+          {{ authState.orgDisplayName() }}.klock
+        </div>
+      </div>
+
+      <h1 class="lk-heading">
+        Admin<br>
+        <span class="lk-heading-accent">account.</span>
+      </h1>
+      <p class="lk-subtext">You'll be the primary admin. We'll verify your email next.</p>
+
+      <div class="lk-field">
+        <label class="lk-label" for="admin-name">Your full name</label>
+        <div class="lk-input-wrap">
+          <svg class="lk-input-icon" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          <input
+            id="admin-name"
+            class="lk-input"
+            type="text"
+            placeholder="Jane Smith"
+            [(ngModel)]="adminName"
+            (keydown.enter)="submitAdminEmail()"
+          />
+        </div>
+      </div>
+
+      <div class="lk-field">
+        <label class="lk-label" for="admin-email">Work email</label>
+        <div class="lk-input-wrap" [class.lk-input-error]="error">
+          <svg class="lk-input-icon" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          <input
+            id="admin-email"
+            class="lk-input"
+            type="email"
+            autocomplete="email"
+            placeholder="jane@{{ authState.orgIdentifier() }}.com"
+            [(ngModel)]="adminEmail"
+            (keydown.enter)="submitAdminEmail()"
+          />
+        </div>
+        @if (error) { <p class="lk-error-msg">{{ error }}</p> }
+      </div>
+
+      <button
+        class="lk-btn"
+        type="button"
+        [disabled]="!adminEmail.trim() || !adminName.trim() || loading"
+        (click)="submitAdminEmail()"
+      >
+        @if (loading) {
+          <span class="lk-spinner"></span> Sending code…
+        } @else {
+          Verify Email
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        }
+      </button>
+
+    </div>
+  }
+
+  <!-- ════════════════════════════════════════════════════════════
+       STEP 3 — OTP (reuse shared component)
+  ════════════════════════════════════════════════════════════ -->
+  @if (step === 'otp') {
+    <klocky-otp-step
+      [orgName]="authState.orgDisplayName()"
+      (verified)="onOtpVerified()"
+      (back)="goBack()"
+    />
+  }
+
+  <!-- ════════════════════════════════════════════════════════════
+       STEP 4 — Organisation Profile
+  ════════════════════════════════════════════════════════════ -->
+  @if (step === 'org-profile') {
+    <div class="lk-step lk-step-profile">
+
+      <div class="lk-profile-header">
+        <div class="lk-profile-avatar">
+          {{ (authState.orgDisplayName() | slice:0:2).toUpperCase() }}
+        </div>
+        <div>
+          <h1 class="lk-heading lk-heading-sm">
+            Set up <span class="lk-heading-accent">{{ authState.orgDisplayName() }}.</span>
+          </h1>
+          <p class="lk-subtext lk-subtext-tight">Tell us about your organisation — you can update these anytime.</p>
+        </div>
+      </div>
+
+      <!-- Industry -->
+      <ui-select
+        [dark]="true"
+        [searchable]="true"
+        label="Industry *"
+        placeholder="Select industry"
+        [options]="industries"
+        [(ngModel)]="industry"
+        name="industry"
+      />
+
+      <!-- Company size -->
+      <ui-select
+        [dark]="true"
+        label="Company size *"
+        placeholder="Select size"
+        [options]="companySizes"
+        [(ngModel)]="companySize"
+        name="companySize"
+      />
+
+      <!-- Country -->
+      <div class="lk-field">
+        <label class="lk-label" for="country">Country <span class="lk-required">*</span></label>
+        <div class="lk-input-wrap">
+          <svg class="lk-input-icon" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          <input id="country" class="lk-input" type="text"
+                 placeholder="e.g. India, United States…"
+                 [(ngModel)]="country" name="country" />
+        </div>
+      </div>
+
+      <!-- Timezone -->
+      <ui-select
+        [dark]="true"
+        [searchable]="true"
+        label="Timezone *"
+        placeholder="Select timezone"
+        [options]="timezones"
+        [(ngModel)]="timezone"
+        name="timezone"
+      />
+
+      <!-- Work week -->
+      <div class="lk-field">
+        <p class="lk-label" style="margin-bottom:8px">Work week</p>
+        <div class="lk-row-fields">
+          <ui-select
+            [dark]="true"
+            [options]="weekdays"
+            [(ngModel)]="workWeekStart"
+            name="workWeekStart"
+          />
+          <span class="lk-row-sep">to</span>
+          <ui-select
+            [dark]="true"
+            [options]="weekdays"
+            [(ngModel)]="workWeekEnd"
+            name="workWeekEnd"
+          />
+        </div>
+      </div>
+
+      <!-- Work hours -->
+      <div class="lk-field">
+        <label class="lk-label" for="work-start">Work hours</label>
+        <div class="lk-row-fields">
+          <div class="lk-input-wrap">
+            <input id="work-start" class="lk-input lk-input-sm" type="time" [(ngModel)]="workDayStart" name="workDayStart" />
+          </div>
+          <span class="lk-row-sep">to</span>
+          <div class="lk-input-wrap">
+            <input class="lk-input lk-input-sm" type="time" [(ngModel)]="workDayEnd" name="workDayEnd" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Website (optional) -->
+      <div class="lk-field">
+        <label class="lk-label" for="website">Website <span class="lk-optional">(optional)</span></label>
+        <div class="lk-input-wrap">
+          <svg class="lk-input-icon" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+          </svg>
+          <input id="website" class="lk-input" type="url"
+                 placeholder="https://yourcompany.com"
+                 [(ngModel)]="website" name="website" />
+        </div>
+      </div>
+
+      @if (error) { <p class="lk-error-msg">{{ error }}</p> }
+
+      <button
+        class="lk-btn"
+        type="button"
+        [disabled]="!industry || !companySize || !country || !timezone || loading"
+        (click)="submitOrgProfile()"
+      >
+        @if (loading) {
+          <span class="lk-spinner"></span> Saving…
+        } @else {
+          Complete Setup
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        }
+      </button>
+
+      <p class="lk-legal">
+        <a href="#" (click)="$event.preventDefault(); skipProfile()">Skip for now →</a>
+      </p>
+
+    </div>
+  }
+
+  <!-- ════════════════════════════════════════════════════════════
+       STEP 5 — Done
+  ════════════════════════════════════════════════════════════ -->
+  @if (step === 'done') {
+    <div class="lk-step">
+      <div class="lk-success-body">
+
+        <div class="lk-success-ring">
+          <div class="lk-success-ring-inner">
+            <svg class="lk-success-check" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="3"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+        </div>
+
+        <h1 class="lk-success-title">You're all set!</h1>
+        <p class="lk-success-sub">
+          <strong>{{ authState.orgDisplayName() }}</strong> is live on Klocky.<br>
+          Start adding employees and configuring attendance.
+        </p>
+
+        <div class="lk-success-meta">
+          <div class="lk-success-avatar">
+            {{ (authState.email() | slice:0:1).toUpperCase() }}
+          </div>
+          <div>
+            <div class="lk-success-email">{{ authState.email() }}</div>
+            <div class="lk-success-org">{{ authState.orgDisplayName() }}.klock · Admin</div>
+          </div>
+        </div>
+
+      </div>
+
+      <button class="lk-btn" type="button" [disabled]="loading" (click)="goToDashboard()">
+        @if (loading) {
+          <span class="lk-spinner"></span>
+        } @else {
+          Go to Dashboard
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        }
+      </button>
+
+    </div>
+  }
+
+</klocky-auth-shell>

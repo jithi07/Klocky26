@@ -2,13 +2,13 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { HeaderComponent } from '../header/header.component';
-import { UiToastContainerComponent, UiModalOutletComponent, OrgRegisterModalComponent } from '../../shared/components';
+import { UiToastContainerComponent, UiModalOutletComponent } from '../../shared/components';
 import { Subscription, filter } from 'rxjs';
 
 @Component({
   selector: 'klocky-shell',
   standalone: true,
-  imports: [RouterOutlet, SidebarComponent, HeaderComponent, UiToastContainerComponent, UiModalOutletComponent, OrgRegisterModalComponent],
+  imports: [RouterOutlet, SidebarComponent, HeaderComponent, UiToastContainerComponent, UiModalOutletComponent],
   templateUrl: './shell.component.html',
   styleUrls: ['./shell.component.scss'],
 })

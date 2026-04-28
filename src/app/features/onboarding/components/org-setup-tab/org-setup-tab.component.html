@@ -1,0 +1,160 @@
+<div class="ob-tab-head">
+  <h2 class="ob-tab-title">
+    Organisation <span class="ob-tab-accent">Setup</span>
+  </h2>
+  <p class="ob-tab-sub">Tell us about your organisation. You can update these anytime in Company Settings.</p>
+</div>
+
+<!-- ── Identity ──────────────────────────────────────────────────── -->
+<p class="ob-section-label">Identity</p>
+
+<div class="ob-grid-2">
+
+  <!-- Organisation Name -->
+  <div class="ob-field">
+    <label class="ob-label" for="org-name">
+      Organisation Name <span class="ob-required">*</span>
+    </label>
+    <div class="ob-input-wrap">
+      <svg class="ob-input-icon" width="16" height="16" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="7" width="20" height="14" rx="2"/>
+        <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+      </svg>
+      <input id="org-name" class="ob-input" type="text"
+             placeholder="Acme Corporation"
+             [(ngModel)]="orgName" name="orgName"
+             (ngModelChange)="emit()" />
+    </div>
+  </div>
+
+  <!-- Display Name -->
+  <div class="ob-field">
+    <label class="ob-label" for="display-name">
+      Display Name <span class="ob-required">*</span>
+    </label>
+    <div class="ob-input-wrap">
+      <svg class="ob-input-icon" width="16" height="16" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+        <path d="M12 12h.01"/>
+      </svg>
+      <input id="display-name" class="ob-input" type="text"
+             placeholder="Acme"
+             [(ngModel)]="displayName" name="displayName"
+             (ngModelChange)="emit()" />
+    </div>
+    <p class="ob-hint">Short name shown in the interface and URL slug.</p>
+  </div>
+
+  <!-- Email Domain -->
+  <div class="ob-field ob-col-full">
+    <label class="ob-label" for="email-domain">
+      Email Domain <span class="ob-optional">(optional)</span>
+    </label>
+    <div class="ob-input-wrap">
+      <svg class="ob-input-icon" width="16" height="16" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="4" width="20" height="16" rx="2"/>
+        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+      </svg>
+      <input id="email-domain" class="ob-input" type="text"
+             placeholder="yourcompany.com"
+             [(ngModel)]="emailDomain" name="emailDomain"
+             (ngModelChange)="emit()" />
+    </div>
+    <p class="ob-hint">Used for auto-provisioning employees with company email addresses.</p>
+  </div>
+
+</div>
+
+<!-- ── Classification ─────────────────────────────────────────────── -->
+<p class="ob-section-label">Classification</p>
+
+<div class="ob-grid-2">
+
+  <!-- Industry -->
+  <div class="ob-field">
+    <ui-select
+      [dark]="true"
+      [searchable]="true"
+      label="Industry *"
+      placeholder="Select industry"
+      [options]="industries"
+      [(ngModel)]="industry"
+      name="industry"
+      (ngModelChange)="emit()"
+    />
+  </div>
+
+  <!-- Company Size -->
+  <div class="ob-field">
+    <ui-select
+      [dark]="true"
+      label="Company Size *"
+      placeholder="Select size"
+      [options]="companySizes"
+      [(ngModel)]="companySize"
+      name="companySize"
+      (ngModelChange)="emit()"
+    />
+  </div>
+
+</div>
+
+<!-- ── Location ────────────────────────────────────────────────────── -->
+<p class="ob-section-label">Location & Time</p>
+
+<div class="ob-grid-2">
+
+  <!-- Country -->
+  <div class="ob-field">
+    <ui-select
+      [dark]="true"
+      [searchable]="true"
+      label="Country *"
+      placeholder="Select country"
+      [options]="countries"
+      [(ngModel)]="country"
+      name="country"
+      (ngModelChange)="emit()"
+    />
+  </div>
+
+  <!-- Timezone -->
+  <div class="ob-field">
+    <ui-select
+      [dark]="true"
+      [searchable]="true"
+      label="Timezone *"
+      placeholder="Select timezone"
+      [options]="timezones"
+      [(ngModel)]="timezone"
+      name="timezone"
+      (ngModelChange)="emit()"
+    />
+  </div>
+
+  <!-- Website -->
+  <div class="ob-field ob-col-full">
+    <label class="ob-label" for="website">
+      Website <span class="ob-optional">(optional)</span>
+    </label>
+    <div class="ob-input-wrap">
+      <svg class="ob-input-icon" width="16" height="16" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+      </svg>
+      <input id="website" class="ob-input" type="url"
+             placeholder="https://yourcompany.com"
+             [(ngModel)]="website" name="website"
+             (ngModelChange)="emit()" />
+    </div>
+  </div>
+
+</div>

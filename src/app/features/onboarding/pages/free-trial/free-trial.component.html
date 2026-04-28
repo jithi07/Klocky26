@@ -1,0 +1,27 @@
+@switch (step()) {
+
+  @case ('email') {
+    <ob-trial-email-step
+      (emailSubmitted)="onEmailSubmitted($event)"
+      (signIn)="goLogin()"
+    />
+  }
+
+  @case ('otp') {
+    <klocky-auth-shell>
+      <klocky-otp-step
+        (verified)="onOtpVerified()"
+        (back)="step.set('email')"
+        [isRegistration]="true"
+      />
+    </klocky-auth-shell>
+  }
+
+  @case ('setup') {
+    <ob-company-setup
+      [adminEmail]="adminEmail()"
+      (completed)="onSetupComplete()"
+    />
+  }
+
+}

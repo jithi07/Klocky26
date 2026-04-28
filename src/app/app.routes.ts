@@ -12,6 +12,18 @@ export const routes: Routes = [
       import('./features/auth/auth.routes').then((m) => m.routes),
   },
   {
+    path: 'register',
+    loadComponent: () =>
+      import('./features/auth/pages/register/register.component').then(
+        (m) => m.RegisterComponent,
+      ),
+  },
+  {
+    path: 'free-trial',
+    loadChildren: () =>
+      import('./features/onboarding/onboarding.routes').then((m) => m.onboardingRoutes),
+  },
+  {
     path: 'app',
     loadComponent: () =>
       import('./layout/shell/shell.component').then((m) => m.ShellComponent),

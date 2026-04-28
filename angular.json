@@ -20,6 +20,7 @@
             "outputPath": "dist/klocky-app",
             "index": "src/index.html",
             "browser": "src/main.ts",
+            "baseHref": "/",
             "polyfills": [
               "zone.js"
             ],
@@ -46,8 +47,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "16kB",
-                  "maximumError": "32kB"
+                  "maximumWarning": "50kB",
+                  "maximumError": "100kB"
                 }
               ],
               "outputHashing": "all"

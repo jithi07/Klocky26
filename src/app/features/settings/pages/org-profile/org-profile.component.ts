@@ -9,6 +9,21 @@ import { UiInputComponent } from '../../../../shared/components/ui-input/ui-inpu
 import { UiTextareaComponent } from '../../../../shared/components/ui-textarea/ui-textarea.component';
 import { UiSelectComponent } from '../../../../shared/components/ui-select/ui-select.component';
 import { UiToggleComponent } from '../../../../shared/components/ui-toggle/ui-toggle.component';
+import {
+  INDUSTRIES,
+  COMPANY_SIZES,
+  COUNTRIES,
+  TIMEZONE_OPTIONS,
+  CURRENCIES,
+  DATE_FORMATS,
+  WEEK_STARTS,
+  COMPANY_TYPES,
+  WORKING_DAY_OPTIONS,
+  GRACE_PERIOD_OPTIONS,
+  HALF_DAY_THRESHOLD_OPTIONS,
+  LEAVE_YEAR_MONTHS,
+  ACCENT_PRESETS,
+} from '../../../../core/config/form-options.const';
 
 export interface Office {
   id: string;
@@ -36,12 +51,6 @@ export interface Holiday {
   type: 'national' | 'optional' | 'restricted';
 }
 
-const HOLIDAY_TYPE_LABELS: Record<Holiday['type'], string> = {
-  national:   'National',
-  optional:   'Optional',
-  restricted: 'Restricted',
-};
-
 const DEFAULT_HOLIDAYS: Omit<Holiday, 'id'>[] = [
   // Jan
   { name: 'New Year\'s Day',           month: 1,  day: 1,  type: 'national'   },
@@ -64,113 +73,15 @@ const DEFAULT_HOLIDAYS: Omit<Holiday, 'id'>[] = [
   { name: 'Christmas Day',             month: 12, day: 25, type: 'national'   },
 ];
 
-export const TIMEZONES = [
-  { label: 'IST — India Standard Time (UTC+5:30)', value: 'Asia/Kolkata' },
-  { label: 'EST — Eastern Time (UTC−5)', value: 'America/New_York' },
-  { label: 'CST — Central Time (UTC−6)', value: 'America/Chicago' },
-  { label: 'PST — Pacific Time (UTC−8)', value: 'America/Los_Angeles' },
-  { label: 'GMT — Greenwich Mean Time (UTC+0)', value: 'Europe/London' },
-  { label: 'CET — Central European Time (UTC+1)', value: 'Europe/Berlin' },
-  { label: 'SGT — Singapore Time (UTC+8)', value: 'Asia/Singapore' },
-  { label: 'GST — Gulf Standard Time (UTC+4)', value: 'Asia/Dubai' },
-  { label: 'AEST — Australian Eastern Time (UTC+10)', value: 'Australia/Sydney' },
-];
+export const TIMEZONES = TIMEZONE_OPTIONS;
 
-const INDUSTRIES = [
-  'Technology',
-  'Finance & Banking',
-  'Healthcare',
-  'Education',
-  'Retail & E-commerce',
-  'Manufacturing',
-  'Logistics & Supply Chain',
-  'Real Estate',
-  'Media & Entertainment',
-  'Legal & Consulting',
-  'Other',
-];
+const EMPLOYEE_BANDS = COMPANY_SIZES;
 
-const COUNTRIES = [
-  'India',
-  'United States',
-  'United Kingdom',
-  'Canada',
-  'Australia',
-  'Germany',
-  'France',
-  'Singapore',
-  'UAE',
-  'Other',
-];
-
-const EMPLOYEE_BANDS = ['1–10', '11–50', '51–200', '201–500', '501–1000', '1000+'];
-
-const CURRENCIES = [
-  { label: 'INR — Indian Rupee (₹)', value: 'INR' },
-  { label: 'USD — US Dollar ($)', value: 'USD' },
-  { label: 'GBP — British Pound (£)', value: 'GBP' },
-  { label: 'EUR — Euro (€)', value: 'EUR' },
-  { label: 'AED — UAE Dirham (د.إ)', value: 'AED' },
-  { label: 'SGD — Singapore Dollar (S$)', value: 'SGD' },
-  { label: 'AUD — Australian Dollar (A$)', value: 'AUD' },
-];
-
-const DATE_FORMATS = ['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD', 'D MMM YYYY'];
-
-const WEEK_STARTS = ['Monday', 'Sunday', 'Saturday'];
-
-const COMPANY_TYPES = [
-  'Private Limited',
-  'Public Limited',
-  'LLP',
-  'Partnership',
-  'Sole Proprietorship',
-  'One Person Company (OPC)',
-  'Non-Profit / NGO',
-  'Government',
-  'Other',
-];
-
-const WORKING_DAY_OPTIONS = [
-  { label: 'Mon – Fri', value: 'mon-fri' },
-  { label: 'Mon – Sat', value: 'mon-sat' },
-  { label: 'Mon – Sun', value: 'mon-sun' },
-  { label: 'Custom', value: 'custom' },
-];
-
-const GRACE_PERIOD_OPTIONS = [
-  { label: 'No grace', value: 0 },
-  { label: '5 minutes', value: 5 },
-  { label: '10 minutes', value: 10 },
-  { label: '15 minutes', value: 15 },
-  { label: '20 minutes', value: 20 },
-  { label: '30 minutes', value: 30 },
-];
-
-const HALF_DAY_THRESHOLD_OPTIONS = [
-  { label: '3 hours', value: 3 },
-  { label: '4 hours', value: 4 },
-  { label: '5 hours', value: 5 },
-];
-
-const LEAVE_YEAR_MONTHS = [
-  'January', 'April', 'July', 'October',
-];
-
-const ACCENT_PRESETS = [
-  '#6366f1',
-  '#8b5cf6',
-  '#a855f7',
-  '#3b82f6',
-  '#0ea5e9',
-  '#06b6d4',
-  '#14b8a6',
-  '#10b981',
-  '#f59e0b',
-  '#f97316',
-  '#ef4444',
-  '#ec4899',
-];
+const HOLIDAY_TYPE_LABELS: Record<Holiday['type'], string> = {
+  national:   'National',
+  optional:   'Optional',
+  restricted: 'Restricted',
+};
 
 @Component({
   selector: 'org-profile',

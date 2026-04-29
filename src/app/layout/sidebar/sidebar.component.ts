@@ -1,5 +1,5 @@
-import { Component, Input } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, Input, inject } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import {
   IconHomeComponent,
   IconEmployeesComponent,
@@ -10,6 +10,7 @@ import {
   IconKlockyLogoComponent,
   IconUserComponent,
 } from '../../shared/icons';
+import { OrgThemeService } from '../../core/services/org-theme.service';
 
 @Component({
   selector: 'klocky-sidebar',
@@ -31,6 +32,14 @@ import {
 export class SidebarComponent {
   @Input() isOpen = false;
 
+  private router    = inject(Router);
+  private orgTheme  = inject(OrgThemeService);
+
+  logout(): void {
+    this.orgTheme.reset();
+    this.router.navigate(['/']);
+  }
+
   /** Organisation name — triggers joint-venture mode when set */
   @Input() orgName = '';
   /** Organisation logo URL — shown in JV brand area */
@@ -42,8 +51,8 @@ export class SidebarComponent {
     return !!(this.orgName || this.orgLogoUrl);
   }
 
-  /** Resolved accent color: org override or Klocky indigo */
+  /** Resolved accent — always uses the org/app accent, falling back to default teal */
   get accentColor(): string {
-    return this.isJv && this.orgAccentColor ? this.orgAccentColor : '#6366f1';
+    return this.orgAccentColor || '#0d9488';
   }
 }

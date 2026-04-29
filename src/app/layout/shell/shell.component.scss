@@ -16,7 +16,7 @@
 .content {
   flex: 1;
   padding: 20px;
-  background: #f5f7fb;
+  background: var(--app-bg, #edf1f7);
   overflow-y: auto;
   overflow-x: hidden;
   min-width: 0;
@@ -49,12 +49,12 @@
   }
 
   .content {
-    padding: 0;
+    padding: 16px 12px;
   }
 }
 
 @media (max-width: 480px) {
   .content {
-    padding: 0;
+    padding: 12px 10px;
   }
 }

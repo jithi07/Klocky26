@@ -13,7 +13,7 @@
        STEP 1 — Organisation Info
   ════════════════════════════════════════════════════════════ -->
   @if (step === 'org-info') {
-    <div class="lk-step">
+    <form class="lk-step" [formGroup]="orgInfoForm" (ngSubmit)="submitOrgInfo()" novalidate>
 
       <h1 class="lk-heading">
         Create your<br>
@@ -22,8 +22,8 @@
       <p class="lk-subtext">Set up your organisation on Klocky in minutes.</p>
 
       <div class="lk-field">
-        <label class="lk-label" for="org-name">Organisation name</label>
-        <div class="lk-input-wrap" [class.lk-input-error]="error">
+        <label class="lk-label" for="org-name">Organisation name <span class="lk-required">*</span></label>
+        <div class="lk-input-wrap" [class.lk-input-error]="isInvalid(orgInfoForm, 'orgName')">
           <svg class="lk-input-icon" width="16" height="16" viewBox="0 0 24 24"
                fill="none" stroke="currentColor" stroke-width="2"
                stroke-linecap="round" stroke-linejoin="round">
@@ -35,16 +35,18 @@
             class="lk-input"
             type="text"
             placeholder="Acme Corporation"
-            [(ngModel)]="orgName"
-            (ngModelChange)="onOrgNameChange()"
-            (keydown.enter)="submitOrgInfo()"
+            formControlName="orgName"
+            (input)="onOrgNameChange()"
           />
         </div>
+        @if (isInvalid(orgInfoForm, 'orgName')) {
+          <p class="lk-error-msg">Please enter a valid organisation name.</p>
+        }
       </div>
 
       <div class="lk-field">
-        <label class="lk-label" for="org-slug">Workspace URL</label>
-        <div class="lk-input-wrap lk-input-domain">
+        <label class="lk-label" for="org-slug">Workspace URL <span class="lk-required">*</span></label>
+        <div class="lk-input-wrap lk-input-domain" [class.lk-input-error]="isInvalid(orgInfoForm, 'orgSlug')">
           <svg class="lk-input-icon" width="16" height="16" viewBox="0 0 24 24"
                fill="none" stroke="currentColor" stroke-width="2"
                stroke-linecap="round" stroke-linejoin="round">
@@ -57,22 +59,24 @@
             class="lk-input"
             type="text"
             placeholder="acme"
-            [(ngModel)]="orgSlug"
-            (focus)="orgSlugTouched = true"
-            (keydown.enter)="submitOrgInfo()"
+            formControlName="orgSlug"
+            (focus)="onSlugFocus()"
           />
           <span class="lk-domain-suffix">.klock</span>
         </div>
-        <p class="lk-field-hint">Only lowercase letters, numbers and hyphens</p>
+        @if (isInvalid(orgInfoForm, 'orgSlug')) {
+          <p class="lk-error-msg">Only lowercase letters, numbers and hyphens.</p>
+        } @else {
+          <p class="lk-field-hint">Only lowercase letters, numbers and hyphens</p>
+        }
       </div>
 
       @if (error) { <p class="lk-error-msg">{{ error }}</p> }
 
       <button
         class="lk-btn"
-        type="button"
-        [disabled]="!orgName.trim() || !orgSlug.trim() || loading"
-        (click)="submitOrgInfo()"
+        type="submit"
+        [disabled]="orgInfoForm.invalid || loading"
       >
         @if (loading) {
           <span class="lk-spinner"></span> Creating workspace…
@@ -91,14 +95,14 @@
         <a href="#" (click)="$event.preventDefault(); goLogin()">Sign in</a>
       </p>
 
-    </div>
+    </form>
   }
 
   <!-- ════════════════════════════════════════════════════════════
        STEP 2 — Admin details
   ════════════════════════════════════════════════════════════ -->
   @if (step === 'admin-email') {
-    <div class="lk-step">
+    <form class="lk-step" [formGroup]="adminForm" (ngSubmit)="submitAdminEmail()" novalidate>
 
       <div class="lk-top-bar">
         <button type="button" class="lk-back-btn" (click)="goBack()">
@@ -126,8 +130,8 @@
       <p class="lk-subtext">You'll be the primary admin. We'll verify your email next.</p>
 
       <div class="lk-field">
-        <label class="lk-label" for="admin-name">Your full name</label>
-        <div class="lk-input-wrap">
+        <label class="lk-label" for="admin-name">Your full name <span class="lk-required">*</span></label>
+        <div class="lk-input-wrap" [class.lk-input-error]="isInvalid(adminForm, 'adminName')">
           <svg class="lk-input-icon" width="16" height="16" viewBox="0 0 24 24"
                fill="none" stroke="currentColor" stroke-width="2"
                stroke-linecap="round" stroke-linejoin="round">
@@ -139,15 +143,17 @@
             class="lk-input"
             type="text"
             placeholder="Jane Smith"
-            [(ngModel)]="adminName"
-            (keydown.enter)="submitAdminEmail()"
+            formControlName="adminName"
           />
         </div>
+        @if (isInvalid(adminForm, 'adminName')) {
+          <p class="lk-error-msg">Please enter your full name.</p>
+        }
       </div>
 
       <div class="lk-field">
-        <label class="lk-label" for="admin-email">Work email</label>
-        <div class="lk-input-wrap" [class.lk-input-error]="error">
+        <label class="lk-label" for="admin-email">Work email <span class="lk-required">*</span></label>
+        <div class="lk-input-wrap" [class.lk-input-error]="isInvalid(adminForm, 'adminEmail')">
           <svg class="lk-input-icon" width="16" height="16" viewBox="0 0 24 24"
                fill="none" stroke="currentColor" stroke-width="2"
                stroke-linecap="round" stroke-linejoin="round">
@@ -160,18 +166,19 @@
             type="email"
             autocomplete="email"
             placeholder="jane@{{ authState.orgIdentifier() }}.com"
-            [(ngModel)]="adminEmail"
-            (keydown.enter)="submitAdminEmail()"
+            formControlName="adminEmail"
           />
         </div>
+        @if (isInvalid(adminForm, 'adminEmail')) {
+          <p class="lk-error-msg">Please enter a valid work email.</p>
+        }
         @if (error) { <p class="lk-error-msg">{{ error }}</p> }
       </div>
 
       <button
         class="lk-btn"
-        type="button"
-        [disabled]="!adminEmail.trim() || !adminName.trim() || loading"
-        (click)="submitAdminEmail()"
+        type="submit"
+        [disabled]="adminForm.invalid || loading"
       >
         @if (loading) {
           <span class="lk-spinner"></span> Sending code…
@@ -185,7 +192,7 @@
         }
       </button>
 
-    </div>
+    </form>
   }
 
   <!-- ════════════════════════════════════════════════════════════
@@ -203,7 +210,7 @@
        STEP 4 — Organisation Profile
   ════════════════════════════════════════════════════════════ -->
   @if (step === 'org-profile') {
-    <div class="lk-step lk-step-profile">
+    <form class="lk-step lk-step-profile" [formGroup]="profileForm" (ngSubmit)="submitOrgProfile()" novalidate>
 
       <div class="lk-profile-header">
         <div class="lk-profile-avatar">
@@ -224,9 +231,11 @@
         label="Industry *"
         placeholder="Select industry"
         [options]="industries"
-        [(ngModel)]="industry"
-        name="industry"
+        formControlName="industry"
       />
+      @if (isInvalid(profileForm, 'industry')) {
+        <p class="lk-error-msg" style="margin-top:-12px;margin-bottom:12px">Please select an industry.</p>
+      }
 
       <!-- Company size -->
       <ui-select
@@ -234,14 +243,16 @@
         label="Company size *"
         placeholder="Select size"
         [options]="companySizes"
-        [(ngModel)]="companySize"
-        name="companySize"
+        formControlName="companySize"
       />
+      @if (isInvalid(profileForm, 'companySize')) {
+        <p class="lk-error-msg" style="margin-top:-12px;margin-bottom:12px">Please select a company size.</p>
+      }
 
       <!-- Country -->
       <div class="lk-field">
         <label class="lk-label" for="country">Country <span class="lk-required">*</span></label>
-        <div class="lk-input-wrap">
+        <div class="lk-input-wrap" [class.lk-input-error]="isInvalid(profileForm, 'country')">
           <svg class="lk-input-icon" width="16" height="16" viewBox="0 0 24 24"
                fill="none" stroke="currentColor" stroke-width="2"
                stroke-linecap="round" stroke-linejoin="round">
@@ -251,8 +262,11 @@
           </svg>
           <input id="country" class="lk-input" type="text"
                  placeholder="e.g. India, United States…"
-                 [(ngModel)]="country" name="country" />
+                 formControlName="country" />
         </div>
+        @if (isInvalid(profileForm, 'country')) {
+          <p class="lk-error-msg">Please enter your country.</p>
+        }
       </div>
 
       <!-- Timezone -->
@@ -262,9 +276,11 @@
         label="Timezone *"
         placeholder="Select timezone"
         [options]="timezones"
-        [(ngModel)]="timezone"
-        name="timezone"
+        formControlName="timezone"
       />
+      @if (isInvalid(profileForm, 'timezone')) {
+        <p class="lk-error-msg" style="margin-top:-12px;margin-bottom:12px">Please select a timezone.</p>
+      }
 
       <!-- Work week -->
       <div class="lk-field">
@@ -273,15 +289,13 @@
           <ui-select
             [dark]="true"
             [options]="weekdays"
-            [(ngModel)]="workWeekStart"
-            name="workWeekStart"
+            formControlName="workWeekStart"
           />
           <span class="lk-row-sep">to</span>
           <ui-select
             [dark]="true"
             [options]="weekdays"
-            [(ngModel)]="workWeekEnd"
-            name="workWeekEnd"
+            formControlName="workWeekEnd"
           />
         </div>
       </div>
@@ -291,11 +305,11 @@
         <label class="lk-label" for="work-start">Work hours</label>
         <div class="lk-row-fields">
           <div class="lk-input-wrap">
-            <input id="work-start" class="lk-input lk-input-sm" type="time" [(ngModel)]="workDayStart" name="workDayStart" />
+            <input id="work-start" class="lk-input lk-input-sm" type="time" formControlName="workDayStart" />
           </div>
           <span class="lk-row-sep">to</span>
           <div class="lk-input-wrap">
-            <input class="lk-input lk-input-sm" type="time" [(ngModel)]="workDayEnd" name="workDayEnd" />
+            <input class="lk-input lk-input-sm" type="time" formControlName="workDayEnd" />
           </div>
         </div>
       </div>
@@ -312,7 +326,7 @@
           </svg>
           <input id="website" class="lk-input" type="url"
                  placeholder="https://yourcompany.com"
-                 [(ngModel)]="website" name="website" />
+                 formControlName="website" />
         </div>
       </div>
 
@@ -320,9 +334,8 @@
 
       <button
         class="lk-btn"
-        type="button"
-        [disabled]="!industry || !companySize || !country || !timezone || loading"
-        (click)="submitOrgProfile()"
+        type="submit"
+        [disabled]="profileForm.invalid || loading"
       >
         @if (loading) {
           <span class="lk-spinner"></span> Saving…
@@ -340,7 +353,7 @@
         <a href="#" (click)="$event.preventDefault(); skipProfile()">Skip for now →</a>
       </p>
 
-    </div>
+    </form>
   }
 
   <!-- ════════════════════════════════════════════════════════════

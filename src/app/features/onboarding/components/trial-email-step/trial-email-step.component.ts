@@ -2,6 +2,11 @@ import { Component, Output, EventEmitter, ChangeDetectionStrategy } from '@angul
 import { FormsModule } from '@angular/forms';
 import { AuthShellComponent } from '../../../auth/components/auth-shell/auth-shell.component';
 
+export interface TrialStartData {
+  orgName: string;
+  email: string;
+}
+
 @Component({
   selector: 'ob-trial-email-step',
   standalone: true,
@@ -13,20 +18,43 @@ import { AuthShellComponent } from '../../../auth/components/auth-shell/auth-she
 
         <div class="lk-eyebrow">
           <span class="lk-dot"></span>
-          Free Trial
+          Register your organisation
         </div>
 
         <h1 class="lk-heading">
-          Start your<br/>
-          <span class="lk-heading-accent">free trial.</span>
+          Create your<br/>
+          <span class="lk-heading-accent">workspace.</span>
         </h1>
         <p class="lk-subtext">
-          Enter your email. We'll send a quick verification code to get you started.
+          Set up your organisation on Klocky in minutes — no credit card required.
         </p>
 
+        <!-- Organisation name -->
         <div class="lk-field">
-          <label class="lk-label" for="trial-email">Email <span style="color:#f87171">*</span></label>
-          <div class="lk-input-wrap" [class.lk-input-error]="error">
+          <label class="lk-label" for="trial-org">Organisation name <span style="color:#f87171">*</span></label>
+          <div class="lk-input-wrap" [class.lk-input-error]="orgError">
+            <svg class="lk-input-icon" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            <input
+              id="trial-org"
+              class="lk-input"
+              type="text"
+              placeholder="Acme Corporation"
+              [(ngModel)]="orgName"
+              autocomplete="organization"
+            />
+          </div>
+          @if (orgError) { <p class="lk-error-msg">{{ orgError }}</p> }
+        </div>
+
+        <!-- Admin email -->
+        <div class="lk-field">
+          <label class="lk-label" for="trial-email">Admin email <span style="color:#f87171">*</span></label>
+          <div class="lk-input-wrap" [class.lk-input-error]="emailError">
             <svg class="lk-input-icon" width="16" height="16" viewBox="0 0 24 24"
                  fill="none" stroke="currentColor" stroke-width="2"
                  stroke-linecap="round" stroke-linejoin="round">
@@ -37,19 +65,19 @@ import { AuthShellComponent } from '../../../auth/components/auth-shell/auth-she
               id="trial-email"
               class="lk-input"
               type="email"
-              placeholder="you@mail.com"
+              placeholder="admin@company.com"
               [(ngModel)]="email"
               (keydown.enter)="submit()"
               autocomplete="email"
             />
           </div>
-          @if (error) { <p class="lk-error-msg">{{ error }}</p> }
+          @if (emailError) { <p class="lk-error-msg">{{ emailError }}</p> }
         </div>
 
         <button
           class="lk-btn"
           type="button"
-          [disabled]="!email.trim()"
+          [disabled]="!orgName.trim() || !email.trim()"
           (click)="submit()"
         >
           Get Started
@@ -66,6 +94,10 @@ import { AuthShellComponent } from '../../../auth/components/auth-shell/auth-she
         </p>
 
         <p class="lk-legal" style="margin-top:8px">
+          <a href="#" (click)="$event.preventDefault(); goHome.emit()">← Back to home</a>
+        </p>
+
+        <p class="lk-legal" style="margin-top:8px">
           By continuing you agree to our
           <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
         </p>
@@ -76,22 +108,33 @@ import { AuthShellComponent } from '../../../auth/components/auth-shell/auth-she
   styleUrl: './trial-email-step.component.scss',
 })
 export class TrialEmailStepComponent {
-  @Output() emailSubmitted = new EventEmitter<string>();
+  @Output() emailSubmitted = new EventEmitter<TrialStartData>();
   @Output() signIn = new EventEmitter<void>();
+  @Output() goHome = new EventEmitter<void>();
 
-  email = '';
-  error = '';
+  orgName    = '';
+  email      = '';
+  orgError   = '';
+  emailError = '';
 
   submit(): void {
-    this.error = '';
-    const trimmed = this.email.trim();
-    if (!trimmed) return;
+    this.orgError   = '';
+    this.emailError = '';
 
-    if (!trimmed.includes('@') || !trimmed.includes('.')) {
-      this.error = 'Please enter a valid email address.';
+    const org     = this.orgName.trim();
+    const trimmed = this.email.trim();
+
+    if (!org) {
+      this.orgError = 'Please enter your organisation name.';
       return;
     }
 
-    this.emailSubmitted.emit(trimmed);
+    if (!trimmed || !trimmed.includes('@') || !trimmed.includes('.')) {
+      this.emailError = 'Please enter a valid email address.';
+      return;
+    }
+
+    this.emailSubmitted.emit({ orgName: org, email: trimmed });
   }
 }
+

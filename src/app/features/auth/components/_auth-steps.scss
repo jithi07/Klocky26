@@ -58,6 +58,7 @@
 }
 .lk-input-wrap {
   display: flex; align-items: center;
+  position: relative;
   background: rgba(255,255,255,.055);
   border: 1.5px solid rgba(255,255,255,.09);
   border-radius: 12px; overflow: hidden;

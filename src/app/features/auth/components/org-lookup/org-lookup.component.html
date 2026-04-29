@@ -1,4 +1,4 @@
-<div class="lk-step">
+<form class="lk-step" [formGroup]="form" (ngSubmit)="proceed()" novalidate>
 
   <h1 class="lk-heading">
     Find your<br>
@@ -23,8 +23,7 @@
         type="text"
         autocomplete="organization"
         placeholder="yourcompany"
-        [(ngModel)]="orgInput"
-        (keydown.enter)="proceed()"
+        formControlName="orgInput"
       />
       <span class="lk-domain-suffix">.klock</span>
     </div>
@@ -36,9 +35,8 @@
 
   <button
     class="lk-btn"
-    type="button"
-    [disabled]="!orgInput.trim() || loading"
-    (click)="proceed()"
+    type="submit"
+    [disabled]="form.invalid || loading"
   >
     @if (loading) {
       <span class="lk-spinner"></span>
@@ -58,4 +56,8 @@
     <a href="#" (click)="$event.preventDefault(); register.emit()">Create your organization</a>
   </p>
 
-</div>
+  <p class="lk-legal" style="margin-top:8px">
+    <a href="#" (click)="$event.preventDefault(); goHome()">← Back to home</a>
+  </p>
+
+</form>

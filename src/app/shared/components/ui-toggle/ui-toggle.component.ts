@@ -50,20 +50,26 @@ import { NgIf } from '@angular/common';
     .ui-toggle-wrap.disabled { opacity: .45; pointer-events: none; }
 
     .toggle-info { display: flex; flex-direction: column; gap: 3px; }
-    .toggle-main-label { font-size: 14px; font-weight: 500; color: #1e293b; }
-    .toggle-hint { font-size: 12.5px; color: #64748b; line-height: 1.4; }
+    .toggle-main-label {
+      font-size: 14px; font-weight: 500;
+      color: var(--ui-toggle-label, rgba(255,255,255,.88));
+    }
+    .toggle-hint {
+      font-size: 12.5px; line-height: 1.4;
+      color: var(--ui-toggle-hint, rgba(255,255,255,.38));
+    }
 
     .track {
       position: relative; display: inline-flex; align-items: center;
       width: 44px; height: 24px; border-radius: 12px;
-      border: none; background: #d1d5db; padding: 0;
+      border: none; background: rgba(255,255,255,.12); padding: 0;
       flex-shrink: 0;
       cursor: pointer; transition: background .2s;
     }
     .track.size-sm { width: 34px; height: 18px; border-radius: 9px; }
     .track.size-lg { width: 56px; height: 30px; border-radius: 15px; }
 
-    .track.on { background: var(--accent, #4f46e5); }
+    .track.on { background: var(--accent, #0d9488); }
 
     .thumb {
       position: absolute; left: 3px;
@@ -78,7 +84,10 @@ import { NgIf } from '@angular/common';
     .track.size-sm.on .thumb { transform: translateX(16px); }
     .track.size-lg.on .thumb { transform: translateX(26px); }
 
-    .toggle-label { font-size: 14px; color: #374151; }
+    .toggle-label {
+      font-size: 14px;
+      color: var(--ui-toggle-label, rgba(255,255,255,.75));
+    }
   `],
 })
 export class UiToggleComponent implements ControlValueAccessor {

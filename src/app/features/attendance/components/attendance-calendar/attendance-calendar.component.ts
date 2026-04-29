@@ -268,10 +268,13 @@ export class AttendanceCalendarComponent {
   }
 
   private _touchStartX = 0;
+  private _touchStartY = 0;
   private _wheelCooldown = false;
 
   onWheel(e: WheelEvent): void {
     if (this._wheelCooldown) return;
+    // Only horizontal-dominant wheel events (trackpad horizontal scroll)
+    if (Math.abs(e.deltaX) < Math.abs(e.deltaY) * 2) return;
     this._wheelCooldown = true;
     if (e.deltaX > 30) this.nextMonth();
     else if (e.deltaX < -30) this.prevMonth();
@@ -280,12 +283,17 @@ export class AttendanceCalendarComponent {
 
   onTouchStart(e: TouchEvent): void {
     this._touchStartX = e.touches[0].clientX;
+    this._touchStartY = e.touches[0].clientY;
   }
 
   onTouchEnd(e: TouchEvent): void {
-    const delta = this._touchStartX - e.changedTouches[0].clientX;
-    if (delta > 40) this.nextMonth();
-    else if (delta < -40) this.prevMonth();
+    const deltaX = this._touchStartX - e.changedTouches[0].clientX;
+    const deltaY = this._touchStartY - e.changedTouches[0].clientY;
+    // Require gesture to be at least 2.5× more horizontal than vertical
+    // (~22° from horizontal) to avoid triggering on vertical page scrolls
+    if (Math.abs(deltaX) < Math.abs(deltaY) * 2.5) return;
+    if (deltaX > 40) this.nextMonth();
+    else if (deltaX < -40) this.prevMonth();
   }
 
   prevMonth(): void {

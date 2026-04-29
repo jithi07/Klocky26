@@ -49,11 +49,11 @@ export class OtpStepComponent {
     if (!this.otpComplete || this.loading) return;
     this.error = '';
     this.loading = true;
-    await this.delay(4000);
+    await this.delay(2000);
     this.loading = false;
 
     const code = this.otp.join('');
-    if (code === '111111') {
+    if (code != '111111') {
       this.error = 'Invalid code. Please check and try again.';
       this.otp = ['', '', '', '', '', ''];
       this.cdr.markForCheck();

@@ -1,0 +1,176 @@
+<div class="adr-page">
+
+  <!-- ── Header ───────────────────────────────────────────────────── -->
+  <div class="adr-header">
+    <div>
+      <h1 class="adr-title">Demo Requests</h1>
+      <p class="adr-subtitle">{{ newReqs() }} new · {{ scheduledReqs() }} scheduled · {{ completedReqs() }} completed</p>
+    </div>
+  </div>
+
+  <!-- ── Stat pills ────────────────────────────────────────────────── -->
+  <div class="adr-stat-row">
+    <div class="adr-stat adr-stat--blue">
+      <span class="adr-stat-val">{{ totalReqs() }}</span>
+      <span class="adr-stat-lbl">Total</span>
+    </div>
+    <div class="adr-stat adr-stat--purple">
+      <span class="adr-stat-val">{{ newReqs() }}</span>
+      <span class="adr-stat-lbl">New</span>
+    </div>
+    <div class="adr-stat adr-stat--amber">
+      <span class="adr-stat-val">{{ scheduledReqs() }}</span>
+      <span class="adr-stat-lbl">Scheduled</span>
+    </div>
+    <div class="adr-stat adr-stat--green">
+      <span class="adr-stat-val">{{ completedReqs() }}</span>
+      <span class="adr-stat-lbl">Completed</span>
+    </div>
+  </div>
+
+  <!-- ── Table card ────────────────────────────────────────────────── -->
+  <div class="adr-table-card">
+    <div class="adr-table-toolbar">
+      <div class="adr-search-wrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input class="adr-search" type="text" placeholder="Search by name, email or company…"
+               [value]="search()" (input)="onSearch($event)" />
+      </div>
+      <select class="adr-filter" [value]="statusFilter()" (change)="onStatusFilter($event)">
+        <option value="all">All statuses</option>
+        @for (s of statuses; track s) {
+          <option [value]="s">{{ statusLabel(s) }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="adr-table-scroll">
+      <table class="adr-table">
+        <thead>
+          <tr>
+            <th>Contact</th>
+            <th>Company</th>
+            <th>Team Size</th>
+            <th>Submitted</th>
+            <th>Status</th>
+            <th>Notes</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (req of filtered(); track req.id) {
+            <tr class="adr-tr" (click)="view(req)">
+              <td>
+                <div class="adr-contact-cell">
+                  <div class="adr-avatar">{{ req.fullName.slice(0, 2).toUpperCase() }}</div>
+                  <div>
+                    <div class="adr-name">{{ req.fullName }}</div>
+                    <div class="adr-email">{{ req.workEmail }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="adr-muted">{{ req.companyName }}</td>
+              <td class="adr-muted">{{ req.teamSize }}</td>
+              <td class="adr-muted">
+                <div>{{ formatDate(req.submittedAt) }}</div>
+                <div class="adr-time">{{ formatTime(req.submittedAt) }}</div>
+              </td>
+              <td>
+                <span class="adr-status-chip adr-status-chip--{{ req.status }}">{{ statusLabel(req.status) }}</span>
+              </td>
+              <td class="adr-msg-preview adr-muted">
+                {{ req.message || '—' }}
+              </td>
+              <td (click)="$event.stopPropagation()">
+                <select class="adr-status-select" [value]="req.status"
+                        (change)="setStatus(req, $any($event.target).value)">
+                  @for (s of statuses; track s) {
+                    <option [value]="s">{{ statusLabel(s) }}</option>
+                  }
+                </select>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="adr-empty">No demo requests match your search.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="adr-table-footer">
+      Showing {{ filtered().length }} of {{ totalReqs() }} requests
+    </div>
+  </div>
+
+  <!-- ── Detail drawer ─────────────────────────────────────────────── -->
+  @if (selected()) {
+    <div class="adr-overlay" (click)="close()"></div>
+    <aside class="adr-drawer">
+      <div class="adr-drawer-head">
+        <div class="adr-drawer-avatar">{{ selected()!.fullName.slice(0, 2).toUpperCase() }}</div>
+        <div class="adr-drawer-info">
+          <h2 class="adr-drawer-name">{{ selected()!.fullName }}</h2>
+          <p class="adr-drawer-sub">{{ selected()!.companyName }} &bull; {{ selected()!.teamSize }} employees</p>
+        </div>
+        <button class="adr-drawer-close" type="button" (click)="close()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="adr-drawer-body">
+        <div class="adr-detail-row"><span class="adr-detail-label">Work Email</span>
+          <a class="adr-email-link" [href]="'mailto:' + selected()!.workEmail">{{ selected()!.workEmail }}</a>
+        </div>
+        <div class="adr-detail-row"><span class="adr-detail-label">Phone</span><span>{{ selected()!.phone }}</span></div>
+        <div class="adr-detail-row"><span class="adr-detail-label">Team Size</span><span>{{ selected()!.teamSize }}</span></div>
+        <div class="adr-detail-row"><span class="adr-detail-label">Submitted</span>
+          <span>{{ formatDate(selected()!.submittedAt) }} at {{ formatTime(selected()!.submittedAt) }}</span>
+        </div>
+
+        @if (selected()!.message) {
+          <div class="adr-message-box">
+            <p class="adr-detail-label">Message</p>
+            <p class="adr-message-text">{{ selected()!.message }}</p>
+          </div>
+        }
+
+        <!-- Status changer -->
+        <div class="adr-detail-row adr-detail-row--col">
+          <span class="adr-detail-label">Update Status</span>
+          <div class="adr-status-selector">
+            @for (s of statuses; track s) {
+              <button class="adr-status-opt adr-status-opt--{{ s }}"
+                      [class.is-active]="selected()!.status === s"
+                      type="button"
+                      (click)="setStatus(selected()!, s)">
+                {{ statusLabel(s) }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="adr-drawer-footer">
+        <a class="adr-contact-btn" [href]="'mailto:' + selected()!.workEmail">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          Send Email
+        </a>
+      </div>
+    </aside>
+  }
+
+</div>

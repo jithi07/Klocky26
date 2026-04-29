@@ -1,122 +1,146 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+  AbstractControl,
+} from '@angular/forms';
 import { SlicePipe } from '@angular/common';
 import { AuthShellComponent } from '../../components/auth-shell/auth-shell.component';
 import { AuthStateService } from '../../services/auth-state.service';
 import { OtpStepComponent } from '../../components/otp-step/otp-step.component';
 import { UiSelectComponent } from '../../../../shared/components/ui-select/ui-select.component';
+import { OrgThemeService } from '../../../../core/services/org-theme.service';
+import {
+  INDUSTRIES,
+  COMPANY_SIZES,
+  TIMEZONE_STRINGS,
+  WEEKDAYS,
+} from '../../../../core/config/form-options.const';
 
 type RegStep = 'org-info' | 'admin-email' | 'otp' | 'org-profile' | 'done';
+
+const SLUG_PATTERN = /^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$|^[a-z0-9]$/;
 
 @Component({
   selector: 'klocky-register',
   standalone: true,
-  imports: [AuthShellComponent, FormsModule, SlicePipe, OtpStepComponent, UiSelectComponent],
+  imports: [AuthShellComponent, ReactiveFormsModule, SlicePipe, OtpStepComponent, UiSelectComponent],
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss',
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
   step: RegStep = 'org-info';
-
-  // ── Step 1: workspace ────────────────────────────────────────
-  orgName = '';
-  orgSlug = '';
-  orgSlugTouched = false;
-
-  // ── Step 2: admin ────────────────────────────────────────────
-  adminEmail = '';
-  adminName = '';
-
-  // ── Step 4: org profile ──────────────────────────────────────
-  industry = '';
-  companySize = '';
-  country = '';
-  timezone = '';
-  workWeekStart = 'Monday';
-  workWeekEnd = 'Friday';
-  workDayStart = '09:00';
-  workDayEnd = '18:00';
-  website = '';
-
   loading = false;
   error = '';
 
   readonly authState = inject(AuthStateService);
   private router = inject(Router);
+  private fb = inject(FormBuilder);
+  private orgTheme = inject(OrgThemeService);
 
-  // ── Industries ───────────────────────────────────────────────
-  readonly industries = [
-    'Technology', 'Finance & Banking', 'Healthcare', 'Education',
-    'Retail & E-commerce', 'Manufacturing', 'Media & Entertainment',
-    'Hospitality', 'Construction', 'Consulting', 'Government', 'Other',
-  ];
+  ngOnInit(): void {
+    this.orgTheme.reset();
+  }
 
-  readonly companySizes = [
-    '1 – 10', '11 – 50', '51 – 200', '201 – 500', '501 – 1000', '1000+',
-  ];
+  // ── Form groups per step ──────────────────────────────────────
+  readonly orgInfoForm: FormGroup = this.fb.group({
+    orgName: ['', [Validators.required, Validators.minLength(2)]],
+    orgSlug: ['', [Validators.required, Validators.pattern(SLUG_PATTERN)]],
+  });
 
-  readonly timezones = [
-    'UTC-12:00', 'UTC-11:00', 'UTC-10:00 (Hawaii)', 'UTC-08:00 (Pacific)',
-    'UTC-07:00 (Mountain)', 'UTC-06:00 (Central)', 'UTC-05:00 (Eastern)',
-    'UTC-04:00 (Atlantic)', 'UTC-03:00 (Brasilia)', 'UTC+00:00 (London)',
-    'UTC+01:00 (Paris)', 'UTC+02:00 (Cairo)', 'UTC+03:00 (Moscow)',
-    'UTC+04:00 (Dubai)', 'UTC+05:30 (India)', 'UTC+06:00 (Dhaka)',
-    'UTC+07:00 (Bangkok)', 'UTC+08:00 (Singapore)', 'UTC+09:00 (Tokyo)',
-    'UTC+10:00 (Sydney)', 'UTC+12:00 (Auckland)',
-  ];
+  readonly adminForm: FormGroup = this.fb.group({
+    adminName:  ['', [Validators.required, Validators.minLength(2)]],
+    adminEmail: ['', [Validators.required, Validators.email]],
+  });
 
-  readonly weekdays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  readonly profileForm: FormGroup = this.fb.group({
+    industry:      ['', Validators.required],
+    companySize:   ['', Validators.required],
+    country:       ['', Validators.required],
+    timezone:      ['', Validators.required],
+    workWeekStart: ['Monday'],
+    workWeekEnd:   ['Friday'],
+    workDayStart:  ['09:00'],
+    workDayEnd:    ['18:00'],
+    website:       [''],
+  });
 
   // ── Slug auto-generation ──────────────────────────────────────
+  private slugTouched = false;
+
   onOrgNameChange(): void {
-    if (!this.orgSlugTouched) {
-      this.orgSlug = this.orgName.toLowerCase()
-        .replace(/\s+/g, '-')
-        .replace(/[^a-z0-9-]/g, '');
+    if (!this.slugTouched) {
+      const raw: string = this.orgInfoForm.get('orgName')!.value ?? '';
+      const slug = raw.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      this.orgInfoForm.get('orgSlug')!.setValue(slug, { emitEvent: false });
     }
+  }
+
+  onSlugFocus(): void { this.slugTouched = true; }
+
+  // ── Reference data (from shared constants) ───────────────────
+  readonly industries  = INDUSTRIES;
+  readonly companySizes = COMPANY_SIZES;
+  readonly timezones   = TIMEZONE_STRINGS;
+  readonly weekdays    = WEEKDAYS;
+
+  // ── Validation helpers ────────────────────────────────────────
+  isInvalid(form: FormGroup, field: string): boolean {
+    const ctrl: AbstractControl = form.get(field)!;
+    return ctrl.invalid && (ctrl.dirty || ctrl.touched);
   }
 
   // ── Step 1 ───────────────────────────────────────────────────
   async submitOrgInfo(): Promise<void> {
-    if (!this.orgName.trim() || !this.orgSlug.trim() || this.loading) return;
+    this.orgInfoForm.markAllAsTouched();
+    if (this.orgInfoForm.invalid || this.loading) return;
     this.error = '';
     this.loading = true;
     await this.delay(700);
     this.loading = false;
-    this.authState.setOrg(this.orgSlug, this.orgName.trim());
+    const { orgName, orgSlug } = this.orgInfoForm.value;
+    console.log('[Register] Step 1 — Org Info:', { orgName, orgSlug });
+    this.authState.setOrg(orgSlug, orgName.trim());
     this.step = 'admin-email';
   }
 
   // ── Step 2 ───────────────────────────────────────────────────
   async submitAdminEmail(): Promise<void> {
-    if (!this.adminEmail.trim() || !this.adminName.trim() || this.loading) return;
+    this.adminForm.markAllAsTouched();
+    if (this.adminForm.invalid || this.loading) return;
     this.error = '';
     this.loading = true;
     await this.delay(900);
     this.loading = false;
-    this.authState.setEmail(this.adminEmail.trim());
+    console.log('[Register] Step 2 — Admin:', this.adminForm.value);
+    this.authState.setEmail(this.adminForm.value.adminEmail.trim());
     this.step = 'otp';
   }
 
-  // ── Step 3: OTP verified → org profile ───────────────────────
-  onOtpVerified(): void {
-    this.step = 'org-profile';
-  }
+  // ── Step 3: OTP verified ──────────────────────────────────────
+  onOtpVerified(): void { this.step = 'org-profile'; }
 
   // ── Step 4: org profile ───────────────────────────────────────
   async submitOrgProfile(): Promise<void> {
-    if (!this.industry || !this.companySize || !this.country || !this.timezone || this.loading) return;
+    this.profileForm.markAllAsTouched();
+    if (this.profileForm.invalid || this.loading) return;
     this.error = '';
     this.loading = true;
     await this.delay(1000);
     this.loading = false;
+    console.log('[Register] Step 4 — Org Profile:', this.profileForm.value);
+    console.log('[Register] Full registration payload:', {
+      ...this.orgInfoForm.value,
+      ...this.adminForm.value,
+      ...this.profileForm.value,
+    });
     this.step = 'done';
   }
 
-  skipProfile(): void {
-    this.step = 'done';
-  }
+  skipProfile(): void { this.step = 'done'; }
 
   // ── Step 5: done ──────────────────────────────────────────────
   async goToDashboard(): Promise<void> {

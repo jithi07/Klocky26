@@ -1,0 +1,143 @@
+:host { display: block; height: 100dvh; }
+
+$sidebar-w: 220px;
+$sidebar-collapsed: 64px;
+$bg: #060c14;
+$surface: rgba(255,255,255,.03);
+$border: rgba(255,255,255,.07);
+$text-muted: rgba(255,255,255,.38);
+$text: rgba(255,255,255,.88);
+$accent: #0d9488;
+
+.as-layout {
+  display: grid;
+  grid-template-columns: $sidebar-w 1fr;
+  height: 100%;
+  background: $bg;
+  transition: grid-template-columns .25s ease;
+
+  &.sidebar-collapsed {
+    grid-template-columns: $sidebar-collapsed 1fr;
+  }
+}
+
+// ── Sidebar ───────────────────────────────────────────────────────────
+.as-sidebar {
+  background: rgba(255,255,255,.02);
+  border-right: 1px solid $border;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  z-index: 10;
+}
+
+.as-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 14px 14px;
+  border-bottom: 1px solid $border;
+  gap: 8px;
+}
+
+.as-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.as-logo-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: $text;
+  white-space: nowrap;
+}
+
+.as-team-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  background: rgba($accent, .18);
+  border: 1px solid rgba($accent, .3);
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #5eead4;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
+.as-toggle-btn {
+  background: transparent;
+  border: none;
+  color: $text-muted;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  transition: color .2s, background .2s;
+
+  &:hover { color: $text; background: rgba(255,255,255,.06); }
+}
+
+// ── Nav ───────────────────────────────────────────────────────────────
+.as-nav {
+  flex: 1;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.as-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 10px;
+  border-radius: 8px;
+  color: $text-muted;
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: color .2s, background .2s;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+
+  svg { flex-shrink: 0; }
+
+  &:hover { color: $text; background: rgba(255,255,255,.05); }
+
+  &.active {
+    color: $text;
+    background: rgba($accent, .12);
+
+    svg { color: $accent; }
+  }
+}
+
+// ── Footer ────────────────────────────────────────────────────────────
+.as-sidebar-footer {
+  padding: 8px 8px 16px;
+  border-top: 1px solid $border;
+}
+
+.as-logout {
+  color: rgba(239, 68, 68, .6) !important;
+
+  &:hover { color: #f87171 !important; background: rgba(239,68,68,.07) !important; }
+}
+
+// ── Main ──────────────────────────────────────────────────────────────
+.as-main {
+  overflow-y: auto;
+  background: $bg;
+}

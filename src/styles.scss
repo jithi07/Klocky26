@@ -3,10 +3,16 @@
 @use './app/shared/styles/components';
 @use './app/shared/styles/mixins';
 
+*,
+*::before,
+*::after {
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
   margin: 0;
   font-family: 'Inter', sans-serif;
-  background: var(--bg);
+  background: var(--app-bg, #edf1f7);
   color: var(--text);
   overflow-x: hidden;
 }

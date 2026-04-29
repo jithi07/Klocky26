@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════
-//  Shared auth styles — imported by auth-shell and step components
+//  Auth-shell — page wrapper + split layout
 // ═══════════════════════════════════════════════════════════════════
 
 // ── Host lock ────────────────────────────────────────────────────────
@@ -12,7 +12,7 @@
 // ── Page ─────────────────────────────────────────────────────────────
 .lk-page {
   height: 100%;
-  background: var(--th-page-bg);
+  background: var(--th-page-bg, #05110f);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -28,27 +28,27 @@
   position: fixed;
   border-radius: 50%;
   pointer-events: none;
-  filter: blur(80px);
 }
 .orb-1 {
   width: 640px; height: 640px;
-  background: radial-gradient(circle, rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .13) 0%, transparent 65%);
+  background: radial-gradient(circle, rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .15) 0%, transparent 65%);
   top: -260px; right: -160px;
   filter: blur(100px);
   animation: drift-1 22s ease-in-out infinite;
 }
 .orb-2 {
   width: 480px; height: 480px;
-  background: radial-gradient(circle, rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .09) 0%, transparent 65%);
+  background: radial-gradient(circle, rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .10) 0%, transparent 65%);
   bottom: -180px; left: -120px;
   filter: blur(100px);
   animation: drift-2 28s ease-in-out infinite;
 }
 .orb-3 {
-  width: 280px; height: 280px;
-  background: radial-gradient(circle, rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .07) 0%, transparent 65%);
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .08) 0%, transparent 65%);
   top: 40%; left: 50%;
   transform: translate(-50%, -50%);
+  filter: blur(80px);
   animation: drift-3 32s ease-in-out infinite;
 }
 
@@ -74,33 +74,157 @@
   mask-image: radial-gradient(ellipse 65% 65% at 50% 50%, black 0%, transparent 100%);
 }
 
+// ── Split container ───────────────────────────────────────────────────
+// Houses the left panel + right card as a single unified widget
+.lk-split {
+  position: relative; z-index: 10;
+  width: 100%;
+  max-width: 860px;
+  display: flex;
+  align-items: stretch;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.08) inset,
+    0 36px 90px rgba(0,0,0,.6),
+    0 8px 24px rgba(0,0,0,.35);
+}
+
+// ── Left brand panel (hidden on mobile) ─────────────────────────────
+.lk-left {
+  display: none;          // collapsed on mobile
+  width: 320px;
+  flex-shrink: 0;
+  background: linear-gradient(160deg,
+    rgba(8, 24, 20, 0.98) 0%,
+    rgba(4, 14, 12, 0.99) 100%
+  );
+  border-right: 1px solid rgba(255,255,255,.06);
+  padding: 44px 36px 36px;
+  flex-direction: column;
+
+  @media (min-width: 820px) { display: flex; }
+}
+
+// Left: logo + name
+.lk-ll-brand {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 44px;
+}
+.lk-ll-name {
+  font-size: 19px; font-weight: 800;
+  color: rgba(255,255,255,.9); letter-spacing: -.4px;
+}
+
+// Left: body text block
+.lk-ll-body { flex: 1; }
+
+.lk-eyebrow-tag {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 10.5px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--th-text-accent, rgba(255,255,255,.5));
+  margin-bottom: 16px;
+}
+.lk-badge-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--th-accent, #0d9488);
+  box-shadow: 0 0 8px rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .65);
+  animation: badge-pulse 2.5s ease-in-out infinite;
+}
+@keyframes badge-pulse {
+  0%, 100% { box-shadow: 0 0 7px rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .5); }
+  50%       { box-shadow: 0 0 16px rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .28), 0 0 28px rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .14); }
+}
+
+.lk-ll-heading {
+  font-size: 28px; font-weight: 800;
+  color: rgba(255,255,255,.92);
+  line-height: 1.18; letter-spacing: -.9px;
+  margin: 0 0 14px;
+}
+.lk-ll-sub {
+  font-size: 13.5px; color: rgba(255,255,255,.38);
+  line-height: 1.65; margin-bottom: 36px;
+}
+
+// Feature bullets
+.lk-feats {
+  list-style: none; padding: 0; margin: 0;
+  display: flex; flex-direction: column; gap: 13px;
+
+  li {
+    display: flex; align-items: center; gap: 11px;
+    font-size: 13px; color: rgba(255,255,255,.52); font-weight: 500;
+  }
+}
+.lk-feat-ic {
+  width: 27px; height: 27px; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  background: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .11);
+  color: var(--th-text-accent, #5eead4);
+  border: 1px solid rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .20);
+}
+
+// Left: bottom tagline
+.lk-ll-tagline {
+  margin-top: auto; padding-top: 32px;
+  font-size: 11.5px; color: rgba(255,255,255,.2); line-height: 1.5;
+}
+
+// ── Right form panel ─────────────────────────────────────────────────
+.lk-right {
+  flex: 1; min-width: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,.028);
+}
+
 // ── Card ─────────────────────────────────────────────────────────────
 .lk-card {
-  position: relative; z-index: 10;
-  width: 100%; max-width: 420px;
-  background: rgba(255,255,255,.046);
+  width: 100%;
+  padding: 40px 36px 36px;
+  transition: box-shadow .4s;
+
+  // Mobile: full standalone card look
+  background: rgba(255,255,255,.044);
   backdrop-filter: blur(32px);
   -webkit-backdrop-filter: blur(32px);
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: 22px;
-  padding: 40px 36px 36px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 24px;
+  max-width: 420px;
   box-shadow:
     0 0 0 1px rgba(255,255,255,.05) inset,
     0 28px 70px rgba(0,0,0,.5),
     0 6px 20px rgba(0,0,0,.28);
-  transition: box-shadow .4s;
+
+  // Desktop: right half of split, flush edges
+  @media (min-width: 820px) {
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: none;
+    border-radius: 0;
+    max-width: none;
+    box-shadow: none;
+    padding: 44px 40px;
+    overflow-y: auto;
+  }
 
   &.is-success {
     box-shadow:
       0 0 0 1px rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .28) inset,
       0 28px 70px rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .15),
       0 6px 20px rgba(0,0,0,.28);
+
+    @media (min-width: 820px) { box-shadow: none; }
   }
 }
 
-// ── Brand ─────────────────────────────────────────────────────────────
+// ── Brand inside card (mobile only) ──────────────────────────────────
 .lk-brand {
   display: flex; align-items: center; gap: 9px; margin-bottom: 36px;
+
+  @media (min-width: 820px) { display: none; }
 }
 .lk-logo-mark {
   display: flex; align-items: center; justify-content: center;
@@ -110,31 +234,31 @@
   font-size: 17px; font-weight: 750;
   color: rgba(255,255,255,.9); letter-spacing: -.3px;
 }
-.lk-logo-org {
-  color: rgba(255,255,255,.95);
-}
-.lk-logo-tld {
-  color: var(--th-text-accent);
-  font-weight: 600;
-  opacity: .75;
-}
+.lk-logo-org  { color: rgba(255,255,255,.95); }
+.lk-logo-tld  { color: var(--th-text-accent); font-weight: 600; opacity: .75; }
 
-// ── Footer ────────────────────────────────────────────────────────────
+// ── Footer ───────────────────────────────────────────────────────────
 .lk-footer {
-  position: relative; z-index: 10; margin-top: 28px;
+  position: relative; z-index: 10; margin-top: 24px;
   font-size: 11.5px; color: rgba(255,255,255,.2); text-align: center;
 }
 
-// ── Responsive ────────────────────────────────────────────────────────
+// ── Responsive ───────────────────────────────────────────────────────
+@media (max-width: 819px) {
+  .lk-split {
+    max-width: 440px;
+    border-radius: 22px;
+  }
+  .lk-right { width: 100%; }
+  .lk-card  { max-width: 100%; }
+}
 @media (max-width: 600px) {
   .lk-page {
-    padding: max(24px, env(safe-area-inset-top, 24px)) 12px
-             max(24px, env(safe-area-inset-bottom, 24px));
+    padding: max(20px, env(safe-area-inset-top, 20px)) 12px
+             max(20px, env(safe-area-inset-bottom, 20px));
   }
-  .lk-card { max-width: 100%; padding: 28px 20px 24px; border-radius: 20px; }
-  .lk-brand { margin-bottom: 28px; }
-  .lk-footer { margin-top: 20px; }
+  .lk-card { padding: 28px 20px 24px; }
 }
 @media (max-width: 400px) {
-  .lk-card { padding: 24px 16px 20px; border-radius: 16px; }
+  .lk-card { padding: 24px 16px 20px; }
 }

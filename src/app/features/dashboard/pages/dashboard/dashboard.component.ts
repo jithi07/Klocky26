@@ -2,6 +2,24 @@
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
+// ── API integration reference ──────────────────────────────────────────────
+// When wiring real data, inject these services:
+//
+//   private api      = inject(ApiService);        // core/services/api.service.ts
+//   private appState = inject(AppStateService);    // core/services/app-state.service.ts
+//   private loading  = inject(LoadingService);     // core/services/loading.service.ts
+//
+// Example — load dashboard stats from API:
+//   readonly stats$ = this.api.get<ApiResponse<DashboardStats>>('/dashboard/stats');
+//
+// Example — read current user from global state:
+//   readonly currentUser = this.appState.user;      // signal<User | null>
+//   readonly isAdmin     = computed(() => this.appState.userRole() === 'admin');
+//
+// Example — show global loader:
+//   @if (loading.isLoading()) { <klocky-ui-loader /> }
+// ──────────────────────────────────────────────────────────────────────────────
+
 interface DeptStat {
   name: string;
   count: number;

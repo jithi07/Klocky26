@@ -61,10 +61,10 @@
       <span class="nav-text label">Settings</span>
     </a>
 
-    <a routerLink="/login" title="Logout">
+    <button class="nav-logout" (click)="logout()" title="Logout">
       <span class="nav-icon"><icon-logout [size]="18"></icon-logout></span>
       <span class="nav-text label">Logout</span>
-    </a>
+    </button>
 
     <!-- Powered by footer -->
     <div class="by-klocky">

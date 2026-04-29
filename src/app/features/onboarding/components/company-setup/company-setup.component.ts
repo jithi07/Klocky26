@@ -18,6 +18,11 @@ type SetupTab = 'org' | 'attendance' | 'preview';
 })
 export class CompanySetupComponent {
   @Input() adminEmail = '';
+  @Input() set orgName(name: string) {
+    if (name) {
+      this.orgData = { ...this.orgData, orgName: name, displayName: name };
+    }
+  }
   @Output() completed = new EventEmitter<{ org: OrgSetupData; attendance: AttendanceSetupData }>();
 
   @ViewChild(OrgSetupTabComponent)        orgTab!: OrgSetupTabComponent;

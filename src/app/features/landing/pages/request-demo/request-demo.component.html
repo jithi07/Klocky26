@@ -1,0 +1,267 @@
+<div class="demo-page">
+
+  <!-- ── Top nav ──────────────────────────────────────────────── -->
+  <header class="demo-nav">
+    <button class="demo-nav__brand" type="button" (click)="goHome()">
+      <svg class="demo-nav__logo-icon" width="28" height="28" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" rx="9" fill="url(#lg-demo-nav)"/>
+        <path d="M10 8v16M10 16l8-8M10 16l8 8" stroke="#fff" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round"/>
+        <defs>
+          <linearGradient id="lg-demo-nav" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#0a6b63"/><stop offset="1" stop-color="#0d9488"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <span class="demo-nav__logo-name">klock</span>
+    </button>
+
+    <button class="demo-nav__back" type="button" (click)="goHome()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      Back to home
+    </button>
+  </header>
+
+  <!-- ── Main two-column layout ──────────────────────────────── -->
+  <main class="demo-main">
+
+    <!-- LEFT: pitch ──────────────────────────────────────────── -->
+    <section class="demo-pitch">
+
+      <div class="demo-eyebrow">
+        <span class="demo-eyebrow__dot"></span>
+        Live walkthrough · 30 minutes
+      </div>
+
+      <h1 class="demo-h1">
+        See Klocky<br>
+        <span class="demo-h1__accent">in action.</span>
+      </h1>
+
+      <p class="demo-subtext">
+        Get a personalized tour of the platform — from smart clock-in to leave management,
+        payroll-ready reports, and custom org branding. No commitment, no credit card.
+      </p>
+
+      <ul class="demo-features">
+        <li class="demo-feature">
+          <span class="demo-feature__icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </span>
+          <div>
+            <strong>Smart Attendance</strong>
+            <p>Geo-fenced check-ins, selfie verification, auto-checkout rules</p>
+          </div>
+        </li>
+        <li class="demo-feature">
+          <span class="demo-feature__icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </span>
+          <div>
+            <strong>Leave &amp; Holiday Management</strong>
+            <p>Configurable leave policies, approval workflows, holiday calendars</p>
+          </div>
+        </li>
+        <li class="demo-feature">
+          <span class="demo-feature__icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </span>
+          <div>
+            <strong>Employee Directory</strong>
+            <p>Department trees, role management, multi-office support</p>
+          </div>
+        </li>
+        <li class="demo-feature">
+          <span class="demo-feature__icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+          </span>
+          <div>
+            <strong>Analytics &amp; Reports</strong>
+            <p>Payroll-ready exports, late/early trends, department summaries</p>
+          </div>
+        </li>
+      </ul>
+
+      <div class="demo-trust">
+        <div class="demo-trust__avatars">
+          <span class="demo-trust__avatar demo-trust__avatar--a">JS</span>
+          <span class="demo-trust__avatar demo-trust__avatar--b">MK</span>
+          <span class="demo-trust__avatar demo-trust__avatar--c">AR</span>
+        </div>
+        <p class="demo-trust__text">
+          <strong>Trusted by 200+ teams</strong> across India &amp; Southeast Asia
+        </p>
+      </div>
+
+    </section>
+
+    <!-- RIGHT: form ─────────────────────────────────────────── -->
+    <section class="demo-form-col">
+
+      @if (!submitted()) {
+
+        <div class="demo-card">
+          <div class="demo-card__header">
+            <h2 class="demo-card__title">Book your demo</h2>
+            <p class="demo-card__sub">We'll get back to you soon.</p>
+          </div>
+
+          <form [formGroup]="form" (ngSubmit)="submit()" novalidate autocomplete="off" class="demo-form">
+
+            <!-- Row: Full name + Work email -->
+            <div class="demo-form__row">
+              <div class="demo-form__field">
+                <label class="demo-label" for="rd-name">Full name <span class="demo-required">*</span></label>
+                <div class="demo-input-wrap" [class.is-error]="isInvalid('fullName')">
+                  <svg class="demo-input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                  <input id="rd-name" class="demo-input" type="text" placeholder="Jane Smith"
+                         formControlName="fullName" />
+                </div>
+                @if (isInvalid('fullName')) {
+                  <p class="demo-error-msg">Enter your full name.</p>
+                }
+              </div>
+
+              <div class="demo-form__field">
+                <label class="demo-label" for="rd-email">Email <span class="demo-required">*</span></label>
+                <div class="demo-input-wrap" [class.is-error]="isInvalid('workEmail')">
+                  <svg class="demo-input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                  </svg>
+                  <input id="rd-email" class="demo-input" type="email" autocomplete="email"
+                         placeholder="jane@company.com" formControlName="workEmail" />
+                </div>
+                @if (isInvalid('workEmail')) {
+                  <p class="demo-error-msg">Enter a valid email.</p>
+                }
+              </div>
+            </div>
+
+            <!-- Row: Phone + Company -->
+            <div class="demo-form__row">
+              <div class="demo-form__field">
+                <label class="demo-label" for="rd-phone">Phone <span class="demo-required">*</span></label>
+                <div class="demo-input-wrap" [class.is-error]="isInvalid('phone')">
+                  <svg class="demo-input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.13 12 19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+                  </svg>
+                  <input id="rd-phone" class="demo-input" type="tel"
+                         placeholder="+91 98765 43210" formControlName="phone" />
+                </div>
+                @if (isInvalid('phone')) {
+                  <p class="demo-error-msg">Enter a valid phone number.</p>
+                }
+              </div>
+
+              <div class="demo-form__field">
+                <label class="demo-label" for="rd-company">Company</label>
+                <div class="demo-input-wrap" [class.is-error]="isInvalid('companyName')">
+                  <svg class="demo-input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                  </svg>
+                  <input id="rd-company" class="demo-input" type="text" placeholder="Acme Corp"
+                         formControlName="companyName" />
+                </div>
+                @if (isInvalid('companyName')) {
+                  <p class="demo-error-msg">Enter your company name.</p>
+                }
+              </div>
+            </div>
+
+            <!-- Message -->
+            <div class="demo-form__field">
+              <label class="demo-label" for="rd-message">
+                Anything specific to cover?
+                <span class="demo-optional">(optional)</span>
+              </label>
+              <textarea id="rd-message" class="demo-textarea" rows="3"
+                        placeholder="E.g. multi-shift scheduling, API integrations, onboarding…"
+                        formControlName="message"></textarea>
+            </div>
+
+            <button class="demo-submit" type="submit" [disabled]="submitting()">
+              @if (submitting()) {
+                <span class="demo-spinner"></span> Sending request…
+              } @else {
+                Book a Live Demo
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+              }
+            </button>
+
+            <p class="demo-privacy">
+              No spam, ever. We'll only use your info to arrange your demo.
+            </p>
+
+          </form>
+        </div>
+
+      } @else {
+
+        <div class="demo-card demo-card--success">
+          <div class="demo-success-ring">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="3"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+
+          <h2 class="demo-success-title">Request received!</h2>
+          <p class="demo-success-sub">
+            Thanks, <strong>{{ f['fullName'].value }}</strong>! Our team will reach out to
+            <strong>{{ f['workEmail'].value }}</strong> within 24 hours to schedule your demo.
+          </p>
+
+          <div class="demo-success-actions">
+            <button class="demo-submit" type="button" (click)="goTrial()">
+              Start Free Trial Instead
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.5"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+            <button class="demo-back-btn" type="button" (click)="goHome()">← Back to home</button>
+          </div>
+        </div>
+
+      }
+
+    </section>
+
+  </main>
+
+</div>

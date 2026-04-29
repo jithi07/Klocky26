@@ -161,7 +161,7 @@
             </ui-input>
           </div>
           <div class="op-form-row">
-            <ui-select [dark]="true" label="Company Type"
+            <ui-select [dark]="false" label="Company Type"
               [options]="companyTypes"
               [(ngModel)]="companyType" (ngModelChange)="markDirty()">
             </ui-select>
@@ -395,12 +395,12 @@
             </ui-input>
 
             <div class="op-form-row">
-              <ui-select [dark]="true" label="Country" placeholder="Select country…"
+              <ui-select [dark]="false" label="Country" placeholder="Select country…"
                 [options]="countries"
                 [searchable]="true"
                 [(ngModel)]="offices[i].country" (ngModelChange)="markDirty()">
               </ui-select>
-              <ui-select [dark]="true" label="Timezone" placeholder="Select timezone…"
+              <ui-select [dark]="false" label="Timezone" placeholder="Select timezone…"
                 [options]="timezones"
                 [(ngModel)]="offices[i].timezone" (ngModelChange)="markDirty()">
               </ui-select>
@@ -441,7 +441,7 @@
 
           <div class="op-field op-field-sep">
             <p class="op-field-label">Industry</p>
-            <ui-select [dark]="true" [options]="industries"
+            <ui-select [dark]="false" [options]="industries"
               [(ngModel)]="industry" (ngModelChange)="markDirty()">
             </ui-select>
           </div>
@@ -475,12 +475,12 @@
         <div class="op-card">
 
           <div class="op-form-row">
-            <ui-select [dark]="true" label="Default Timezone"
+            <ui-select [dark]="false" label="Default Timezone"
               [options]="timezones"
               hint="Used for reports and notifications when no office timezone is set"
               [(ngModel)]="defaultTimezone" (ngModelChange)="markDirty()">
             </ui-select>
-            <ui-select [dark]="true" label="Currency"
+            <ui-select [dark]="false" label="Currency"
               [options]="currencies"
               [(ngModel)]="currency" (ngModelChange)="markDirty()">
             </ui-select>
@@ -561,12 +561,12 @@
           </div>
 
           <div class="op-form-row">
-            <ui-select [dark]="true" label="Grace Period for Late Arrival"
+            <ui-select [dark]="false" label="Grace Period for Late Arrival"
               [options]="gracePeriodOptions"
               hint="Employees arriving within this window are not marked late"
               [(ngModel)]="gracePeriodMins" (ngModelChange)="markDirty()">
             </ui-select>
-            <ui-select [dark]="true" label="Half-Day Threshold"
+            <ui-select [dark]="false" label="Half-Day Threshold"
               [options]="halfDayOptions"
               hint="Sessions shorter than this are counted as half-day"
               [(ngModel)]="halfDayThresholdHrs" (ngModelChange)="markDirty()">
@@ -878,7 +878,9 @@
             These are used for attendance and leave calculations.
           </p>
 
-          <!-- Month tabs -->
+          <div class="op-hol-layout">
+
+          <!-- Month tabs (vertical on desktop, horizontal scroll on mobile) -->
           <div class="op-hol-months">
             @for (m of allMonths; track m; let mi = $index) {
               <button type="button"
@@ -892,6 +894,9 @@
               </button>
             }
           </div>
+
+          <!-- Holiday content area -->
+          <div class="op-hol-content">
 
           <!-- Column headers -->
           <div class="op-hol-header">
@@ -967,6 +972,9 @@
             </svg>
             Add Holiday to {{ allMonths[holidayMonth() - 1] }}
           </button>
+
+          </div><!-- /op-hol-content -->
+          </div><!-- /op-hol-layout -->
         </div>
       </section>
       }

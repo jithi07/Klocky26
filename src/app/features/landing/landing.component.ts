@@ -1,5 +1,7 @@
-import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { OrgThemeService } from '../../core/services/org-theme.service';
+import { AppStateService } from '../../core/services/app-state.service';
 
 @Component({
   selector: 'app-landing',
@@ -9,9 +11,15 @@ import { Router } from '@angular/router';
   templateUrl: './landing.component.html',
   styleUrl: './landing.component.scss',
 })
-export class LandingComponent {
+export class LandingComponent implements OnInit {
+  private orgTheme = inject(OrgThemeService);
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private appState: AppStateService) {}
+
+  ngOnInit(): void {
+    this.orgTheme.reset();
+    this.appState.clearState();
+  }
 
   features = [
     {
@@ -60,6 +68,6 @@ export class LandingComponent {
   goLogin()     { this.closeMenu(); this.router.navigate(['/login']); }
   goRegister()  { this.closeMenu(); this.router.navigate(['/register']); }
   goTrial()     { this.closeMenu(); this.router.navigate(['/free-trial']); }
-  goDemo()      { this.closeMenu(); this.router.navigate(['/free-trial'], { queryParams: { mode: 'demo' } }); }
+  goDemo()      { this.closeMenu(); this.router.navigate(['/request-demo']); }
   goDashboard() { this.closeMenu(); this.router.navigate(['/app/dashboard']); }
 }

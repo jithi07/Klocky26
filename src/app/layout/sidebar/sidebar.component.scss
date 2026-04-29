@@ -5,22 +5,16 @@
 
 /* ─── Base ───────────────────────────────────────────────────────── */
 .sidebar {
-  --accent: #6366f1;
-
   width: 68px;
   height: 100vh;
-  background: #0d1117;
+  /* Always tint background with the active accent color */
+  background: color-mix(in srgb, var(--accent) 7%, #0d1117);
   display: flex;
   flex-direction: column;
   transition: width 0.26s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
   position: relative;
   flex-shrink: 0;
-}
-
-/* JV: tint the entire sidebar bg with the org's accent */
-.sidebar.is-jv {
-  background: color-mix(in srgb, var(--accent) 9%, #0d1117);
 }
 
 /* Expand on hover */
@@ -143,7 +137,8 @@
 
 /* ─── Nav links ──────────────────────────────────────────────────── */
 .nav-main a,
-.nav-bottom a {
+.nav-bottom a,
+.nav-logout {
   position: relative;
   display: flex;
   align-items: center;
@@ -151,7 +146,7 @@
   gap: 12px;
   padding: 0 2px;
   border-radius: 10px;
-  color: #4b5563;
+  color: rgba(255, 255, 255, .35);
   text-decoration: none;
   font-size: 13.5px;
   font-weight: 500;
@@ -159,17 +154,23 @@
   overflow: hidden;
   transition: background 0.15s ease, color 0.15s ease;
   letter-spacing: 0.1px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
 }
 
 .nav-main a:hover,
-.nav-bottom a:hover {
-  background: rgba(255, 255, 255, 0.04);
-  color: #94a3b8;
+.nav-bottom a:hover,
+.nav-logout:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, .72);
 }
 
 .nav-main a.active {
-  background: rgba(255, 255, 255, 0.055);
-  color: #e2e8f0;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: rgba(255, 255, 255, .92);
 }
 
 /* Left indicator bar — springs in on active */
@@ -200,14 +201,15 @@
   align-items: center;
   justify-content: center;
   border-radius: 9px;
-  color: #4b5563;
+  color: rgba(255, 255, 255, .3);
   flex-shrink: 0;
   transition: color 0.15s ease;
 }
 
 .nav-main a:hover .nav-icon,
-.nav-bottom a:hover .nav-icon {
-  color: #94a3b8;
+.nav-bottom a:hover .nav-icon,
+.nav-logout:hover .nav-icon {
+  color: rgba(255, 255, 255, .65);
 }
 
 /* Active icon: accent color */
@@ -264,7 +266,7 @@
 .by-klocky-text {
   font-size: 10.5px;
   font-weight: 600;
-  color: #2d3f55;
+  color: rgba(255, 255, 255, .2);
   letter-spacing: 0.3px;
 }
 

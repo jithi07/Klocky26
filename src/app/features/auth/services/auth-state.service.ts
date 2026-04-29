@@ -8,7 +8,7 @@ export type UserRole = 'admin' | 'employee';
 @Injectable({ providedIn: 'root' })
 export class AuthStateService {
   // ── Login flow ──────────────────────────────────────────────
-  readonly orgIdentifier = signal('');
+  readonly orgIdentifier = signal('globex');
   readonly orgDisplayName = signal('');
   readonly email = signal('');
   readonly userRole = signal<UserRole>('employee');
@@ -41,13 +41,13 @@ export class AuthStateService {
     this.orgIdentifier.set('');
     this.orgDisplayName.set('');
     this.email.set('');
-    this.titleService.setTitle('Klocky');
+    this.titleService.setTitle('Klock');
   }
 
   resetToOrgStep(): void {
     this.email.set('');
     this.orgIdentifier.set('');
     this.orgDisplayName.set('');
-    this.titleService.setTitle('Klocky');
+    this.titleService.setTitle('Klock');
   }
 }

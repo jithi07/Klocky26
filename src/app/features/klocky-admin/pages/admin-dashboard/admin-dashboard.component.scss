@@ -1,0 +1,367 @@
+$bg: #060c14;
+$surface: rgba(255,255,255,.03);
+$border: rgba(255,255,255,.07);
+$text: rgba(255,255,255,.88);
+$text-muted: rgba(255,255,255,.42);
+$accent: #0d9488;
+
+:host { display: block; }
+
+.ad-page {
+  padding: 32px 36px;
+  min-height: 100%;
+  position: relative;
+}
+
+// ── Header ────────────────────────────────────────────────────────────
+.ad-header {
+  margin-bottom: 28px;
+}
+
+.ad-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: $text;
+  letter-spacing: -.5px;
+  margin: 0 0 4px;
+}
+
+.ad-subtitle {
+  font-size: 13px;
+  color: $text-muted;
+  margin: 0;
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────
+.ad-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+
+  @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 560px) { grid-template-columns: 1fr; }
+}
+
+.ad-stat-card {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ad-stat-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+
+  &--teal   { background: rgba(13,148,136,.15); color: #5eead4; }
+  &--green  { background: rgba(16,185,129,.15); color: #6ee7b7; }
+  &--blue   { background: rgba(59,130,246,.15); color: #93c5fd; }
+  &--purple { background: rgba(139,92,246,.15); color: #c4b5fd; }
+}
+
+.ad-stat-value {
+  font-size: 26px;
+  font-weight: 800;
+  color: $text;
+  letter-spacing: -.5px;
+  line-height: 1;
+}
+
+.ad-stat-label {
+  font-size: 12px;
+  color: $text-muted;
+  margin-top: 3px;
+}
+
+// ── Table card ────────────────────────────────────────────────────────
+.ad-table-card {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.ad-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid $border;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ad-section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: $text;
+  margin: 0;
+}
+
+.ad-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ad-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid $border;
+  border-radius: 8px;
+  padding: 0 12px;
+  color: $text-muted;
+
+  &:focus-within { border-color: $accent; }
+}
+
+.ad-search {
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 8px 0;
+  font-size: 13px;
+  color: $text;
+  font-family: inherit;
+  width: 180px;
+
+  &::placeholder { color: $text-muted; }
+}
+
+.ad-filter {
+  background: rgba(255,255,255,.05);
+  border: 1px solid $border;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: $text;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+
+  option { background: #111827; }
+
+  &:focus { border-color: $accent; }
+}
+
+// ── Table ─────────────────────────────────────────────────────────────
+.ad-table-scroll { overflow-x: auto; }
+
+.ad-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th {
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    border-bottom: 1px solid $border;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 12px 16px;
+    color: $text;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+}
+
+.ad-tr {
+  cursor: pointer;
+  transition: background .15s;
+
+  &:hover td { background: rgba(255,255,255,.035); }
+  &:last-child td { border-bottom: none; }
+}
+
+.ad-text-muted { color: $text-muted !important; }
+
+.ad-empty {
+  text-align: center;
+  color: $text-muted;
+  padding: 40px !important;
+  font-size: 14px;
+}
+
+// ── Org cell ──────────────────────────────────────────────────────────
+.ad-org-cell { display: flex; align-items: center; gap: 12px; }
+
+.ad-org-avatar {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  background: rgba($accent, .15);
+  color: #5eead4;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.ad-org-name  { font-weight: 600; color: $text; font-size: 13.5px; }
+.ad-org-slug  { font-size: 11px; color: $text-muted; margin-top: 1px; }
+
+// ── Chips ─────────────────────────────────────────────────────────────
+@mixin chip($color, $bg) {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .3px;
+  color: $color;
+  background: $bg;
+}
+
+.ad-plan-chip {
+  &--free       { @include chip(#94a3b8, rgba(148,163,184,.12)); }
+  &--starter    { @include chip(#7dd3fc, rgba(125,211,252,.12)); }
+  &--pro        { @include chip(#a5b4fc, rgba(165,180,252,.12)); }
+  &--enterprise { @include chip(#fbbf24, rgba(251,191,36,.12));  }
+}
+
+.ad-status-chip {
+  &--active    { @include chip(#6ee7b7, rgba(110,231,183,.12)); }
+  &--suspended { @include chip(#fca5a5, rgba(252,165,165,.1));  }
+  &--pending   { @include chip(#fcd34d, rgba(252,211,77,.1));   }
+}
+
+// ── Action button ─────────────────────────────────────────────────────
+.ad-action-btn {
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: transparent;
+  color: $text-muted;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+
+  &:hover { border-color: rgba(255,255,255,.25); color: $text; }
+
+  &--danger { border-color: rgba(239,68,68,.25); color: #fca5a5;
+    &:hover { background: rgba(239,68,68,.1); } }
+}
+
+// ── Detail drawer ─────────────────────────────────────────────────────
+.ad-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 50;
+  animation: fade-in .2s ease;
+}
+
+.ad-drawer {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: 360px;
+  background: #0d1a26;
+  border-left: 1px solid $border;
+  z-index: 51;
+  display: flex;
+  flex-direction: column;
+  animation: slide-in .25s cubic-bezier(.16,1,.3,1);
+}
+
+@keyframes fade-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slide-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+.ad-drawer-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 20px 18px;
+  border-bottom: 1px solid $border;
+}
+
+.ad-drawer-avatar {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  background: rgba($accent, .15);
+  color: #5eead4;
+  font-size: 15px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.ad-drawer-name {
+  font-size: 16px; font-weight: 700; color: $text; margin: 0 0 2px;
+}
+
+.ad-drawer-slug { font-size: 12px; color: $text-muted; margin: 0; }
+
+.ad-drawer-close {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: $text-muted;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  transition: color .2s;
+
+  &:hover { color: $text; }
+}
+
+.ad-drawer-body { flex: 1; overflow-y: auto; padding: 20px; }
+
+.ad-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+  font-size: 13.5px;
+  gap: 12px;
+
+  &:last-child { border-bottom: none; }
+}
+
+.ad-detail-label {
+  font-size: 12px;
+  color: $text-muted;
+  font-weight: 500;
+}
+
+.ad-drawer-footer {
+  padding: 16px 20px;
+  border-top: 1px solid $border;
+}
+
+.ad-drawer-action {
+  width: 100%;
+  padding: 11px;
+  border-radius: 9px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: transparent;
+  color: $text-muted;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+
+  &:hover { border-color: rgba(255,255,255,.25); color: $text; }
+
+  &--danger { border-color: rgba(239,68,68,.25); color: #fca5a5;
+    &:hover { background: rgba(239,68,68,.1); } }
+}

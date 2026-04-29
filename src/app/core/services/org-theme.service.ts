@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
+import { ORG_THEMES } from '../config/org-themes.const';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // OrgTheme — the colour contract every organisation provides
@@ -20,48 +21,13 @@ export interface OrgTheme {
 // ─────────────────────────────────────────────────────────────────────────────
 // Built-in presets — swap or extend as organisations are onboarded
 // ─────────────────────────────────────────────────────────────────────────────
-const THEMES: Record<string, OrgTheme> = {
-  /** Default app theme — Deep Teal / Viridian */
-  default: {
-    accent:          '#0d9488',
-    accentDark:      '#0a6b63',
-    textAccent:      '#5eead4',
-    textAccentPale:  '#99f6e4',
-    pageBg:          '#c3d7d4',
-  },
+/** Slug used by the Klocky internal team — always maps to the default theme */
+export const KLOCKY_TEAM_SLUG = 'klock';
 
-  /** ── HARDCODED ORG THEMES ────────────────────────────────────────────── *
-   *  Replace "acme" / "globex" keys with real org slugs or IDs from your    *
-   *  backend. Later this entire map can be fetched via API and cached.       *
-   * ──────────────────────────────────────────────────────────────────────── */
+/** localStorage key for persisting the active org slug across page reloads */
+const STORAGE_KEY = 'klocky_org_slug';
 
-  /** Acme Corp — deep indigo */
-  acme: {
-    accent:          '#4f46e5',
-    accentDark:      '#3730a3',
-    textAccent:      '#a5b4fc',
-    textAccentPale:  '#c7d2fe',
-    pageBg:          '#07080f',
-  },
-
-  /** Globex Inc — warm amber */
-  globex: {
-    accent:          '#d97706',
-    accentDark:      '#b45309',
-    textAccent:      '#fcd34d',
-    textAccentPale:  '#fde68a',
-    pageBg:          '#0d0a03',
-  },
-
-  /** Stark Industries — rose */
-  stark: {
-    accent:          '#e11d48',
-    accentDark:      '#be123c',
-    textAccent:      '#fda4af',
-    textAccentPale:  '#fecdd3',
-    pageBg:          '#0d0408',
-  },
-};
+const THEMES: Record<string, OrgTheme> = ORG_THEMES;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Service
@@ -70,7 +36,7 @@ const THEMES: Record<string, OrgTheme> = {
 export class OrgThemeService {
 
   private readonly doc = inject(DOCUMENT) as Document;
-  private _current: OrgTheme = THEMES['default'];
+  private _current: OrgTheme = THEMES['globex'];
 
   // ── Apply by org slug / id ──────────────────────────────────────────────
 
@@ -89,10 +55,29 @@ export class OrgThemeService {
 
     this._current = theme;
     this._writeCssVars(theme);
+
+    // Persist so the theme survives page reloads
+    if (typeof orgSlugOrTheme === 'string') {
+      try { localStorage.setItem(STORAGE_KEY, orgSlugOrTheme); } catch { /* SSR / private-mode */ }
+    }
   }
 
-  /** Reset to the default app theme */
+  /**
+   * Re-apply the last org theme from localStorage.
+   * Call this in ShellComponent.ngOnInit so the theme is restored on reload.
+   */
+  restoreFromStorage(): void {
+    try {
+      const slug = localStorage.getItem(STORAGE_KEY);
+      this.apply(slug ?? 'default');
+    } catch {
+      this.apply('default');
+    }
+  }
+
+  /** Reset to the default app theme and clear persisted slug */
   reset(): void {
+    try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
     this.apply('default');
   }
 

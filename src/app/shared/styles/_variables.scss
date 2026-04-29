@@ -5,8 +5,10 @@
   --secondary: #22c55e;
   --danger: #ef4444;
 
-  --bg: #f9fafb;
-  --card-bg: #ffffff;
+  /* ── App shell backgrounds ─────────────────────────────────────── */
+  --app-bg:   #edf1f7;   /* elegant cool-neutral for inner app pages   */
+  --bg:       #edf1f7;   /* legacy alias — used by body                */
+  --card-bg:  #ffffff;   /* card surfaces                              */
 
   --text: #111827;
   --text-light: #6b7280;

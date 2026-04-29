@@ -11,3 +11,4 @@ export { IconUserComponent } from './icon-user.component';
 export { IconSearchComponent } from './icon-search.component';
 export { IconPaletteComponent } from './icon-palette.component';
 export { IconKlockyLogoComponent } from './icon-klocky-logo.component';
+export { IconAdminComponent } from './icon-admin.component';

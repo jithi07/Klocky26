@@ -1,4 +1,4 @@
-// ── Page shell ────────────────────────────────────────────────────────
+// ── Page shell ──────────────────────────────────────────────────────────────
 :host {
   display: block;
   max-width: 100%;
@@ -7,74 +7,43 @@
 
 .op-page {
   min-height: 100%;
-  background: var(--th-page-bg);
+  background: linear-gradient(160deg, #eef2f8 0%, #f0f4fa 60%, #ebf0f7 100%);
   padding-bottom: 80px;
   max-width: 100%;
   overflow-x: hidden;
   box-sizing: border-box;
   position: relative;
-
-  // Ambient orb 1
-  &::before {
-    content: '';
-    position: fixed; pointer-events: none;
-    width: 520px; height: 520px; border-radius: 50%;
-    background: radial-gradient(circle, rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .17) 0%, transparent 70%);
-    filter: blur(100px);
-    top: -180px; right: -80px;
-    animation: op-float1 22s ease-in-out infinite;
-    z-index: 0;
-  }
-  // Ambient orb 2
-  &::after {
-    content: '';
-    position: fixed; pointer-events: none;
-    width: 340px; height: 340px; border-radius: 50%;
-    background: radial-gradient(circle, rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .11) 0%, transparent 70%);
-    filter: blur(100px);
-    bottom: -100px; left: -60px;
-    animation: op-float2 28s ease-in-out infinite;
-    z-index: 0;
-  }
 }
 
-@keyframes op-float1 {
-  0%,100% { transform: translate(0,0); }
-  50%      { transform: translate(-28px,38px); }
-}
-@keyframes op-float2 {
-  0%,100% { transform: translate(0,0); }
-  50%     { transform: translate(22px,-28px); }
-}
-
+// ── Page header ─────────────────────────────────────────────────────────────
 .op-page-header {
   padding: 28px 32px 22px;
-  background: rgba(10,10,22,.85);
-  backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(255,255,255,.06);
+  background: #ffffff;
+  border-bottom: 1px solid #dde3ed;
   box-sizing: border-box;
   width: 100%;
-  position: relative; z-index: 1;
+  position: relative;
+  z-index: 1;
 }
 
 .op-title {
   margin: 0;
   font-size: 22px;
   font-weight: 800;
-  color: rgba(255,255,255,.92);
+  color: #0f172a;
   letter-spacing: -0.5px;
 }
 
 .op-subtitle {
   margin: 5px 0 0;
   font-size: 13.5px;
-  color: rgba(255,255,255,.36);
+  color: #64748b;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-// ── Two-column body ───────────────────────────────────────────────────
+// ── Two-column body ──────────────────────────────────────────────────────────
 .op-body {
   display: grid;
   grid-template-columns: 200px 1fr;
@@ -84,10 +53,11 @@
   gap: 0;
   box-sizing: border-box;
   min-width: 0;
-  position: relative; z-index: 1;
+  position: relative;
+  z-index: 1;
 }
 
-// ── Left nav ──────────────────────────────────────────────────────────
+// ── Left nav ─────────────────────────────────────────────────────────────────
 .op-sidenav {
   padding: 28px 16px 28px 0;
   position: sticky;
@@ -109,21 +79,23 @@
   cursor: pointer;
   border-radius: 9px;
   font-size: 13.5px;
-  color: rgba(255,255,255,.38);
+  color: #64748b;
   text-align: left;
   font-weight: 500;
   font-family: inherit;
   transition: background 0.12s, color 0.12s;
 
   &:hover {
-    background: rgba(255,255,255,.06);
-    color: rgba(255,255,255,.7);
+    background: #f1f5f9;
+    color: #334155;
   }
 
   &.active {
-    background: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .14);
-    color: var(--th-text-accent);
+    background: color-mix(in srgb, var(--accent, #6366f1) 12%, transparent);
+    color: var(--accent, #6366f1);
     font-weight: 650;
+    border-left: 3px solid var(--accent, #6366f1);
+    padding-left: 9px;
   }
 }
 
@@ -137,7 +109,7 @@
   opacity: 0.75;
 }
 
-// ── Content area ──────────────────────────────────────────────────────
+// ── Content area ─────────────────────────────────────────────────────────────
 .op-content {
   padding: 36px 0 28px;
   display: flex;
@@ -157,45 +129,44 @@
 }
 
 .op-section-header {
-  margin-bottom: 14px;
+  margin-bottom: 18px;
 
   h2 {
-    margin: 0 0 3px;
-    font-size: 15px;
-    font-weight: 700;
-    color: rgba(255,255,255,.82);
-    letter-spacing: -0.2px;
+    margin: 0 0 4px;
+    font-size: 17px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.4px;
   }
 
   p {
     margin: 0;
     font-size: 13px;
-    color: rgba(255,255,255,.32);
+    color: #64748b;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 }
 
-// ── Card ──────────────────────────────────────────────────────────────
+// ── Card ──────────────────────────────────────────────────────────────────────
 .op-card {
-  background: rgba(255,255,255,.04);
-  border: 1.5px solid rgba(255,255,255,.08);
+  background: #ffffff;
+  border: 1px solid #dde3ed;
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 2px 12px rgba(0,0,0,.24);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 4px 20px rgba(15, 23, 42, 0.06);
   min-width: 0;
   box-sizing: border-box;
   width: 100%;
 }
 
-// ── Form row / field ──────────────────────────────────────────────────
+// ── Form row / field ─────────────────────────────────────────────────────────
 .op-form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
   margin-bottom: 24px;
-
   &:last-child { margin-bottom: 0; }
 }
 
@@ -204,18 +175,16 @@
   flex-direction: column;
   gap: 6px;
   margin-bottom: 20px;
-
   &:last-child { margin-bottom: 0; }
 
   > label {
     font-size: 11.5px;
     font-weight: 600;
-    color: rgba(255,255,255,.45);
+    color: #374151;
     text-transform: uppercase;
     letter-spacing: .7px;
     line-height: 1;
-
-    .req { color: #f87171; margin-left: 2px; }
+    .req { color: #ef4444; margin-left: 2px; }
   }
 }
 
@@ -223,7 +192,7 @@
 .op-field-label {
   font-size: 11.5px;
   font-weight: 600;
-  color: rgba(255,255,255,.45);
+  color: #374151;
   text-transform: uppercase;
   letter-spacing: .7px;
   line-height: 1;
@@ -234,44 +203,44 @@
 .op-field-sep {
   margin-top: 4px;
   padding-top: 20px;
-  border-top: 1px solid rgba(255,255,255,.06);
+  border-top: 1px solid #e8ecf2;
 }
 
 .op-field-desc {
   margin: 0 0 10px;
   font-size: 12.5px;
-  color: rgba(255,255,255,.28);
+  color: #64748b;
 }
 
 .op-hint {
   font-size: 12px;
-  color: rgba(255,255,255,.25);
+  color: #94a3b8;
   line-height: 1.4;
 }
 
-// ── Text inputs ───────────────────────────────────────────────────────
+// ── Text inputs ──────────────────────────────────────────────────────────────
 input[type='text'],
 input[type='email'],
 input[type='url'],
 input[type='tel'],
 textarea {
-  border: 1.5px solid rgba(255,255,255,.09);
+  border: 1.5px solid #e2e8f0;
   border-radius: 12px;
   padding: 0 14px;
   height: 48px;
   font-size: 14.5px;
-  color: rgba(255,255,255,.88);
-  background: rgba(255,255,255,.055);
+  color: #0f172a;
+  background: #fff;
   font-family: inherit;
   transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
   outline: none;
 
-  &::placeholder { color: rgba(255,255,255,.2); }
+  &::placeholder { color: #94a3b8; }
 
   &:focus {
-    border-color: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .6);
-    background: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .045);
-    box-shadow: 0 0 0 4px rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .1);
+    border-color: var(--accent, #6366f1);
+    background: color-mix(in srgb, var(--accent, #6366f1) 4%, #fff);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, #6366f1) 12%, transparent);
   }
 }
 
@@ -283,19 +252,19 @@ textarea {
   line-height: 1.55;
 }
 
-// ── Select ────────────────────────────────────────────────────────────
+// ── Select ────────────────────────────────────────────────────────────────────
 .op-select-wrap {
   position: relative;
 
   select {
     width: 100%;
     height: 42px;
-    border: 1.5px solid rgba(255,255,255,.1);
+    border: 1.5px solid #e2e8f0;
     border-radius: 10px;
     padding: 0 36px 0 14px;
     font-size: 14px;
-    color: rgba(255,255,255,.88);
-    background: rgba(255,255,255,.06);
+    color: #0f172a;
+    background: #fff;
     appearance: none;
     cursor: pointer;
     outline: none;
@@ -303,8 +272,8 @@ textarea {
     transition: border-color 0.15s, box-shadow 0.15s;
 
     &:focus {
-      border-color: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .6);
-      box-shadow: 0 0 0 3px rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .12);
+      border-color: var(--accent, #6366f1);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, #6366f1) 12%, transparent);
     }
   }
 
@@ -320,7 +289,7 @@ textarea {
   color: #94a3b8;
 }
 
-// ── Logo upload ───────────────────────────────────────────────────────
+// ── Logo upload ───────────────────────────────────────────────────────────────
 .op-logo-upload {
   display: flex;
   align-items: center;
@@ -339,6 +308,7 @@ textarea {
   font-weight: 800;
   color: white;
   letter-spacing: -1px;
+  background: color-mix(in srgb, var(--accent, #6366f1) 20%, transparent);
 
   img {
     width: 100%;
@@ -363,7 +333,7 @@ textarea {
 
 .op-hidden { display: none; }
 
-// ── Color swatches ────────────────────────────────────────────────────
+// ── Color swatches ────────────────────────────────────────────────────────────
 .op-swatch-row {
   display: flex;
   align-items: center;
@@ -392,29 +362,29 @@ textarea {
 }
 
 .op-swatch-custom {
-  background: rgba(255,255,255,.07) !important;
-  border: 1.5px dashed rgba(255,255,255,.2) !important;
+  background: #f8fafc !important;
+  border: 1.5px dashed #cbd5e1 !important;
 
-  &:hover { background: rgba(255,255,255,.12) !important; }
+  &:hover { background: #f1f5f9 !important; }
 
-  svg { stroke: rgba(255,255,255,.45); }
+  svg { stroke: #94a3b8; }
 }
 
-// ── Brand preview ─────────────────────────────────────────────────────
+// ── Brand preview ─────────────────────────────────────────────────────────────
 .op-brand-preview {
   display: flex;
   align-items: center;
   gap: 14px;
   padding: 14px 18px;
-  background: rgba(255,255,255,.04);
+  background: #f8fafc;
   border-radius: 12px;
-  border: 1.5px solid rgba(255,255,255,.08);
+  border: 1.5px solid #e2e8f0;
 }
 
 .op-bp-label {
   font-size: 11.5px;
   font-weight: 600;
-  color: rgba(255,255,255,.28);
+  color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   white-space: nowrap;
@@ -456,7 +426,7 @@ textarea {
   transition: background 0.2s;
 }
 
-// ── Secondary email list ──────────────────────────────────────────────
+// ── Secondary email list ──────────────────────────────────────────────────────
 .op-email-list {
   display: flex;
   flex-direction: column;
@@ -467,7 +437,6 @@ textarea {
   display: flex;
   gap: 8px;
   align-items: center;
-
   input { flex: 1; }
 }
 
@@ -484,7 +453,6 @@ textarea {
   align-items: center;
   justify-content: center;
   transition: background 0.12s;
-
   &:hover { background: #fee2e2; }
 }
 
@@ -511,7 +479,7 @@ textarea {
   }
 }
 
-// ── Office cards ──────────────────────────────────────────────────────
+// ── Office cards ──────────────────────────────────────────────────────────────
 .op-office-card {
   margin-bottom: 12px;
 }
@@ -529,7 +497,7 @@ textarea {
   gap: 5px;
   font-size: 12px;
   font-weight: 700;
-  color: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .7);
+  color: var(--accent, #6366f1);
   text-transform: uppercase;
   letter-spacing: 0.6px;
 }
@@ -548,7 +516,6 @@ textarea {
   font-family: inherit;
   cursor: pointer;
   transition: background 0.12s;
-
   &:hover { background: #fee2e2; }
 }
 
@@ -577,22 +544,21 @@ textarea {
   }
 }
 
-// ── Band / pill grid ──────────────────────────────────────────────────
+// ── Band / pill grid ──────────────────────────────────────────────────────────
 .op-band-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-
   &.op-band-grid-sm { grid-template-columns: repeat(2, 1fr); }
 }
 
 .op-band-btn {
   padding: 9px 8px;
-  border: 1.5px solid rgba(255,255,255,.1);
+  border: 1.5px solid #e2e8f0;
   border-radius: 9px;
-  background: rgba(255,255,255,.04);
+  background: #f8fafc;
   font-size: 13px;
-  color: rgba(255,255,255,.5);
+  color: #64748b;
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
@@ -600,19 +566,20 @@ textarea {
   transition: border-color 0.12s, color 0.12s, background 0.12s;
 
   &:hover {
-    border-color: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .5);
-    color: var(--th-text-accent);
+    border-color: color-mix(in srgb, var(--accent, #6366f1) 50%, transparent);
+    color: var(--accent, #6366f1);
   }
 
   &.selected {
-    border-color: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .6);
-    background: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .15);
-    color: var(--th-text-accent);
+    border-color: var(--accent, #6366f1);
+    background: var(--accent, #6366f1);
+    color: #fff;
     font-weight: 650;
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--accent, #6366f1) 35%, transparent);
   }
 }
 
-// ── Button variants ───────────────────────────────────────────────────
+// ── Button variants ───────────────────────────────────────────────────────────
 .op-btn-outline {
   display: inline-flex;
   align-items: center;
@@ -627,7 +594,6 @@ textarea {
   font-family: inherit;
   cursor: pointer;
   transition: border-color 0.12s, background 0.12s;
-
   &:hover { border-color: #c7d2e0; background: #f8fafc; }
 }
 
@@ -642,11 +608,10 @@ textarea {
   cursor: pointer;
   border-radius: 8px;
   transition: background 0.12s;
-
   &:hover { background: #fff5f5; }
 }
 
-// ── Discard confirmation modal ───────────────────────────────────────
+// ── Discard confirmation modal ────────────────────────────────────────────────
 .op-confirm-backdrop {
   position: fixed;
   inset: 0;
@@ -676,7 +641,7 @@ textarea {
 
 @keyframes slide-up {
   from { opacity: 0; transform: translateY(20px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
 }
 
 .op-confirm-icon {
@@ -723,7 +688,6 @@ textarea {
   font-family: inherit;
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s;
-
   &:hover { background: #f8fafc; border-color: #cbd5e1; }
 }
 
@@ -739,11 +703,10 @@ textarea {
   font-family: inherit;
   cursor: pointer;
   transition: background 0.12s, box-shadow 0.12s;
-
   &:hover { background: #dc2626; box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35); }
 }
 
-// ── Floating save bar ─────────────────────────────────────────────────
+// ── Floating save bar ─────────────────────────────────────────────────────────
 .op-save-bar {
   position: fixed;
   bottom: 24px;
@@ -791,7 +754,6 @@ textarea {
   font-family: inherit;
   cursor: pointer;
   transition: background 0.12s, color 0.12s;
-
   &:hover { background: rgba(255, 255, 255, 0.14); color: #cbd5e1; }
 }
 
@@ -826,20 +788,22 @@ textarea {
 
 @keyframes op-spin { to { transform: rotate(360deg); } }
 
-// ── Group label (section divider inside card) ─────────────────────────
+// ── Group label (section divider inside card) ─────────────────────────────────
 .op-field-group-label {
   font-size: 10.5px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: rgb(var(--th-lr) var(--th-lg) var(--th-lb) / .6);
+  color: var(--accent, #6366f1);
   margin-bottom: 16px;
+  padding-left: 10px;
+  border-left: 3px solid color-mix(in srgb, var(--accent, #6366f1) 50%, transparent);
 
   & + .op-form-row,
   & + .op-field { margin-top: 0; }
 }
 
-// ── Number stepper ────────────────────────────────────────────────────
+// ── Number stepper ────────────────────────────────────────────────────────────
 .op-number-wrap {
   display: inline-flex;
   align-items: center;
@@ -849,16 +813,16 @@ textarea {
 .op-stepper {
   display: inline-flex;
   align-items: center;
-  background: rgba(255,255,255,.055);
-  border: 1.5px solid rgba(255,255,255,.09);
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
   border-radius: 12px;
   overflow: hidden;
   height: 48px;
   transition: border-color 0.2s, box-shadow 0.2s;
 
   &:focus-within {
-    border-color: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .6);
-    box-shadow: 0 0 0 4px rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .1);
+    border-color: var(--accent, #6366f1);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, #6366f1) 12%, transparent);
   }
 }
 
@@ -866,8 +830,8 @@ textarea {
   width: 38px;
   height: 100%;
   border: none;
-  background: rgba(255,255,255,.04);
-  color: rgba(255,255,255,.5);
+  background: #f8fafc;
+  color: #64748b;
   font-size: 18px;
   font-weight: 400;
   line-height: 1;
@@ -879,13 +843,13 @@ textarea {
   transition: background 0.12s, color 0.12s;
   font-family: inherit;
 
-  &:hover { background: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .15); color: var(--th-text-accent); }
-  &:active { background: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .25); }
+  &:hover { background: color-mix(in srgb, var(--accent, #6366f1) 10%, transparent); color: var(--accent, #6366f1); }
+  &:active { background: color-mix(in srgb, var(--accent, #6366f1) 18%, transparent); }
   &:disabled { opacity: 0.25; cursor: not-allowed; }
 }
 
-.op-stepper-minus { border-right: 1px solid rgba(255,255,255,.08); }
-.op-stepper-plus  { border-left:  1px solid rgba(255,255,255,.08); }
+.op-stepper-minus { border-right: 1px solid #e2e8f0; }
+.op-stepper-plus  { border-left:  1px solid #e2e8f0; }
 
 .op-stepper-val {
   width: 52px;
@@ -893,13 +857,14 @@ textarea {
   text-align: center;
   font-size: 15px;
   font-weight: 650;
-  color: rgba(255,255,255,.88);
+  color: #0f172a;
   border: none;
   outline: none;
   background: transparent;
   font-family: inherit;
   padding: 0 4px;
   -moz-appearance: textfield;
+
   &::-webkit-inner-spin-button,
   &::-webkit-outer-spin-button { appearance: none; margin: 0; }
 }
@@ -907,12 +872,12 @@ textarea {
 .op-number-unit {
   font-size: 12.5px;
   font-weight: 500;
-  color: rgba(255,255,255,.3);
+  color: #64748b;
   white-space: nowrap;
   padding: 0 2px;
 }
 
-// ── Toggle switch row ─────────────────────────────────────────────────
+// ── Toggle switch row ─────────────────────────────────────────────────────────
 // Row separators for ui-toggle [row] components inside cards
 ui-toggle + ui-toggle {
   border-top: 1px solid #f1f5f9;
@@ -925,7 +890,6 @@ ui-toggle + ui-toggle {
   align-items: center;
   cursor: pointer;
   flex-shrink: 0;
-
   input { position: absolute; opacity: 0; width: 0; height: 0; }
 }
 
@@ -950,8 +914,8 @@ ui-toggle + ui-toggle {
   height: 16px;
   background: white;
   border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.18);
-  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 
   .op-toggle input:checked ~ .op-toggle-track & {
     transform: translateX(18px);
@@ -961,25 +925,24 @@ ui-toggle + ui-toggle {
 .op-toggle-sub {
   margin-top: 12px;
   padding: 14px 16px;
-  background: rgba(255,255,255,.04);
+  background: #f8fafc;
   border-radius: 10px;
-  border: 1.5px solid rgba(255,255,255,.08);
+  border: 1.5px solid #e2e8f0;
   margin-bottom: 0;
 }
 
-// ── Info box ──────────────────────────────────────────────────────────
+// ── Info box ──────────────────────────────────────────────────────────────────
 .op-info-box {
   display: flex;
   align-items: flex-start;
   gap: 8px;
   padding: 12px 14px;
-  background: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .08);
-  border: 1.5px solid rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .2);
+  background: color-mix(in srgb, var(--accent, #6366f1) 8%, transparent);
+  border: 1.5px solid color-mix(in srgb, var(--accent, #6366f1) 25%, transparent);
   border-radius: 10px;
   font-size: 12.5px;
-  color: var(--th-text-accent);
+  color: var(--accent, #6366f1);
   line-height: 1.5;
-
   svg { flex-shrink: 0; margin-top: 1px; }
 }
 
@@ -988,7 +951,7 @@ ui-toggle + ui-toggle {
   align-items: center;
 }
 
-// ── Custom leave type table ───────────────────────────────────────────
+// ── Custom leave type table ───────────────────────────────────────────────────
 .op-lt-header,
 .op-lt-row {
   display: grid;
@@ -1015,7 +978,6 @@ ui-toggle + ui-toggle {
   padding: 8px 4px;
   border-bottom: 1px solid #f8fafc;
   transition: background 0.1s;
-
   &:hover { background: #fafbfc; border-radius: 8px; }
   &:last-child { border-bottom: none; }
 }
@@ -1023,10 +985,8 @@ ui-toggle + ui-toggle {
 .op-lt-col {
   display: flex;
   align-items: center;
-
   &.op-lt-paid,
   &.op-lt-carry { justify-content: center; }
-
   &.op-lt-action { justify-content: center; }
 }
 
@@ -1108,7 +1068,6 @@ ui-toggle + ui-toggle {
   align-items: center;
   justify-content: center;
   transition: background 0.12s, color 0.12s;
-
   &:hover { background: #fff1f2; color: #ef4444; }
 }
 
@@ -1119,21 +1078,44 @@ ui-toggle + ui-toggle {
   color: #94a3b8;
 }
 
-// ── Holiday Calendar ──────────────────────────────────────────────────
+// ── Holiday Calendar ──────────────────────────────────────────────────────────
+// Desktop: vertical month sidebar + content area side by side
+.op-hol-layout {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 0 20px;
+  align-items: start;
+}
 
-// Month tab strip
+// Month list — vertical on desktop
 .op-hol-months {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-bottom: 20px;
+  flex-direction: column;
+  gap: 3px;
+  max-height: 420px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #e2e8f0 transparent;
+  margin-bottom: 0;
+  padding-right: 4px;
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
 }
+
+// Content area (header + rows + add btn)
+.op-hol-content {
+  min-width: 0;
+}
+
 
 .op-hol-month-tab {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 5px;
-  padding: 6px 12px;
+  padding: 7px 10px;
   border: 1.5px solid #e2e8f0;
   border-radius: 9px;
   background: white;
@@ -1143,17 +1125,22 @@ ui-toggle + ui-toggle {
   font-family: inherit;
   cursor: pointer;
   transition: all 0.12s;
+  white-space: nowrap;
+  width: 100%;
+  text-align: left;
 
   &:hover {
     border-color: color-mix(in srgb, var(--accent, #6366f1) 50%, transparent);
     color: var(--accent, #6366f1);
+    background: color-mix(in srgb, var(--accent, #6366f1) 4%, transparent);
   }
 
   &.active {
     border-color: var(--accent, #6366f1);
-    background: color-mix(in srgb, var(--accent, #6366f1) 10%, transparent);
-    color: var(--accent, #6366f1);
+    background: var(--accent, #6366f1);
+    color: white;
     font-weight: 650;
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--accent, #6366f1) 30%, transparent);
   }
 }
 
@@ -1198,7 +1185,6 @@ ui-toggle + ui-toggle {
 .op-hol-row {
   padding: 8px 4px;
   border-bottom: 1px solid #f8fafc;
-
   &:hover { background: #fafbfc; border-radius: 8px; }
   &:last-child { border-bottom: none; }
 }
@@ -1231,7 +1217,6 @@ ui-toggle + ui-toggle {
     padding: 0 8px;
 
     &:not(:last-child) { border-right: 1px solid #e2e8f0; }
-
     &:not(.active):hover { background: #f8fafc; }
 
     &.active {
@@ -1257,19 +1242,33 @@ ui-toggle + ui-toggle {
 
 // Responsive holiday table
 @media (max-width: 740px) {
+  // Switch to horizontal scroll layout on mobile
+  .op-hol-layout {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
   .op-hol-months {
+    flex-direction: row;
     flex-wrap: nowrap;
     overflow-x: auto;
+    overflow-y: hidden;
+    max-height: none;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    gap: 5px;
+    margin-bottom: 16px;
+    padding-right: 0;
     padding-bottom: 4px;
     &::-webkit-scrollbar { display: none; }
   }
 
   .op-hol-month-tab {
     flex-shrink: 0;
-    padding: 6px 10px;
-    font-size: 12px;
+    width: auto;
+    padding: 6px 12px;
+    font-size: 12.5px;
+    justify-content: flex-start;
   }
 
   .op-hol-header { display: none; }
@@ -1294,12 +1293,7 @@ ui-toggle + ui-toggle {
   .op-hol-type-seg { width: 100%; button { flex: 1; font-size: 12px; padding: 0 4px; } }
 }
 
-// ── Responsive custom leave (mobile) ─────────────────────────────────
-// DOM order: name, days, applies, paid, carry, action
-// Mobile layout (3 rows):
-//   row1: name(spans 3 cols)  | action
-//   row2: days(col1)          | applies(spans 3 cols)
-//   row3: paid(spans 2 cols)  | carry(spans 2 cols)
+// ── Responsive custom leave (mobile) ─────────────────────────────────────────
 @media (max-width: 740px) {
   .op-lt-header { display: none; }
 
@@ -1327,7 +1321,7 @@ ui-toggle + ui-toggle {
   .op-lt-carry::before { content: 'Carry Fwd'; font-size: 11px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
 }
 
-// ── Responsive ────────────────────────────────────────────────────────
+// ── Responsive ────────────────────────────────────────────────────────────────
 @media (max-width: 900px) {
   .op-body {
     grid-template-columns: 1fr;
@@ -1335,11 +1329,10 @@ ui-toggle + ui-toggle {
   }
 
   .op-sidenav { display: none; }
-
   .op-content { padding: 20px 0; }
 }
 
-// ── Mobile tab strip ───────────────────────────────────────────────────
+// ── Mobile tab strip ──────────────────────────────────────────────────────────
 .op-mobile-tabs {
   display: none; // hidden on desktop
 }
@@ -1352,9 +1345,8 @@ ui-toggle + ui-toggle {
     scrollbar-width: none;
     gap: 6px;
     padding: 14px 20px 16px;
-    border-bottom: 1px solid rgba(255,255,255,.06);
+    border-bottom: 1px solid #e8ecf2;
     margin-bottom: 0;
-
     &::-webkit-scrollbar { display: none; }
   }
 
@@ -1365,12 +1357,12 @@ ui-toggle + ui-toggle {
     white-space: nowrap;
     flex-shrink: 0;
     padding: 8px 14px;
-    border: 1.5px solid rgba(255,255,255,.1);
+    border: 1.5px solid #e2e8f0;
     border-radius: 20px;
-    background: rgba(255,255,255,.04);
+    background: #ffffff;
     font-size: 13px;
     font-weight: 500;
-    color: rgba(255,255,255,.4);
+    color: #64748b;
     font-family: inherit;
     cursor: pointer;
     transition: all 0.14s;
@@ -1378,14 +1370,14 @@ ui-toggle + ui-toggle {
     svg { flex-shrink: 0; opacity: 0.7; }
 
     &:hover {
-      border-color: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .5);
-      color: var(--th-text-accent);
+      border-color: color-mix(in srgb, var(--accent, #6366f1) 50%, transparent);
+      color: var(--accent, #6366f1);
     }
 
     &.active {
-      background: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .18);
-      border-color: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .5);
-      color: var(--th-text-accent);
+      background: color-mix(in srgb, var(--accent, #6366f1) 10%, transparent);
+      border-color: var(--accent, #6366f1);
+      color: var(--accent, #6366f1);
       font-weight: 650;
 
       svg { opacity: 1; }
@@ -1393,11 +1385,40 @@ ui-toggle + ui-toggle {
   }
 }
 
+// ── ui-toggle light-theme overrides ──────────────────────────────────────────
+// The toggle component defaults to white labels (designed for dark backgrounds).
+// Force-override all text + track colors for the light org-profile page.
+:host ::ng-deep ui-toggle {
+  --ui-toggle-label: #0f172a;
+  --ui-toggle-hint: #64748b;
+
+  // Direct color overrides (CSS vars alone may not pierce encapsulation)
+  .toggle-main-label {
+    color: #0f172a !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+  }
+
+  .toggle-hint {
+    color: #64748b !important;
+    font-size: 12.5px !important;
+  }
+
+  // Off-state track — visible on white bg
+  .track:not(.on) {
+    background: #cbd5e1 !important;
+  }
+
+  // Row separators between stacked toggles
+  .ui-toggle-wrap.is-row {
+    border-top: 1px solid #f1f5f9;
+    padding: 14px 0;
+  }
+}
+
 @media (max-width: 640px) {
   .op-page-header { padding: 20px 16px 16px; }
-
   .op-body { padding: 0 10px; }
-
   .op-card { padding: 16px; border-radius: 12px; }
 
   .op-form-row {
@@ -1406,12 +1427,9 @@ ui-toggle + ui-toggle {
   }
 
   .op-band-grid { grid-template-columns: repeat(2, 1fr); }
-
   .op-band-btn { padding: 12px 8px; font-size: 13.5px; }
-
   .op-add-btn { width: 100%; justify-content: center; }
 
-  // ── Branding section ──────────────────────────────────────────
   .op-logo-upload {
     flex-direction: column;
     align-items: flex-start;
@@ -1468,208 +1486,3 @@ ui-toggle + ui-toggle {
     justify-content: space-between;
   }
 }
-
-// ═══════════════════════════════════════════════════════════════════
-//  Dark-theme overrides — bulk-reset remaining light-colored classes
-// ═══════════════════════════════════════════════════════════════════
-
-// ── ui-input dark override ────────────────────────────────────────────
-:host ::ng-deep ui-input {
-  .ui-label { color: rgba(255,255,255,.45); text-transform: uppercase; font-size: 11.5px; letter-spacing: .7px; }
-  .ui-input-wrap {
-    background: rgba(255,255,255,.055);
-    border-color: rgba(255,255,255,.09);
-    border-radius: 12px;
-    &:focus-within {
-      border-color: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .6);
-      background: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .04);
-      box-shadow: 0 0 0 4px rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .1);
-    }
-  }
-  .ui-input {
-    color: rgba(255,255,255,.88);
-    font-size: 14.5px;
-    height: 48px;
-    &::placeholder { color: rgba(255,255,255,.2); }
-  }
-  .ui-hint  { color: rgba(255,255,255,.25); }
-  .ui-error { color: #f87171; }
-}
-
-// ── ui-textarea dark override ─────────────────────────────────────────
-:host ::ng-deep ui-textarea {
-  label { color: rgba(255,255,255,.45); text-transform: uppercase; font-size: 11.5px; letter-spacing: .7px; }
-  textarea {
-    background: rgba(255,255,255,.055);
-    border: 1.5px solid rgba(255,255,255,.09);
-    border-radius: 12px;
-    color: rgba(255,255,255,.88);
-    &::placeholder { color: rgba(255,255,255,.2); }
-    &:focus {
-      border-color: rgba(99,102,241,.6);
-      box-shadow: 0 0 0 4px rgba(99,102,241,.1);
-    }
-  }
-  .ui-hint { color: rgba(255,255,255,.25); }
-}
-
-// ── ui-toggle dark override ───────────────────────────────────────────
-:host ::ng-deep ui-toggle {
-  .toggle-main-label { color: rgba(255,255,255,.82); }
-  .toggle-hint       { color: rgba(255,255,255,.32); }
-  .ui-toggle-wrap.is-row { border-top: none; }
-}
-
-// ── ui-select label dark (already handled via [dark] input) ──────────
-
-// Select wrap (native select used in some places)
-.op-select-wrap select {
-  background: rgba(255,255,255,.055);
-  border-color: rgba(255,255,255,.09);
-  color: rgba(255,255,255,.88);
-  &:focus {
-    border-color: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .6);
-    box-shadow: 0 0 0 4px rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .1);
-  }
-}
-
-// Logo avatar bg fallback
-.op-logo-avatar { background: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .2); }
-
-// Add buttons
-.op-add-btn {
-  border-color: rgba(255,255,255,.12);
-  color: rgba(255,255,255,.36);
-  &:hover {
-    border-color: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .5);
-    color: var(--th-text-accent);
-    background: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .08);
-  }
-}
-.op-add-office-btn {
-  border-color: rgba(255,255,255,.1);
-  color: rgba(255,255,255,.28);
-  &:hover {
-    border-color: rgba(99,102,241,.5);
-    color: #a5b4fc;
-    background: rgba(99,102,241,.06);
-  }
-}
-
-// Outline buttons
-.op-btn-outline {
-  background: rgba(255,255,255,.055);
-  border-color: rgba(255,255,255,.1);
-  color: rgba(255,255,255,.7);
-  &:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.2); }
-}
-.op-btn-ghost-red {
-  color: #f87171;
-  &:hover { background: rgba(248,113,113,.1); }
-}
-
-// Remove office/icon
-.op-remove-office {
-  background: rgba(248,113,113,.1);
-  border-color: rgba(248,113,113,.2);
-  color: #f87171;
-  &:hover { background: rgba(248,113,113,.18); }
-}
-.op-icon-remove {
-  background: rgba(248,113,113,.1);
-  border-color: rgba(248,113,113,.2);
-  color: #f87171;
-  &:hover { background: rgba(248,113,113,.18); }
-}
-
-// Email row input
-.op-email-list input[type='email'] {
-  background: rgba(255,255,255,.055);
-  border-color: rgba(255,255,255,.09);
-  color: rgba(255,255,255,.88);
-}
-
-// Office tag secondary text
-.op-office-tag svg { color: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .7); }
-
-// Confirm box (discard modal)
-.op-confirm-box {
-  background: #161628;
-  border: 1.5px solid rgba(255,255,255,.08);
-}
-.op-confirm-title { color: rgba(255,255,255,.9); }
-.op-confirm-body  { color: rgba(255,255,255,.4); }
-.op-confirm-icon  { background: rgba(249,115,22,.1); }
-.op-confirm-keep {
-  background: rgba(255,255,255,.055);
-  border-color: rgba(255,255,255,.1);
-  color: rgba(255,255,255,.7);
-  &:hover { background: rgba(255,255,255,.1); }
-}
-
-// Save bar
-.op-save-msg { color: rgba(255,255,255,.4); }
-
-// Custom leave table
-.op-lt-header { border-bottom-color: rgba(255,255,255,.07); }
-.op-lt-header .op-lt-col { color: rgba(255,255,255,.3); }
-.op-lt-row {
-  border-bottom-color: rgba(255,255,255,.05);
-  &:hover { background: rgba(255,255,255,.03); }
-}
-
-.op-lt-input {
-  background: rgba(255,255,255,.055);
-  border-color: rgba(255,255,255,.09);
-  color: rgba(255,255,255,.88);
-  &::placeholder { color: rgba(255,255,255,.2); }
-  &:focus {
-    border-color: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .6);
-    box-shadow: 0 0 0 3px rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .1);
-  }
-}
-.op-lt-seg {
-  border-color: rgba(255,255,255,.09);
-  button {
-    background: rgba(255,255,255,.04);
-    color: rgba(255,255,255,.38);
-    &:not(:last-child) { border-right-color: rgba(255,255,255,.08); }
-    &:not(.active):hover { background: rgba(255,255,255,.08); }
-    &.active { color: #fff; }
-  }
-}
-.op-lt-remove { color: rgba(255,255,255,.22); &:hover { background: rgba(248,113,113,.1); color: #f87171; } }
-.op-lt-empty  { color: rgba(255,255,255,.25); }
-
-// Holiday table
-.op-hol-months .op-hol-month-tab {
-  background: rgba(255,255,255,.04);
-  border-color: rgba(255,255,255,.1);
-  color: rgba(255,255,255,.4);
-  &:hover { border-color: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .5); color: var(--th-text-accent); }
-  &.active {
-    background: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .15);
-    border-color: rgb(var(--th-ar) var(--th-ag) var(--th-ab) / .5);
-    color: var(--th-text-accent);
-  }
-}
-.op-hol-header { border-bottom-color: rgba(255,255,255,.07); }
-.op-hol-header .op-hol-col { color: rgba(255,255,255,.3); }
-.op-hol-row {
-  border-bottom-color: rgba(255,255,255,.05);
-  &:hover { background: rgba(255,255,255,.03); }
-}
-.op-hol-type-seg {
-  border-color: rgba(255,255,255,.09);
-  button {
-    background: rgba(255,255,255,.04);
-    color: rgba(255,255,255,.38);
-    &:not(:last-child) { border-right-color: rgba(255,255,255,.08); }
-    &:not(.active):hover { background: rgba(255,255,255,.08); }
-  }
-}
-.op-hol-empty { color: rgba(255,255,255,.25); }
-
-// Toggle track (custom leave / attendance table)
-.op-toggle-track { background: rgba(255,255,255,.12); }
-.op-field-group-label { color: rgb(var(--th-lr) var(--th-lg) var(--th-lb) / .65); }

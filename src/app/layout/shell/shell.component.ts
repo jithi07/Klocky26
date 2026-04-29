@@ -4,6 +4,7 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
 import { HeaderComponent } from '../header/header.component';
 import { UiToastContainerComponent, UiModalOutletComponent } from '../../shared/components';
 import { Subscription, filter } from 'rxjs';
+import { OrgThemeService } from '../../core/services/org-theme.service';
 
 @Component({
   selector: 'klocky-shell',
@@ -16,15 +17,20 @@ export class ShellComponent implements OnInit, OnDestroy {
   isSidebarOpen = false;
   private _routerSub?: Subscription;
 
-  // Joint-venture branding — set orgName (and optionally orgLogoUrl + orgAccentColor) to activate JV mode.
-  // Leave empty for default Klocky-only branding.
-  orgName = 'TEST Company';
+  // Joint-venture branding — populated when an org is active.
+  orgName = '';
   orgLogoUrl = '';
-  orgAccentColor = '#958427e5';  // e.g. '#10b981' for green
 
-  constructor(private router: Router) {}
+  get orgAccentColor(): string {
+    return this.orgTheme.current.accent;
+  }
+
+  constructor(private router: Router, private orgTheme: OrgThemeService) {}
 
   ngOnInit() {
+    // Restore org theme from previous session so accent/colors are correct on reload
+    this.orgTheme.restoreFromStorage();
+
     this._routerSub = this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe(() => { this.isSidebarOpen = false; });

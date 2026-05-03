@@ -1,0 +1,198 @@
+:host { display: block; }
+
+.fr-page {
+  padding: 28px 32px;
+  max-width: 760px;
+  @media (max-width: 600px) { padding: 18px 16px; }
+}
+
+/* ── Header ──────────────────────────────────────────────── */
+.fr-header { margin-bottom: 24px; }
+.fr-title   { font-size: 20px; font-weight: 800; color: #1e293b; margin: 0 0 4px; }
+.fr-subtitle { font-size: 13.5px; color: #64748b; margin: 0; }
+
+/* ── Success banner ──────────────────────────────────────── */
+.fr-success-banner {
+  display: flex; align-items: center; gap: 10px;
+  background: #f0fdf4; border: 1px solid #86efac;
+  border-radius: 12px; padding: 12px 18px; margin-bottom: 20px;
+  font-size: 14px; color: #166534;
+  strong { font-weight: 700; }
+}
+.fr-success-icon {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: #22c55e; color: #fff; font-size: 14px; font-weight: 900;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+
+/* ── Enrol bar ───────────────────────────────────────────── */
+.fr-enroll-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.fr-count { font-size: 13px; color: #64748b; font-weight: 600; }
+.fr-add-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 20px; border: none; border-radius: 10px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff; font-size: 13.5px; font-weight: 700; cursor: pointer;
+  font-family: inherit; transition: opacity .15s;
+  &:hover { opacity: .88; }
+}
+
+/* ── Empty state ─────────────────────────────────────────── */
+.fr-empty {
+  text-align: center; padding: 52px 20px;
+  background: #f8fafc; border: 1.5px dashed #cbd5e1;
+  border-radius: 16px;
+}
+.fr-empty-icon { font-size: 48px; margin-bottom: 14px; }
+.fr-empty p { font-size: 14px; color: #64748b; margin: 0; line-height: 1.6;
+  strong { color: #6366f1; }
+}
+
+/* ── Roster list ─────────────────────────────────────────── */
+.fr-list { display: flex; flex-direction: column; gap: 10px; }
+.fr-card {
+  display: flex; align-items: center; gap: 14px;
+  background: #fff; border: 1px solid #e2e8f0;
+  border-radius: 14px; padding: 14px 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.04);
+}
+.fr-card-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff; font-size: 18px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.fr-card-info { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fr-card-name { font-size: 14.5px; font-weight: 700; color: #1e293b; }
+.fr-card-id   { font-size: 11px; font-family: monospace; color: #6366f1;
+                 background: #eef2ff; padding: 1px 6px; border-radius: 4px; width: fit-content; }
+.fr-card-date { font-size: 11.5px; color: #94a3b8; }
+.fr-remove-btn {
+  width: 34px; height: 34px; border-radius: 9px;
+  background: rgba(239,68,68,.08); border: none;
+  color: #ef4444; cursor: pointer; display: flex;
+  align-items: center; justify-content: center; flex-shrink: 0;
+  transition: background .15s;
+  &:hover { background: rgba(239,68,68,.16); }
+}
+
+/* ── Camera wrap ─────────────────────────────────────────── */
+.fr-cam-wrap { display: flex; flex-direction: column; gap: 0; }
+
+.fr-name-row {
+  margin-bottom: 14px;
+}
+.fr-name-input {
+  width: 100%; height: 48px; border-radius: 12px;
+  border: 1.5px solid #cbd5e1; padding: 0 16px;
+  font-size: 15px; font-family: inherit; color: #1e293b;
+  outline: none; box-sizing: border-box;
+  transition: border-color .15s;
+  &:focus { border-color: #6366f1; }
+}
+
+/* ── Full camera screen ──────────────────────────────────── */
+.fr-cam-screen {
+  position: relative; border-radius: 20px; overflow: hidden;
+  background: #000; aspect-ratio: 3 / 4; max-width: 400px; width: 100%;
+  box-shadow: 0 8px 40px rgba(0,0,0,.18);
+}
+.fr-cam-video {
+  width: 100%; height: 100%; object-fit: cover;
+  transform: scaleX(-1); display: block;
+}
+
+/* Top bar */
+.fr-cam-topbar {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 5;
+  padding: 14px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: linear-gradient(to bottom, rgba(0,0,0,.55) 0%, transparent 100%);
+}
+.fr-cam-title { color: #fff; font-size: 14px; font-weight: 700; }
+.fr-cam-close {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: rgba(255,255,255,.15); border: none;
+  color: #fff; font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  &:hover { background: rgba(255,255,255,.28); }
+}
+
+/* Scan overlay */
+.fr-scan-frame { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
+.fr-corner {
+  position: absolute; width: 26px; height: 26px;
+  border-color: rgba(255,255,255,.85); border-style: solid;
+}
+.fr-corner--tl { top: 18%; left: 16%; border-width: 3px 0 0 3px; border-radius: 4px 0 0 0; }
+.fr-corner--tr { top: 18%; right: 16%; border-width: 3px 3px 0 0; border-radius: 0 4px 0 0; }
+.fr-corner--bl { bottom: 26%; left: 16%; border-width: 0 0 3px 3px; border-radius: 0 0 0 4px; }
+.fr-corner--br { bottom: 26%; right: 16%; border-width: 0 3px 3px 0; border-radius: 0 0 4px 0; }
+.fr-oval {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -52%);
+  width: 54%; aspect-ratio: 3 / 4;
+  border: 2.5px solid rgba(255,255,255,.6); border-radius: 50%;
+  animation: oval-pulse 2.5s ease-in-out infinite;
+}
+@keyframes oval-pulse {
+  0%, 100% { border-color: rgba(255,255,255,.35); }
+  50%       { border-color: rgba(255,255,255,.9); }
+}
+
+.fr-cam-hint {
+  position: absolute; bottom: 100px; left: 0; right: 0; z-index: 5;
+  text-align: center; font-size: 12.5px; color: rgba(255,255,255,.8);
+  font-weight: 500; pointer-events: none;
+  text-shadow: 0 1px 4px rgba(0,0,0,.6);
+}
+
+/* Overlay (loading / processing) */
+.fr-cam-overlay {
+  position: absolute; inset: 0; z-index: 8;
+  background: rgba(0,0,0,.72); backdrop-filter: blur(4px);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+}
+.fr-cam-overlay--err { background: rgba(0,0,0,.78); }
+.fr-overlay-text { font-size: 15px; color: #f1f5f9; font-weight: 600; margin: 0; text-align: center; }
+.fr-overlay-err  { font-size: 14px; color: #fca5a5; margin: 0; text-align: center; max-width: 260px; }
+.fr-retry-btn {
+  padding: 10px 28px; border: none; border-radius: 12px;
+  background: #6366f1; color: #fff; font-size: 14px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+  &:hover { opacity: .88; }
+}
+.fr-inline-err {
+  position: absolute; bottom: 100px; left: 12px; right: 12px; z-index: 6;
+  text-align: center; font-size: 12.5px; color: #fca5a5;
+  background: rgba(239,68,68,.2); border-radius: 8px; padding: 8px 12px;
+}
+
+/* Spinner */
+.fr-spinner {
+  width: 52px; height: 52px; border-radius: 50%;
+  border: 3px solid rgba(255,255,255,.15); border-top-color: #6366f1;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Shutter button */
+.fr-shutter-bar {
+  position: absolute; bottom: 22px; left: 0; right: 0; z-index: 6;
+  display: flex; align-items: center; justify-content: center;
+}
+.fr-shutter {
+  width: 68px; height: 68px; border-radius: 50%;
+  background: rgba(255,255,255,.15); border: 3px solid #fff;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(4px); transition: transform .1s, background .15s;
+  &:hover  { background: rgba(255,255,255,.28); }
+  &:active { transform: scale(.91); }
+}
+.fr-shutter-inner {
+  width: 50px; height: 50px; border-radius: 50%; background: #fff; display: block;
+  transition: transform .1s;
+}

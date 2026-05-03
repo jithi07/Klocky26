@@ -10,7 +10,7 @@ import { OrgThemeService } from '../../../../core/services/org-theme.service';
 
 // In production this would be validated server-side.
 // Never embed credentials in a client — this is a placeholder pattern.
-const TEAM_EMAIL    = 'jithin.r@gmail.com';
+const TEAM_EMAIL    = 'admin.klock@gmail.com';
 const TEAM_PASSWORD = 'Klock2026';
 
 @Component({

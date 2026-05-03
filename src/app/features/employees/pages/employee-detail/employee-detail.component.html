@@ -1,0 +1,134 @@
+@if (employee(); as emp) {
+<div class="ed-page">
+
+  <!-- Header -->
+  <div class="ed-header">
+    <button class="ed-back" (click)="goBack()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Employees
+    </button>
+    <div class="ed-hero">
+      <div class="ed-avatar" [style.background]="emp.avatarColor">{{ emp.initials }}</div>
+      <div class="ed-hero__info">
+        <h1>{{ emp.fullName }}</h1>
+        <p>{{ emp.designation }} · {{ emp.department }}</p>
+        <div class="ed-badges">
+          <span class="ed-role-badge ed-role-badge--{{ emp.role }}">{{ emp.role.charAt(0).toUpperCase() + emp.role.slice(1) }}</span>
+          <span class="ed-status-badge ed-status-badge--{{ emp.status }}">
+            @if (emp.status === 'on_leave') { On Leave } @else { {{ emp.status.charAt(0).toUpperCase() + emp.status.slice(1) }} }
+          </span>
+          <span class="ed-code">{{ emp.employeeCode }}</span>
+        </div>
+      </div>
+      <button class="ed-edit-btn" (click)="editEmp()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Edit
+      </button>
+    </div>
+  </div>
+
+  <!-- Quick stats -->
+  <div class="ed-stats">
+    <div class="ed-stat"><span class="ed-stat__val">{{ attendanceRate }}%</span><span class="ed-stat__lbl">Attendance</span></div>
+    <div class="ed-stat"><span class="ed-stat__val">{{ leaveBalance }}</span><span class="ed-stat__lbl">Leave Balance</span></div>
+    <div class="ed-stat"><span class="ed-stat__val">{{ mockGoals.length }}</span><span class="ed-stat__lbl">Active Goals</span></div>
+    <div class="ed-stat"><span class="ed-stat__val">{{ emp.officeLocation }}</span><span class="ed-stat__lbl">Office</span></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="ed-tabs">
+    <button [class.active]="activeTab() === 'overview'"    (click)="setTab('overview')">Overview</button>
+    <button [class.active]="activeTab() === 'attendance'"  (click)="setTab('attendance')">Attendance</button>
+    <button [class.active]="activeTab() === 'leaves'"      (click)="setTab('leaves')">Leaves</button>
+    <button [class.active]="activeTab() === 'performance'" (click)="setTab('performance')">Performance</button>
+  </div>
+
+  <!-- Tab: Overview -->
+  @if (activeTab() === 'overview') {
+    <div class="ed-grid-2">
+      <div class="ed-card">
+        <h3>Contact & Personal</h3>
+        <div class="ed-field-row"><span>Email</span><span>{{ emp.email }}</span></div>
+        <div class="ed-field-row"><span>Phone</span><span>{{ emp.phone }}</span></div>
+        <div class="ed-field-row"><span>Location</span><span>{{ emp.officeLocation }}</span></div>
+        <div class="ed-field-row"><span>Joined</span><span>{{ emp.dateOfJoining | date:'MMMM d, yyyy' }}</span></div>
+      </div>
+      <div class="ed-card">
+        <h3>Work Information</h3>
+        <div class="ed-field-row"><span>Department</span><span>{{ emp.department }}</span></div>
+        <div class="ed-field-row"><span>Designation</span><span>{{ emp.designation }}</span></div>
+        <div class="ed-field-row"><span>Role</span><span>{{ emp.role.charAt(0).toUpperCase() + emp.role.slice(1) }}</span></div>
+        <div class="ed-field-row"><span>Reports To</span><span>{{ emp.reportingManagerName ?? 'No manager' }}</span></div>
+      </div>
+    </div>
+  }
+
+  <!-- Tab: Attendance -->
+  @if (activeTab() === 'attendance') {
+    <div class="ed-card">
+      <h3>Recent Attendance</h3>
+      <table class="ed-table">
+        <thead><tr><th>Date</th><th>Check In</th><th>Check Out</th><th>Hours</th><th>Status</th></tr></thead>
+        <tbody>
+          @for (a of mockAttendance; track a.date) {
+            <tr>
+              <td>{{ a.date | date:'MMM d, yyyy' }}</td>
+              <td>{{ a.checkIn }}</td>
+              <td>{{ a.checkOut }}</td>
+              <td>{{ a.hours > 0 ? a.hours + ' hrs' : '–' }}</td>
+              <td><span class="ed-att-badge ed-att-badge--{{ a.status }}">{{ a.status | titlecase }}</span></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Tab: Leaves -->
+  @if (activeTab() === 'leaves') {
+    <div class="ed-card">
+      <h3>Leave History</h3>
+      <table class="ed-table">
+        <thead><tr><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Status</th></tr></thead>
+        <tbody>
+          @for (l of mockLeaves; track l.from) {
+            <tr>
+              <td>{{ l.type }}</td>
+              <td>{{ l.from | date:'MMM d, yyyy' }}</td>
+              <td>{{ l.to | date:'MMM d, yyyy' }}</td>
+              <td>{{ l.days }}</td>
+              <td><span class="ed-leave-badge ed-leave-badge--{{ l.status }}">{{ l.status | titlecase }}</span></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Tab: Performance -->
+  @if (activeTab() === 'performance') {
+    <div class="ed-card">
+      <h3>Goals & OKRs</h3>
+      <div class="ed-goals">
+        @for (g of mockGoals; track g.title) {
+          <div class="ed-goal">
+            <div class="ed-goal__top">
+              <span class="ed-goal__title">{{ g.title }}</span>
+              <span class="ed-goal__badge ed-goal__badge--{{ g.status }}">
+                @if (g.status === 'on_track') { On Track }
+                @else if (g.status === 'at_risk') { At Risk }
+                @else { Completed }
+              </span>
+            </div>
+            <div class="ed-goal__bar"><div class="ed-goal__fill" [style.width.%]="g.progress" [class]="'fill--' + g.status"></div></div>
+            <div class="ed-goal__meta">{{ g.progress }}% · Due {{ g.due | date:'MMM d, yyyy' }}</div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+</div>
+} @else {
+  <div class="ed-not-found">Employee not found. <button (click)="goBack()">Go back</button></div>
+}

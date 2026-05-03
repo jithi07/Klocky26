@@ -1,0 +1,116 @@
+<div class="sv-page">
+  <div class="sv-header">
+    <div><h1>Employee Engagement</h1><p>Run surveys, measure sentiment and track engagement trends</p></div>
+    <button class="sv-btn sv-btn--primary" (click)="activeTab.set('new')">+ New Survey</button>
+  </div>
+
+  <div class="sv-tabs">
+    <button [class.active]="activeTab() === 'surveys'" (click)="activeTab.set('surveys')">Surveys</button>
+    <button [class.active]="activeTab() === 'results'" (click)="activeTab.set('results')">eNPS & Insights</button>
+    <button [class.active]="activeTab() === 'new'"     (click)="activeTab.set('new')">Create Survey</button>
+    @if (activeTab() === 'surveys') {
+      <select class="sv-filter" [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event)">
+        <option value="">All</option>
+        <option value="active">Active</option>
+        <option value="draft">Draft</option>
+        <option value="closed">Closed</option>
+      </select>
+    }
+  </div>
+
+  @if (activeTab() === 'surveys') {
+    <div class="sv-list">
+      @for (s of surveys(); track s.id) {
+        <div class="sv-card sv-card--{{ s.status }}">
+          <div class="sv-card__top">
+            <div>
+              <span class="sv-category">{{ s.category }}</span>
+              <div class="sv-card__title">{{ s.title }}</div>
+              <div class="sv-card__desc">{{ s.description }}</div>
+            </div>
+            <span class="sv-status sv-status--{{ s.status }}">{{ s.status | titlecase }}</span>
+          </div>
+          <div class="sv-card__stats">
+            <div class="sv-stat">
+              <span class="sv-stat__val">{{ s.responses }}</span>
+              <span class="sv-stat__lbl">Responses</span>
+            </div>
+            <div class="sv-stat">
+              <span class="sv-stat__val">{{ responseRate(s) }}%</span>
+              <span class="sv-stat__lbl">Response Rate</span>
+            </div>
+            <div class="sv-stat">
+              <span class="sv-stat__val">{{ s.questions }}</span>
+              <span class="sv-stat__lbl">Questions</span>
+            </div>
+            @if (s.avgScore) {
+              <div class="sv-stat">
+                <span class="sv-stat__val">{{ s.avgScore }}/5</span>
+                <span class="sv-stat__lbl">Avg Score</span>
+              </div>
+            }
+          </div>
+          <div class="sv-progress-bar">
+            <div class="sv-progress-fill" [style.width.%]="responseRate(s)"></div>
+          </div>
+          <div class="sv-card__footer">
+            @if (s.dueDate) { <span class="sv-due">Due {{ s.dueDate | date:'MMM d, yyyy' }}</span> }
+            <div class="sv-card__actions">
+              <button class="sv-btn sv-btn--ghost sv-btn--sm">View</button>
+              @if (s.status === 'draft') { <button class="sv-btn sv-btn--primary sv-btn--sm">Launch</button> }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @if (activeTab() === 'results') {
+    <div class="sv-results">
+      <div class="sv-enps-card">
+        <h3>Employee Net Promoter Score (eNPS)</h3>
+        <div class="sv-enps-score" [class.good]="eNPS() > 30" [class.ok]="eNPS() > 0 && eNPS() <= 30" [class.bad]="eNPS() <= 0">
+          {{ eNPS() > 0 ? '+' : '' }}{{ eNPS() }}
+        </div>
+        <p>Based on Q1 2026 survey responses. Scores above +30 are excellent.</p>
+        <div class="sv-enps-bar">
+          <div class="sv-enps-detractors" style="width:20%">20% Detractors</div>
+          <div class="sv-enps-passives"   style="width:38%">38% Passives</div>
+          <div class="sv-enps-promoters"  style="width:42%">42% Promoters</div>
+        </div>
+      </div>
+      <div class="sv-drivers-card">
+        <h3>Engagement Drivers</h3>
+        @for (d of engagementDrivers; track d.label) {
+          <div class="sv-driver-row">
+            <span class="sv-driver-lbl">{{ d.label }}</span>
+            <div class="sv-driver-track"><div class="sv-driver-fill" [style.width.%]="(d.score / 5) * 100"></div></div>
+            <span class="sv-driver-val">{{ d.score }}/5</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (activeTab() === 'new') {
+    @if (created()) { <div class="sv-success">✓ Survey created as Draft! Redirecting…</div> }
+    <div class="sv-new-form">
+      <div class="sv-field"><label>Survey Title *</label><input class="sv-input" type="text" placeholder="e.g. Q3 Pulse Survey" [ngModel]="newTitle()" (ngModelChange)="newTitle.set($event)" /></div>
+      <div class="sv-field"><label>Description</label><textarea class="sv-textarea" rows="3" placeholder="What is this survey about?" [ngModel]="newDesc()" (ngModelChange)="newDesc.set($event)"></textarea></div>
+      <div class="sv-row">
+        <div class="sv-field"><label>Category</label>
+          <select class="sv-select" [ngModel]="newCategory()" (ngModelChange)="newCategory.set($event)">
+            @for (c of categories; track c) { <option [value]="c">{{ c }}</option> }
+          </select>
+        </div>
+        <div class="sv-field"><label>Due Date</label><input class="sv-input" type="date" [ngModel]="newDue()" (ngModelChange)="newDue.set($event)" /></div>
+      </div>
+      <div class="sv-actions">
+        <button class="sv-btn sv-btn--ghost" (click)="activeTab.set('surveys')">Cancel</button>
+        <button class="sv-btn sv-btn--primary" (click)="createSurvey()" [disabled]="!newTitle().trim() || creating()">
+          @if (creating()) { Creating… } @else { Save as Draft }
+        </button>
+      </div>
+    </div>
+  }
+</div>

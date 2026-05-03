@@ -1,0 +1,208 @@
+<div class="fs-page">
+
+  <!-- Header -->
+  <div class="fs-header">
+    <div>
+      <h1>Face Scan Attendance</h1>
+      <p>Enrol once, verify identity to clock in — no passwords needed</p>
+    </div>
+    <div class="fs-header-stats">
+      <div class="fs-stat"><span class="fs-stat-num">{{ enrolledCount() }}</span><span>Enrolled</span></div>
+      <div class="fs-stat"><span class="fs-stat-num">{{ clockLog().length }}</span><span>Clock-ins today</span></div>
+    </div>
+  </div>
+
+  <!-- HTTPS notice -->
+  @if (httpsNotice()) {
+    <div class="fs-banner fs-banner--warn">
+      ⚠ Camera features require <strong>HTTPS</strong>. You are on HTTP — camera may not work in all browsers.
+    </div>
+  }
+
+  <!-- Two-column layout: left = consent+camera, right = log -->
+  <div class="fs-layout">
+
+    <!-- LEFT PANEL -->
+    <div class="fs-left">
+
+      <!-- Consent gate -->
+      @if (!consentGiven()) {
+        <div class="fs-consent">
+          <div class="fs-consent__icon">🔒</div>
+          <div>
+            <strong>Privacy Notice</strong>
+            <p>Camera is used <em>only</em> for local face recognition. Raw frames are <strong>never stored or transmitted</strong>. A 256-bit perceptual hash is computed in-browser and only that hash is retained. You can revoke access in browser settings at any time.</p>
+            <label class="fs-check-label">
+              <input type="checkbox" (change)="consentGiven.set(true)" />
+              I understand and consent to camera use for attendance
+            </label>
+          </div>
+        </div>
+      }
+
+      <!-- Action panel (consent given, no camera active, idle) -->
+      @if (consentGiven() && !cameraActive() && status() === 'idle') {
+        <div class="fs-actions">
+          <p class="fs-actions-hint">Choose an action to begin:</p>
+          <div class="fs-mode-cards">
+
+            <!-- ENROLL -->
+            <div class="fs-mode-card">
+              <div class="fs-mode-icon fs-mode-icon--enroll">📷</div>
+              <h3>Enrol Face</h3>
+              <p>Register your face for the first time or re-enrol</p>
+              <div class="fs-select-wrap">
+                <label for="fs-emp-select">Select person</label>
+                <select id="fs-emp-select" class="fs-select" [ngModel]="selectedEmployeeId()" (ngModelChange)="selectedEmployeeId.set($event)">
+                  <option [ngValue]="null">— Choose —</option>
+                  @for (e of employees(); track e.id) {
+                    <option [value]="e.id">{{ e.name }}</option>
+                  }
+                </select>
+              </div>
+              <button class="fs-btn fs-btn--enroll" [disabled]="!selectedEmployeeId()" (click)="startCamera('enroll')">
+                Start Enrolment
+              </button>
+            </div>
+
+            <!-- VERIFY -->
+            <div class="fs-mode-card fs-mode-card--verify">
+              <div class="fs-mode-icon fs-mode-icon--verify">✅</div>
+              <h3>Verify & Clock In</h3>
+              <p>Scan your face to identify yourself and mark attendance</p>
+              @if (enrolledCount() === 0) {
+                <div class="fs-no-enroll-hint">Enrol at least one face first</div>
+              } @else {
+                <button class="fs-btn fs-btn--verify" (click)="startCamera('verify')">
+                  Scan to Clock In
+                </button>
+              }
+            </div>
+
+          </div>
+        </div>
+      }
+
+      <!-- Camera live view -->
+      @if (cameraActive()) {
+        <div class="fs-camera-panel">
+          <div class="fs-mode-label">
+            @if (mode() === 'enroll') { <span class="fs-mode-badge fs-mode-badge--enroll">ENROLMENT MODE</span> }
+            @else { <span class="fs-mode-badge fs-mode-badge--verify">VERIFICATION MODE</span> }
+          </div>
+          <div class="fs-video-wrap">
+            <video #videoEl autoplay playsinline muted class="fs-video"></video>
+            <div class="fs-ring"></div>
+            <div class="fs-corners">
+              <span class="fs-corner fs-corner--tl"></span>
+              <span class="fs-corner fs-corner--tr"></span>
+              <span class="fs-corner fs-corner--bl"></span>
+              <span class="fs-corner fs-corner--br"></span>
+            </div>
+            <div class="fs-guide">Centre your face · Look straight</div>
+          </div>
+          <canvas #canvasEl style="display:none"></canvas>
+          <div class="fs-cam-actions">
+            <button class="fs-btn fs-btn--capture" (click)="captureFrame()">
+              <span class="fs-shutter"></span>
+              Capture
+            </button>
+            <button class="fs-btn fs-btn--ghost" (click)="stopCamera()">Cancel</button>
+          </div>
+        </div>
+      }
+
+      <!-- Error -->
+      @if (cameraError()) {
+        <div class="fs-banner fs-banner--error">⚠ {{ cameraError() }}</div>
+      }
+
+      <!-- Status cards -->
+      @if (status() === 'processing') {
+        <div class="fs-status-card fs-status-card--processing">
+          <div class="fs-spinner"></div>
+          <div>
+            <strong>Analysing…</strong>
+            <p>{{ statusMsg() }}</p>
+          </div>
+        </div>
+      }
+
+      @if (status() === 'success') {
+        <div class="fs-status-card fs-status-card--success">
+          <div class="fs-status-icon">✓</div>
+          <div>
+            @if (identifiedAs()) {
+              <strong>Welcome, {{ identifiedAs()!.name }}!</strong>
+              <p>{{ identifiedAs()!.department }} · {{ statusMsg() }}</p>
+              <code class="fs-face-id">Face ID: {{ shortId(generatedHash()) }}</code>
+            } @else {
+              <strong>{{ statusMsg() }}</strong>
+              <code class="fs-face-id">Face ID: {{ shortId(generatedHash()) }}</code>
+            }
+          </div>
+          <button class="fs-btn fs-btn--ghost fs-btn--sm" (click)="resetStatus()">Done</button>
+        </div>
+      }
+
+      @if (status() === 'fail') {
+        <div class="fs-status-card fs-status-card--fail">
+          <div class="fs-status-icon">✕</div>
+          <div>
+            <strong>Not recognised</strong>
+            <p>{{ statusMsg() }}</p>
+          </div>
+          <button class="fs-btn fs-btn--ghost fs-btn--sm" (click)="resetStatus()">Try Again</button>
+        </div>
+      }
+
+    </div>
+
+    <!-- RIGHT PANEL: enrolment table + clock log -->
+    <div class="fs-right">
+
+      <!-- Enrolment status -->
+      <div class="fs-panel">
+        <h3>Enrolment Status</h3>
+        <div class="fs-enroll-list">
+          @for (e of employees(); track e.id) {
+            <div class="fs-enroll-row" [class.enrolled]="e.enrolled">
+              <div class="fs-enroll-avatar" [style.background]="e.enrolled ? '#22c55e' : '#e5e7eb'">
+                {{ e.name.charAt(0) }}
+              </div>
+              <div class="fs-enroll-info">
+                <span class="fs-enroll-name">{{ e.name }}</span>
+                <span class="fs-enroll-dept">{{ e.department }}</span>
+              </div>
+              <div class="fs-enroll-badge" [class.on]="e.enrolled">
+                {{ e.enrolled ? '✓ Enrolled' : 'Not enrolled' }}
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Today's clock-in log -->
+      <div class="fs-panel">
+        <h3>Today's Clock-in Log</h3>
+        @if (clockLog().length === 0) {
+          <div class="fs-empty">No clock-ins recorded yet. Verify a face to begin.</div>
+        } @else {
+          <div class="fs-log-list">
+            @for (entry of clockLog(); track entry.faceId) {
+              <div class="fs-log-row">
+                <div class="fs-log-avatar">{{ entry.name.charAt(0) }}</div>
+                <div class="fs-log-info">
+                  <span class="fs-log-name">{{ entry.name }}</span>
+                  <code class="fs-log-id">{{ entry.faceId }}</code>
+                </div>
+                <span class="fs-log-time">{{ entry.time | date:'HH:mm:ss' }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+    </div>
+  </div>
+</div>

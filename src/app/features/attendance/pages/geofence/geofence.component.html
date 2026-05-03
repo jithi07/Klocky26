@@ -1,0 +1,99 @@
+<div class="gf-page">
+  <div class="gf-header">
+    <div><h1>Geo-fence Zones</h1><p>Define office perimeters for location-based attendance check-in</p></div>
+    <button class="gf-btn gf-btn--primary" (click)="showAddForm.set(true)">+ Add Zone</button>
+  </div>
+
+  <!-- Privacy notice -->
+  <div class="gf-notice">
+    <span class="gf-notice__icon">🔒</span>
+    <span>Location data is only used to verify attendance. Precise coordinates are never shared with third parties and are encrypted at rest.</span>
+  </div>
+
+  <!-- Zone list -->
+  <div class="gf-zones">
+    @for (z of zones(); track z.id) {
+      <div class="gf-zone" [class.inactive]="!z.active">
+        <!-- Visual radius circle -->
+        <div class="gf-diagram">
+          <div class="gf-circle gf-circle--outer" [style.width.px]="radiusCircle(z.radiusMeters)" [style.height.px]="radiusCircle(z.radiusMeters)" [style.border-color]="z.active ? 'var(--accent,#6366f1)' : '#e5e7eb'">
+            <div class="gf-circle gf-circle--inner"></div>
+            <span class="gf-circle-label">{{ z.radiusMeters }}m</span>
+          </div>
+        </div>
+
+        <!-- Zone info -->
+        <div class="gf-zone__info">
+          <div class="gf-zone__top">
+            <span class="gf-zone__name">{{ z.name }}</span>
+            <span class="gf-zone__status" [class.active]="z.active">{{ z.active ? 'Active' : 'Inactive' }}</span>
+          </div>
+          <div class="gf-zone__address">{{ z.address }}</div>
+          <div class="gf-zone__coords">Lat {{ z.lat }}, Lng {{ z.lng }} · Radius {{ z.radiusMeters }} m</div>
+        </div>
+
+        <!-- Actions -->
+        <div class="gf-zone__actions">
+          <button class="gf-btn gf-btn--ghost gf-btn--sm" (click)="editZone(z)">Edit</button>
+          <button class="gf-btn gf-btn--ghost gf-btn--sm" (click)="toggleActive(z.id)">{{ z.active ? 'Disable' : 'Enable' }}</button>
+          <button class="gf-btn gf-btn--danger gf-btn--sm" (click)="deleteZone(z.id)">Delete</button>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Add / Edit form modal -->
+  @if (showAddForm()) {
+    <div class="gf-overlay" (click)="resetForm()">
+      <div class="gf-modal" (click)="$event.stopPropagation()">
+        <h2>{{ editId() ? 'Edit Zone' : 'New Zone' }}</h2>
+
+        <div class="gf-form-row">
+          <label for="gf-name">Zone Name <span class="req">*</span></label>
+          <input id="gf-name" class="gf-input" [ngModel]="newZone().name" (ngModelChange)="patchName($event)" placeholder="e.g. Headquarters" />
+        </div>
+
+        <div class="gf-form-row">
+          <label for="gf-address">Address / Description</label>
+          <input id="gf-address" class="gf-input" [ngModel]="newZone().address" (ngModelChange)="patchAddress($event)" placeholder="Street, City" />
+        </div>
+
+        <div class="gf-form-row-2">
+          <div class="gf-form-row">
+            <label for="gf-lat">Latitude <span class="req">*</span></label>
+            <input id="gf-lat" class="gf-input" type="number" step="0.000001" [ngModel]="newZone().lat" (ngModelChange)="patchLat($event)" placeholder="e.g. 12.9716" />
+          </div>
+          <div class="gf-form-row">
+            <label for="gf-lng">Longitude <span class="req">*</span></label>
+            <input id="gf-lng" class="gf-input" type="number" step="0.000001" [ngModel]="newZone().lng" (ngModelChange)="patchLng($event)" placeholder="e.g. 77.5946" />
+          </div>
+        </div>
+
+        <div class="gf-form-row gf-form-row--loc">
+          <button class="gf-btn gf-btn--ghost gf-btn--sm" (click)="useMyLocation()" [disabled]="locating()">
+            @if (locating()) { ⏳ Getting location… } @else { 📍 Use My Current Location }
+          </button>
+          @if (locGranted()) { <span class="gf-loc-ok">✓ Coordinates filled from GPS</span> }
+          @if (locError()) { <span class="gf-loc-err">{{ locError() }}</span> }
+        </div>
+
+        <div class="gf-form-row">
+          <label for="gf-radius">Radius (metres) <span class="req">*</span></label>
+          <input id="gf-radius" class="gf-input" type="number" min="10" max="5000" [ngModel]="newZone().radiusMeters" (ngModelChange)="patchRadius($event)" />
+        </div>
+
+        <div class="gf-form-row gf-form-row--check">
+          <label class="gf-checkbox-label">
+            <input type="checkbox" [ngModel]="newZone().active" (ngModelChange)="patchActive($event)" />
+            Zone active
+          </label>
+        </div>
+
+        <div class="gf-modal__actions">
+          <button class="gf-btn gf-btn--ghost" (click)="resetForm()">Cancel</button>
+          <button class="gf-btn gf-btn--primary" (click)="saveZone()">Save Zone</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

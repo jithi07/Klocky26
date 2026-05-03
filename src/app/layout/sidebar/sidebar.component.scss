@@ -124,7 +124,32 @@
   display: flex;
   flex-direction: column;
   gap: 1px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.1) transparent;
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+}
+
+.nav-group-label {
+  display: block;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.28);
+  padding: 12px 8px 3px;
+  white-space: nowrap;
   overflow: hidden;
+  opacity: 0;
+  max-height: 0;
+  transition: opacity 0.22s, max-height 0.22s;
+  .sidebar:hover & {
+    opacity: 1;
+    max-height: 28px;
+  }
 }
 
 .nav-bottom {

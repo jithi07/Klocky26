@@ -1,0 +1,140 @@
+<div class="mp-page">
+
+  <!-- Hero -->
+  <div class="mp-hero">
+    <div class="mp-avatar" [style.background]="me.avatarColor">{{ me.initials }}</div>
+    <div class="mp-hero__info">
+      <h1>{{ me.fullName }}</h1>
+      <p>{{ me.designation }} · {{ me.department }}</p>
+      <div class="mp-badges">
+        <span class="mp-role-badge mp-role-badge--{{ me.role }}">{{ me.role.charAt(0).toUpperCase() + me.role.slice(1) }}</span>
+        <span class="mp-code">{{ me.employeeCode }}</span>
+      </div>
+    </div>
+    @if (!editMode()) {
+      <button class="mp-edit-btn" (click)="editMode.set(true)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Edit Profile
+      </button>
+    }
+  </div>
+
+  @if (saved()) { <div class="mp-success">✓ Profile updated successfully</div> }
+  @if (pwSaved()) { <div class="mp-success">✓ Password changed successfully</div> }
+
+  <!-- Tabs -->
+  <div class="mp-tabs">
+    <button [class.active]="activeTab() === 'profile'"     (click)="activeTab.set('profile')">Profile</button>
+    <button [class.active]="activeTab() === 'security'"    (click)="activeTab.set('security')">Security</button>
+    <button [class.active]="activeTab() === 'preferences'" (click)="activeTab.set('preferences')">Preferences</button>
+  </div>
+
+  <!-- Profile tab -->
+  @if (activeTab() === 'profile') {
+    <div class="mp-grid">
+      <div class="mp-card">
+        <h3>Personal Information</h3>
+        <div class="mp-field-row"><span>Full Name</span><span>{{ me.fullName }}</span></div>
+        <div class="mp-field-row"><span>Email</span><span>{{ me.email }}</span></div>
+        @if (editMode()) {
+          <div class="mp-field-row mp-field-row--edit">
+            <span>Phone</span>
+            <input class="mp-input" [ngModel]="phone()" (ngModelChange)="phone.set($event)" type="tel" />
+          </div>
+          <div class="mp-field-row mp-field-row--edit">
+            <span>Location</span>
+            <select class="mp-select" [ngModel]="officeLocation()" (ngModelChange)="officeLocation.set($event)">
+              @for (o of ['Mumbai HQ','Bangalore','Delhi','Hyderabad','Pune']; track o) {
+                <option [value]="o">{{ o }}</option>
+              }
+            </select>
+          </div>
+          <div class="mp-actions">
+            <button class="mp-btn mp-btn--ghost" (click)="editMode.set(false)">Cancel</button>
+            <button class="mp-btn mp-btn--primary" (click)="saveProfile()">Save Changes</button>
+          </div>
+        } @else {
+          <div class="mp-field-row"><span>Phone</span><span>{{ phone() }}</span></div>
+          <div class="mp-field-row"><span>Location</span><span>{{ officeLocation() }}</span></div>
+        }
+        <div class="mp-field-row"><span>Date of Joining</span><span>{{ me.dateOfJoining | date:'MMMM d, yyyy' }}</span></div>
+        <div class="mp-field-row"><span>Reports To</span><span>{{ me.reportingManagerName ?? 'Top of hierarchy' }}</span></div>
+      </div>
+
+      <div class="mp-card">
+        <h3>Recent Activity</h3>
+        <div class="mp-activity">
+          @for (a of recentActivity; track a.action) {
+            <div class="mp-act-row">
+              <span class="mp-act-icon">{{ a.icon }}</span>
+              <div>
+                <div class="mp-act-text">{{ a.action }}</div>
+                <div class="mp-act-time">{{ a.time }}</div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Security tab -->
+  @if (activeTab() === 'security') {
+    <div class="mp-card mp-card--narrow">
+      <h3>Change Password</h3>
+      @if (pwError()) { <div class="mp-error">⚠ {{ pwError() }}</div> }
+      <div class="mp-field">
+        <label for="mp-cur-pw">Current Password</label>
+        <input id="mp-cur-pw" class="mp-input" [type]="showPw() ? 'text' : 'password'" [ngModel]="currentPw()" (ngModelChange)="currentPw.set($event)" placeholder="Enter current password" [attr.autocomplete]="'current-password'" />
+      </div>
+      <div class="mp-field">
+        <label for="mp-new-pw">New Password</label>
+        <input id="mp-new-pw" class="mp-input" [type]="showPw() ? 'text' : 'password'" [ngModel]="newPw()" (ngModelChange)="newPw.set($event)" placeholder="Min 8 characters" [attr.autocomplete]="'new-password'" />
+      </div>
+      <div class="mp-field">
+        <label for="mp-confirm-pw">Confirm New Password</label>
+        <input id="mp-confirm-pw" class="mp-input" [type]="showPw() ? 'text' : 'password'" [ngModel]="confirmPw()" (ngModelChange)="confirmPw.set($event)" placeholder="Repeat new password" [attr.autocomplete]="'new-password'" />
+      </div>
+      <label class="mp-toggle-row">
+        <input type="checkbox" [checked]="showPw()" (change)="showPw.set(!showPw())" />
+        Show passwords
+      </label>
+      <div class="mp-pw-hints">
+        <span [class.ok]="newPw().length >= 8">✓ At least 8 characters</span>
+        <span [class.ok]="pwHasUpper()">✓ Uppercase letter</span>
+        <span [class.ok]="pwHasNumber()">✓ Number</span>
+        <span [class.ok]="pwHasSpecial()">✓ Special character</span>
+      </div>
+      <button class="mp-btn mp-btn--primary" (click)="savePassword()">Update Password</button>
+    </div>
+  }
+
+  <!-- Preferences tab -->
+  @if (activeTab() === 'preferences') {
+    <div class="mp-card mp-card--narrow">
+      <h3>Appearance</h3>
+      <div class="mp-theme-group">
+        <button class="mp-theme-btn" [class.active]="theme() === 'light'" (click)="theme.set('light')">☀️ Light</button>
+        <button class="mp-theme-btn" [class.active]="theme() === 'dark'" (click)="theme.set('dark')">🌙 Dark</button>
+        <button class="mp-theme-btn" [class.active]="theme() === 'system'" (click)="theme.set('system')">💻 System</button>
+      </div>
+      <h3 style="margin-top:20px">Notifications</h3>
+      <div class="mp-notif-list">
+        <label class="mp-switch-row">
+          <span>Email Notifications</span>
+          <input type="checkbox" [checked]="notifyEmail()" (change)="notifyEmail.set(!notifyEmail())" />
+        </label>
+        <label class="mp-switch-row">
+          <span>Push Notifications</span>
+          <input type="checkbox" [checked]="notifyPush()" (change)="notifyPush.set(!notifyPush())" />
+        </label>
+        <label class="mp-switch-row">
+          <span>SMS Notifications</span>
+          <input type="checkbox" [checked]="notifySms()" (change)="notifySms.set(!notifySms())" />
+        </label>
+      </div>
+      <button class="mp-btn mp-btn--primary" style="margin-top:16px" (click)="saved.set(true)">Save Preferences</button>
+    </div>
+  }
+
+</div>

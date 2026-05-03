@@ -1,0 +1,138 @@
+<div class="lv-page">
+
+  <!-- Header -->
+  <div class="lv-header">
+    <div>
+      <h1>Leave Management</h1>
+      <p>Review and approve employee leave requests</p>
+    </div>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="lv-summary">
+    <div class="lv-sum-card lv-sum-card--total"   (click)="filterStatus.set('all')">
+      <span class="lv-sum-val">{{ counts().total }}</span><span class="lv-sum-lbl">Total</span>
+    </div>
+    <div class="lv-sum-card lv-sum-card--pending"  (click)="filterStatus.set('pending')">
+      <span class="lv-sum-val">{{ counts().pending }}</span><span class="lv-sum-lbl">Pending</span>
+    </div>
+    <div class="lv-sum-card lv-sum-card--approved" (click)="filterStatus.set('approved')">
+      <span class="lv-sum-val">{{ counts().approved }}</span><span class="lv-sum-lbl">Approved</span>
+    </div>
+    <div class="lv-sum-card lv-sum-card--rejected" (click)="filterStatus.set('rejected')">
+      <span class="lv-sum-val">{{ counts().rejected }}</span><span class="lv-sum-lbl">Rejected</span>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="lv-filters">
+    <div class="lv-tab-group">
+      @for (s of ['all','pending','approved','rejected']; track s) {
+        <button [class.active]="filterStatus() === s" (click)="filterStatus.set(s)">
+          {{ s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1) }}
+        </button>
+      }
+    </div>
+    <select class="lv-select" [ngModel]="filterType()" (ngModelChange)="filterType.set($event)">
+      <option value="">All Leave Types</option>
+      @for (t of leaveTypes; track t) {
+        <option [value]="t">{{ typeLabel(t) }}</option>
+      }
+    </select>
+  </div>
+
+  <!-- List -->
+  <div class="lv-list">
+    @for (req of filtered(); track req.id) {
+      <div class="lv-card" [class]="'lv-card--' + req.status">
+        <div class="lv-card__left">
+          <div class="lv-avatar" [style.background]="req.avatarColor">{{ req.initials }}</div>
+          <div class="lv-info">
+            <div class="lv-info__name">{{ req.employeeName }}</div>
+            <div class="lv-info__sub">{{ req.department }} · {{ req.employeeCode }}</div>
+          </div>
+        </div>
+
+        <div class="lv-card__mid">
+          <span class="lv-type-badge">{{ typeLabel(req.leaveType) }}</span>
+          <span class="lv-date">{{ req.from | date:'MMM d' }} – {{ req.to | date:'MMM d, yyyy' }}</span>
+          <span class="lv-days">{{ req.days }} day{{ req.days > 1 ? 's' : '' }}</span>
+        </div>
+
+        <div class="lv-card__status">
+          <span class="lv-status lv-status--{{ req.status }}">
+            {{ req.status.charAt(0).toUpperCase() + req.status.slice(1) }}
+          </span>
+          <span class="lv-applied">Applied {{ req.appliedOn | date:'MMM d' }}</span>
+        </div>
+
+        <div class="lv-card__actions">
+          <button class="lv-btn lv-btn--sm lv-btn--ghost" (click)="openDetail(req)">Details</button>
+          @if (req.status === 'pending') {
+            <button class="lv-btn lv-btn--sm lv-btn--approve" (click)="approve(req.id)">Approve</button>
+            <button class="lv-btn lv-btn--sm lv-btn--reject"  (click)="openReject(req.id)">Reject</button>
+          }
+        </div>
+      </div>
+    }
+    @if (filtered().length === 0) {
+      <div class="lv-empty">No leave requests match the current filter.</div>
+    }
+  </div>
+
+</div>
+
+<!-- Detail modal -->
+@if (detailTarget(); as d) {
+  <div class="lv-overlay" (click)="closeDetail()">
+    <div class="lv-modal" (click)="$event.stopPropagation()">
+      <div class="lv-modal__header">
+        <h3>Leave Request Details</h3>
+        <button (click)="closeDetail()">✕</button>
+      </div>
+      <div class="lv-modal__body">
+        <div class="lv-avatar lv-avatar--lg" [style.background]="d.avatarColor">{{ d.initials }}</div>
+        <h4>{{ d.employeeName }}</h4>
+        <p>{{ d.department }} · {{ d.employeeCode }}</p>
+        <div class="lv-detail-grid">
+          <div class="lv-detail-row"><span>Leave Type</span><span>{{ typeLabel(d.leaveType) }}</span></div>
+          <div class="lv-detail-row"><span>From</span><span>{{ d.from | date:'MMMM d, yyyy' }}</span></div>
+          <div class="lv-detail-row"><span>To</span><span>{{ d.to | date:'MMMM d, yyyy' }}</span></div>
+          <div class="lv-detail-row"><span>Total Days</span><span>{{ d.days }} day{{ d.days > 1 ? 's' : '' }}</span></div>
+          <div class="lv-detail-row"><span>Applied On</span><span>{{ d.appliedOn | date:'MMMM d, yyyy' }}</span></div>
+          <div class="lv-detail-row"><span>Status</span><span class="lv-status lv-status--{{ d.status }}">{{ d.status | titlecase }}</span></div>
+        </div>
+        <div class="lv-reason">
+          <span>Reason</span>
+          <p>{{ d.reason }}</p>
+        </div>
+      </div>
+      @if (d.status === 'pending') {
+        <div class="lv-modal__footer">
+          <button class="lv-btn lv-btn--approve" (click)="approve(d.id); closeDetail()">Approve</button>
+          <button class="lv-btn lv-btn--reject"  (click)="openReject(d.id); closeDetail()">Reject</button>
+        </div>
+      }
+    </div>
+  </div>
+}
+
+<!-- Reject modal -->
+@if (rejectTarget()) {
+  <div class="lv-overlay" (click)="cancelReject()">
+    <div class="lv-modal lv-modal--sm" (click)="$event.stopPropagation()">
+      <div class="lv-modal__header">
+        <h3>Reject Leave Request</h3>
+        <button (click)="cancelReject()">✕</button>
+      </div>
+      <div class="lv-modal__body">
+        <p>Provide a reason for rejection (optional):</p>
+        <textarea class="lv-textarea" rows="3" [ngModel]="rejectReason()" (ngModelChange)="rejectReason.set($event)" placeholder="Enter reason…"></textarea>
+      </div>
+      <div class="lv-modal__footer">
+        <button class="lv-btn lv-btn--ghost" (click)="cancelReject()">Cancel</button>
+        <button class="lv-btn lv-btn--reject" (click)="doReject()">Confirm Reject</button>
+      </div>
+    </div>
+  </div>
+}

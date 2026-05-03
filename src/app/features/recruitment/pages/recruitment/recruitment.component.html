@@ -1,0 +1,108 @@
+<div class="rc-page">
+  <div class="rc-header">
+    <div><h1>Recruitment & Onboarding</h1><p>Manage job openings, candidates and new hire onboarding</p></div>
+    <button class="rc-btn rc-btn--primary">+ Post Job</button>
+  </div>
+
+  <div class="rc-tabs">
+    <button [class.active]="activeTab() === 'pipeline'"    (click)="activeTab.set('pipeline')">Candidate Pipeline</button>
+    <button [class.active]="activeTab() === 'jobs'"        (click)="activeTab.set('jobs')">Job Openings</button>
+    <button [class.active]="activeTab() === 'onboarding'"  (click)="activeTab.set('onboarding')">Onboarding</button>
+    @if (activeTab() === 'pipeline') {
+      <select class="rc-filter" [ngModel]="selectedJob()" (ngModelChange)="selectedJob.set($event)">
+        <option value="">All Jobs</option>
+        @for (j of jobs; track j.id) { <option [value]="j.id">{{ j.title }}</option> }
+      </select>
+    }
+  </div>
+
+  <!-- Pipeline -->
+  @if (activeTab() === 'pipeline') {
+    <div class="rc-board">
+      @for (stage of stages; track stage) {
+        <div class="rc-stage">
+          <div class="rc-stage__head" [style.border-top-color]="stageColor[stage]">
+            <span>{{ stageLabel[stage] }}</span>
+            <span class="rc-stage__count">{{ candidatesByStage(stage)().length }}</span>
+          </div>
+          <div class="rc-stage__body">
+            @for (c of candidatesByStage(stage)(); track c.id) {
+              <div class="rc-candidate">
+                <div class="rc-cand__top">
+                  <div class="rc-avatar" [style.background]="c.color">{{ c.initials }}</div>
+                  <div>
+                    <div class="rc-cand__name">{{ c.name }}</div>
+                    <div class="rc-cand__exp">{{ c.experience }}</div>
+                  </div>
+                </div>
+                <div class="rc-cand__email">{{ c.email }}</div>
+                <div class="rc-cand__date">Applied {{ c.appliedDate | date:'MMM d' }}</div>
+                <div class="rc-cand__moves">
+                  @for (s of stages; track s) {
+                    @if (s !== stage && s !== 'rejected') {
+                      <button (click)="moveStage(c.id, s)">→ {{ stageLabel[s] }}</button>
+                    }
+                  }
+                  @if (stage !== 'rejected') {
+                    <button class="danger" (click)="moveStage(c.id, 'rejected')">✕ Reject</button>
+                  }
+                </div>
+              </div>
+            }
+            @if (candidatesByStage(stage)().length === 0) {
+              <div class="rc-empty-col">No candidates</div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Jobs -->
+  @if (activeTab() === 'jobs') {
+    <div class="rc-jobs">
+      @for (j of jobs; track j.id) {
+        <div class="rc-job-card rc-job-card--{{ j.status }}">
+          <div class="rc-job__top">
+            <div>
+              <div class="rc-job__title">{{ j.title }}</div>
+              <div class="rc-job__meta">{{ j.department }} · {{ j.type }} · {{ j.location }}</div>
+            </div>
+            <span class="rc-job__status rc-job__status--{{ j.status }}">{{ j.status | titlecase }}</span>
+          </div>
+          <div class="rc-job__stats">
+            <span>{{ j.applicants }} applicants</span>
+            <span>Opened {{ j.openedDate | date:'MMM d, yyyy' }}</span>
+          </div>
+          <div class="rc-job__actions">
+            <button class="rc-btn rc-btn--ghost rc-btn--sm" (click)="selectedJob.set(j.id); activeTab.set('pipeline')">View Pipeline</button>
+            <button class="rc-btn rc-btn--ghost rc-btn--sm">Edit</button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Onboarding -->
+  @if (activeTab() === 'onboarding') {
+    <div class="rc-onboard">
+      <div class="rc-onboard-header">
+        <div class="rc-avatar rc-avatar--lg" style="background:#22c55e">KM</div>
+        <div>
+          <h2>Karan Mishra</h2>
+          <p>Sales Executive · Starting May 3, 2026</p>
+          <span class="rc-onboard-progress">{{ onboardingDoneCount }}/{{ onboardingChecklist.length }} tasks completed</span>
+        </div>
+      </div>
+      <div class="rc-checklist">
+        @for (item of onboardingChecklist; track item.task) {
+          <div class="rc-check-row" [class.done]="item.done">
+            <span class="rc-check-box">{{ item.done ? '✓' : '' }}</span>
+            <span>{{ item.task }}</span>
+            @if (!item.done) { <button class="rc-btn rc-btn--ghost rc-btn--sm" style="margin-left:auto">Mark Done</button> }
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

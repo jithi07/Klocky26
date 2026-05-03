@@ -686,6 +686,140 @@
 .db-ann-title { font-size: 13.5px; font-weight: 700; color: #1e293b; margin: 0 0 4px; }
 .db-ann-body  { font-size: 12.5px; color: #64748b; margin: 0; line-height: 1.5; }
 
+/* ─── Face Clock-In widget ───────────────────────────────── */
+.db-facein-card { overflow: visible; }
+
+.db-facein-idle {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  padding: 16px 0 4px; text-align: center;
+  p { font-size: 13px; color: #64748b; margin: 0; }
+}
+.db-facein-icon { font-size: 36px; }
+.db-facein-fail {
+  font-size: 12.5px; color: #ef4444; background: #fef2f2;
+  border-radius: 8px; padding: 8px 12px;
+}
+.db-facein-btn {
+  margin-top: 4px; padding: 9px 20px; border: none; border-radius: 10px;
+  background: var(--accent, #6366f1); color: #fff; font-size: 13.5px;
+  font-weight: 600; cursor: pointer; transition: opacity .15s;
+  font-family: inherit;
+  &:hover { opacity: .88; }
+}
+.db-facein-success {
+  display: flex; align-items: center; gap: 14px; padding: 12px 0;
+  strong { display: block; font-size: 14px; color: #0f172a; margin-bottom: 2px; }
+  p { font-size: 12.5px; color: #64748b; margin: 0 0 4px; }
+  code { font-size: 11px; color: #6366f1; background: #eef2ff; padding: 2px 7px; border-radius: 5px; }
+}
+.db-facein-avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff; font-size: 22px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.db-face-id { font-size: 10.5px; color: #6366f1; background: #eef2ff; padding: 2px 7px; border-radius: 5px; }
+.db-badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; }
+.db-badge--green { background: #dcfce7; color: #16a34a; }
+
+/* ─── Face scan modal ────────────────────────────────────── */
+.db-face-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.55);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 2000; backdrop-filter: blur(4px);
+}
+.db-face-modal {
+  background: #fff; border-radius: 20px; padding: 0;
+  width: min(400px, 94vw); max-height: 90vh; overflow: auto;
+  box-shadow: 0 24px 60px rgba(0,0,0,.2);
+  display: flex; flex-direction: column;
+}
+.db-face-modal__head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 20px 14px; border-bottom: 1px solid #f1f5f9;
+  font-size: 15px; font-weight: 700; color: #0f172a;
+  button { background: none; border: none; cursor: pointer; font-size: 18px; color: #94a3b8; }
+}
+.db-face-consent {
+  padding: 20px; display: flex; flex-direction: column; gap: 14px;
+  p { font-size: 13px; color: #475569; line-height: 1.6; margin: 0; }
+}
+.db-face-consent-label {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 600; cursor: pointer; color: #1e293b;
+}
+.db-face-start { padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.db-face-err { font-size: 13px; color: #ef4444; background: #fef2f2; border-radius: 8px; padding: 8px 12px; text-align: center; }
+.db-face-cam {
+  padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 16px;
+}
+.db-face-video-wrap {
+  position: relative; border-radius: 14px; overflow: hidden;
+  width: 100%; max-width: 300px; aspect-ratio: 4/3; background: #0f172a;
+}
+.db-face-video { width: 100%; height: 100%; object-fit: cover; border-radius: 14px; }
+.db-face-ring {
+  position: absolute; inset: 12px; border-radius: 50%;
+  border: 3px solid rgba(99,102,241,.6);
+  box-shadow: 0 0 0 4px rgba(99,102,241,.12);
+  pointer-events: none;
+}
+.db-face-proc {
+  padding: 36px 20px; display: flex; flex-direction: column; align-items: center; gap: 14px;
+  p { font-size: 13px; color: #64748b; }
+}
+.db-face-spinner {
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 3px solid #e2e8f0; border-top-color: #6366f1;
+  animation: dash-spin .7s linear infinite;
+}
+@keyframes dash-spin { to { transform: rotate(360deg); } }
+.db-face-ok {
+  padding: 28px 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center;
+  strong { font-size: 16px; color: #0f172a; }
+  p  { font-size: 13px; color: #64748b; margin: 0; }
+  code { font-size: 11px; background: #eef2ff; color: #6366f1; padding: 3px 10px; border-radius: 6px; }
+}
+.db-face-ok-icon {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: #dcfce7; color: #16a34a; font-size: 24px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.db-face-fail {
+  padding: 28px 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center;
+  strong { font-size: 15px; color: #0f172a; }
+  p  { font-size: 13px; color: #64748b; margin: 0; }
+}
+.db-face-fail-icon {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: #fef2f2; color: #ef4444; font-size: 22px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ─── Clocked-in active state ────────────────────────────── */
+.db-facein-active {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  padding: 14px 0 4px; text-align: center;
+  strong { display: block; font-size: 15px; font-weight: 700; color: #0f172a; }
+}
+.db-facein-active-icon {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: #dcfce7; color: #16a34a;
+  display: flex; align-items: center; justify-content: center;
+  animation: db-pulse 2s ease-in-out infinite;
+}
+@keyframes db-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,.4); }
+  50%       { box-shadow: 0 0 0 10px rgba(34,197,94,0); }
+}
+.db-facein-sub { font-size: 12px; color: #64748b; margin: 2px 0 0; }
+.db-geo-note   { font-size: 11.5px; color: #94a3b8; margin: 4px 0 0; }
+.db-facein-btn--out {
+  background: #fef2f2; color: #ef4444; border: 1.5px solid #fecaca;
+  &:hover { background: #fee2e2; opacity: 1; }
+}
+.db-face-ok-id { font-size: 11px; color: #94a3b8; margin: 0; }
+
 /* ─── Responsive ─────────────────────────────────────────── */
 @media (max-width: 1100px) {
   .db-grid { grid-template-columns: 1fr; }

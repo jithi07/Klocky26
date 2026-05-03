@@ -59,54 +59,24 @@
     </div>
   </div>
 
-  <!-- Work Hours -->
+  <!-- Work Hours / Day -->
   <div class="ob-field ob-col-full">
-    <p class="ob-label">Work Hours</p>
-    <div class="ob-hours-row">
-      <!-- Start -->
-      <div class="ob-hours-block">
-        <p class="ob-hours-block-label">Start</p>
-        <div class="ob-hours-selects">
-          <ui-select
-            [dark]="true"
-            [options]="hours"
-            [(ngModel)]="startHour"
-            name="startHour"
-            (ngModelChange)="emit()"
-          />
-          <span class="ob-hours-colon">:</span>
-          <ui-select
-            [dark]="true"
-            [options]="minutes"
-            [(ngModel)]="startMinute"
-            name="startMinute"
-            (ngModelChange)="emit()"
-          />
-        </div>
-      </div>
-      <span class="ob-hours-dash">—</span>
-      <!-- End -->
-      <div class="ob-hours-block">
-        <p class="ob-hours-block-label">End</p>
-        <div class="ob-hours-selects">
-          <ui-select
-            [dark]="true"
-            [options]="hours"
-            [(ngModel)]="endHour"
-            name="endHour"
-            (ngModelChange)="emit()"
-          />
-          <span class="ob-hours-colon">:</span>
-          <ui-select
-            [dark]="true"
-            [options]="minutes"
-            [(ngModel)]="endMinute"
-            name="endMinute"
-            (ngModelChange)="emit()"
-          />
-        </div>
-      </div>
+    <p class="ob-label">Work Hours / Day</p>
+    <div class="ob-stepper-wrap">
+      <button type="button" class="ob-stepper-btn"
+              (click)="stepWorkHours(-1)"
+              [disabled]="workHoursPerDay <= 1">&#8722;</button>
+      <input type="number" class="ob-stepper-val"
+             [(ngModel)]="workHoursPerDay"
+             (ngModelChange)="emit()"
+             name="workHoursPerDay"
+             min="1" max="24" />
+      <button type="button" class="ob-stepper-btn"
+              (click)="stepWorkHours(1)"
+              [disabled]="workHoursPerDay >= 24">&#43;</button>
+      <span class="ob-stepper-unit">hrs / day</span>
     </div>
+    <p class="ob-hint">Used to calculate full-day, half-day, and overtime thresholds.</p>
   </div>
 
 </div>
@@ -147,6 +117,22 @@
     <p class="ob-hint">Buffer time before marking an employee as late.</p>
   </div>
 
+  <!-- Half-Day Threshold -->
+  <div class="ob-field ob-col-full">
+    <p class="ob-label">Half-Day Threshold</p>
+    <div class="ob-chip-group">
+      @for (opt of halfDayOptions; track opt.value) {
+        <button
+          type="button"
+          class="ob-chip"
+          [class.ob-chip-active]="halfDayThresholdHrs === opt.value"
+          (click)="halfDayThresholdHrs = opt.value; emit()"
+        >{{ opt.label }}</button>
+      }
+    </div>
+    <p class="ob-hint">Sessions shorter than this are recorded as a half-day.</p>
+  </div>
+
   <!-- Late Threshold -->
   <div class="ob-field ob-col-full">
     <ui-select
@@ -178,6 +164,45 @@
   />
   <p class="ob-hint">Where employees are allowed to clock in from.</p>
 </div>
+
+<!-- ── Overtime ──────────────────────────────────────────────────── -->
+<p class="ob-section-label">Overtime</p>
+
+<div class="ob-toggles">
+  <div class="ob-toggle-row">
+    <div class="ob-toggle-info">
+      <p class="ob-toggle-title">Enable Overtime Tracking</p>
+      <p class="ob-toggle-desc">Track and record extra hours beyond standard work time.</p>
+    </div>
+    <button
+      type="button"
+      class="ob-toggle"
+      [class.is-on]="overtimeEnabled"
+      (click)="toggle('overtimeEnabled')"
+      [attr.aria-label]="'Overtime tracking: ' + (overtimeEnabled ? 'on' : 'off')"
+    ></button>
+  </div>
+</div>
+
+@if (overtimeEnabled) {
+  <div class="ob-field ob-toggle-sub">
+    <p class="ob-label">Overtime Starts After</p>
+    <div class="ob-stepper-wrap">
+      <button type="button" class="ob-stepper-btn"
+              (click)="stepOvertimeHrs(-1)"
+              [disabled]="overtimeAfterHrs <= 1">&#8722;</button>
+      <input type="number" class="ob-stepper-val"
+             [(ngModel)]="overtimeAfterHrs"
+             (ngModelChange)="emit()"
+             name="overtimeAfterHrs"
+             min="1" max="24" />
+      <button type="button" class="ob-stepper-btn"
+              (click)="stepOvertimeHrs(1)"
+              [disabled]="overtimeAfterHrs >= 24">&#43;</button>
+      <span class="ob-stepper-unit">hrs / day</span>
+    </div>
+  </div>
+}
 
 <!-- ── Validations & Restrictions ────────────────────────────────── -->
 <p class="ob-section-label">Validations & Restrictions</p>
@@ -226,5 +251,31 @@
     ></button>
   </div>
 
+  <div class="ob-toggle-row">
+    <div class="ob-toggle-info">
+      <p class="ob-toggle-title">Auto Check-Out</p>
+      <p class="ob-toggle-desc">Automatically clock out employees at a set time if they forget.</p>
+    </div>
+    <button
+      type="button"
+      class="ob-toggle"
+      [class.is-on]="autoCheckoutEnabled"
+      (click)="toggle('autoCheckoutEnabled')"
+      [attr.aria-label]="'Auto check-out: ' + (autoCheckoutEnabled ? 'on' : 'off')"
+    ></button>
+  </div>
+
 </div>
+
+@if (autoCheckoutEnabled) {
+  <div class="ob-field ob-toggle-sub">
+    <p class="ob-label">Auto Check-Out Time</p>
+    <input type="time"
+           class="ob-time-input"
+           [(ngModel)]="autoCheckoutTime"
+           (ngModelChange)="emit()"
+           name="autoCheckoutTime" />
+    <p class="ob-hint">Employees still clocked in after this time will be checked out automatically.</p>
+  </div>
+}
 

@@ -1,6 +1,9 @@
-import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, inject, ViewChild, ElementRef, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { AttendanceStateService } from '../../../../core/services/attendance-state.service';
+import { FaceRosterService } from '../../../../core/services/face-roster.service';
+import * as faceapi from '@vladmandic/face-api';
 
 interface LeaveBalance {
   type: string;
@@ -32,41 +35,210 @@ interface Activity {
   templateUrl: './employee-dashboard.component.html',
   styleUrl: './employee-dashboard.component.scss',
 })
-export class EmployeeDashboardComponent {
+export class EmployeeDashboardComponent implements OnDestroy {
   constructor(private router: Router) {}
 
-  now = new Date();
-  isClockedIn = signal(false);
-  clockInTime = signal<string | null>(null);
-  todayHours   = signal('0h 00m');
+  readonly attendanceSvc = inject(AttendanceStateService);
+  readonly rosterSvc     = inject(FaceRosterService);
+  private  cdr           = inject(ChangeDetectorRef);
 
-  private clockInDate: Date | null = null;
+  // Shorthand getters for template
+  get isClockedIn()  { return this.attendanceSvc.isClockedIn; }
+  get geoStatus()    { return this.attendanceSvc.geoStatus; }
+
+  now = new Date();
+  todayHours = signal('0h 00m');
+
   private timerRef?: ReturnType<typeof setInterval>;
 
-  toggleClock(): void {
-    if (this.isClockedIn()) {
-      // Clock out
-      this.isClockedIn.set(false);
-      if (this.timerRef) clearInterval(this.timerRef);
-      this.clockInTime.set(null);
-    } else {
-      // Clock in
-      this.clockInDate = new Date();
-      this.clockInTime.set(this.formatTime(this.clockInDate));
-      this.isClockedIn.set(true);
-      this.timerRef = setInterval(() => {
-        if (this.clockInDate) {
-          const diff = Date.now() - this.clockInDate.getTime();
-          const h = Math.floor(diff / 3600000);
-          const m = Math.floor((diff % 3600000) / 60000);
-          this.todayHours.set(`${h}h ${String(m).padStart(2, '0')}m`);
-        }
-      }, 10000);
+  // ── Face scan modal ─────────────────────────────────────────────
+  @ViewChild('edVideo')  edVideo!:  ElementRef<HTMLVideoElement>;
+  @ViewChild('edCanvas') edCanvas!: ElementRef<HTMLCanvasElement>;
+
+  faceModalOpen = signal(false);
+  faceMode      = signal<'idle' | 'cam' | 'processing' | 'success' | 'fail'>('idle');
+  faceStatus    = signal('');
+  faceId        = signal('');
+  faceName      = signal('');   // recognised person's name
+  faceConsent   = signal(false);
+  faceCamErr    = signal('');
+  private _stream: MediaStream | null = null;
+  private static _modelsLoaded = false;
+
+  openFaceModal() {
+    if (this.attendanceSvc.isClockedIn()) {
+      this.attendanceSvc.manualClockOut();
+      this._stopTimer();
+      return;
     }
+    this.faceModalOpen.set(true);
+    this.faceMode.set('idle');
+    if (this.faceConsent()) {
+      setTimeout(() => this.startFaceCam(), 80);
+    }
+  }
+
+  grantConsentAndStart() {
+    this.faceConsent.set(true);
+    this.startFaceCam();
+  }
+
+  closeFaceModal() {
+    this._stopCam();
+    this.faceModalOpen.set(false);
+    this.faceMode.set('idle');
+  }
+
+  async startFaceCam() {
+    if (!this.faceConsent()) return;
+    this.faceCamErr.set('');
+    this.faceStatus.set('Loading AI models…');
+    this.cdr.markForCheck();
+
+    // Load face-api models once
+    if (!EmployeeDashboardComponent._modelsLoaded) {
+      try {
+        await Promise.all([
+          faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
+          faceapi.nets.faceLandmark68TinyNet.loadFromUri('/models'),
+          faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
+        ]);
+        EmployeeDashboardComponent._modelsLoaded = true;
+        console.log('[Klocky Face] AI models ready');
+      } catch (e) {
+        this.faceCamErr.set('Failed to load AI models.');
+        this.faceMode.set('idle');
+        this.cdr.markForCheck();
+        return;
+      }
+    }
+
+    this.faceStatus.set('');
+    if (!navigator.mediaDevices?.getUserMedia) {
+      this.faceCamErr.set('Camera not supported.');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    try {
+      this._stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+        audio: false,
+      });
+      console.log(`[Klocky Face] Camera: ${this._stream.getVideoTracks()[0]?.label}`);
+
+      setTimeout(() => {
+        const vid = this.edVideo?.nativeElement;
+        if (vid && this._stream) {
+          vid.srcObject = this._stream;
+          vid.onloadedmetadata = () => {
+            this.faceStatus.set('Camera active — align your face then tap the button');
+            this.cdr.markForCheck();
+          };
+          this.faceMode.set('cam');
+          this.cdr.markForCheck();
+        }
+      }, 80);
+    } catch (e: unknown) {
+      const err = e as { name?: string };
+      this.faceCamErr.set(err.name === 'NotAllowedError' ? 'Camera access denied.' : 'Could not start camera.');
+      this.cdr.markForCheck();
+    }
+  }
+
+  async captureAndVerify() {
+    const video = this.edVideo?.nativeElement;
+    if (!video || video.readyState < 2 || !video.videoWidth) {
+      this.faceStatus.set('Camera not ready — try again');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    // Switch to processing overlay but keep stream alive so faceapi can read the frame
+    this.faceMode.set('processing');
+    this.cdr.markForCheck();
+
+    console.log('[Klocky Face] Running face detection…');
+
+    try {
+      const detection = await faceapi
+        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.35 }))
+        .withFaceLandmarks(true)
+        .withFaceDescriptor();
+
+      // Stop camera only after detection has finished reading the frame
+      this._stopCam();
+
+      if (!detection) {
+        this.faceCamErr.set('No face detected. Please look directly at the camera.');
+        this.faceMode.set('cam');
+        this.cdr.markForCheck();
+        console.warn('[Klocky Face] No face detected in frame');
+        // Restart the camera so the user can try again
+        await this.startFaceCam();
+        return;
+      }
+
+      console.log(`[Klocky Face] Face detected — score ${detection.detection.score.toFixed(3)}`);
+
+      const match = this.rosterSvc.recognise(detection.descriptor);
+
+      if (!match) {
+        this.faceCamErr.set('Face not in roster. Go to Attendance → Face Roster to enrol first.');
+        this.faceMode.set('fail');
+        this.cdr.markForCheck();
+        return;
+      }
+
+      const { face, distance } = match;
+      console.log(`[Klocky Face] ✅ Matched "${face.name}" — ID: ${face.id} | distance: ${distance.toFixed(4)}`);
+
+      this.faceId.set(face.id);
+      this.faceName.set(face.name);
+      this.faceMode.set('success');
+      this.attendanceSvc.clockIn(face.id);
+      this._startTimer();
+      this.cdr.markForCheck();
+      setTimeout(() => this.closeFaceModal(), 2000);
+    } catch (e) {
+      this._stopCam();
+      this.faceCamErr.set('Detection error — please try again.');
+      this.faceMode.set('idle');
+      this.cdr.markForCheck();
+      console.error('[Klocky Face] Detection error:', e);
+    }
+  }
+
+  private _stopCam() {
+    this._stream?.getTracks().forEach(t => t.stop());
+    this._stream = null;
+    const vid = this.edVideo?.nativeElement;
+    if (vid) vid.srcObject = null;
+  }
+
+  private _startTimer() {
+    this._stopTimer();
+    this.timerRef = setInterval(() => {
+      const t = this.attendanceSvc.clockInTime();
+      if (!t) { this._stopTimer(); return; }
+      const diff = Date.now() - t.getTime();
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      this.todayHours.set(`${h}h ${String(m).padStart(2, '0')}m`);
+    }, 10000);
+  }
+
+  private _stopTimer() {
+    if (this.timerRef) { clearInterval(this.timerRef); this.timerRef = undefined; }
   }
 
   formatTime(d: Date): string {
     return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  }
+
+  ngOnDestroy() {
+    this._stopCam();
+    this._stopTimer();
   }
 
   leaveBalances: LeaveBalance[] = [

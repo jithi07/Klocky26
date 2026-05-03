@@ -1,0 +1,116 @@
+<div class="tk-page">
+
+  <!-- Header -->
+  <div class="tk-header">
+    <div><h1>Tasks</h1><p>Create, assign, and track work across your team</p></div>
+    <div class="tk-header__right">
+      <select class="tk-select" [ngModel]="filterPrio()" (ngModelChange)="filterPrio.set($event)">
+        <option value="">All Priorities</option>
+        @for (p of priorities; track p) {
+          <option [value]="p">{{ p.charAt(0).toUpperCase() + p.slice(1) }}</option>
+        }
+      </select>
+      <button class="tk-btn tk-btn--primary" (click)="showAdd.set(true)">+ Add Task</button>
+    </div>
+  </div>
+
+  <!-- Kanban board -->
+  <div class="tk-board">
+    @for (col of columns; track col.status) {
+      <div class="tk-col">
+        <div class="tk-col__head" [style.border-top-color]="col.color">
+          <span class="tk-col__label">{{ col.label }}</span>
+          <span class="tk-col__count">{{ colTasks(col.status)().length }}</span>
+        </div>
+        <div class="tk-col__body">
+          @for (task of colTasks(col.status)(); track task.id) {
+            <div class="tk-card" [class.tk-card--overdue]="isOverdue(task.dueDate)">
+              <div class="tk-card__top">
+                <div class="tk-prio-dot" [style.background]="prioColor(task.priority)" [title]="task.priority"></div>
+                <div class="tk-card__tags">
+                  @for (tag of task.tags; track tag) {
+                    <span class="tk-tag">{{ tag }}</span>
+                  }
+                </div>
+                <button class="tk-del-btn" (click)="deleteTask(task.id)" title="Delete">✕</button>
+              </div>
+              <div class="tk-card__title">{{ task.title }}</div>
+              @if (task.description) {
+                <div class="tk-card__desc">{{ task.description }}</div>
+              }
+              <div class="tk-card__footer">
+                <div class="tk-assignee" [style.background]="task.assigneeColor" [title]="task.assigneeName">{{ task.assigneeInitials }}</div>
+                @if (task.dueDate) {
+                  <span class="tk-due" [class.overdue]="isOverdue(task.dueDate)">
+                    {{ task.dueDate | date:'MMM d' }}
+                  </span>
+                }
+              </div>
+              <!-- Move to buttons -->
+              <div class="tk-move">
+                @for (c of columns; track c.status) {
+                  @if (c.status !== col.status) {
+                    <button (click)="moveTo(task.id, c.status)">→ {{ c.label }}</button>
+                  }
+                }
+              </div>
+            </div>
+          }
+          @if (colTasks(col.status)().length === 0) {
+            <div class="tk-empty-col">No tasks</div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+</div>
+
+<!-- Add task modal -->
+@if (showAdd()) {
+  <div class="tk-overlay" (click)="showAdd.set(false)">
+    <div class="tk-modal" (click)="$event.stopPropagation()">
+      <div class="tk-modal__head">
+        <h3>New Task</h3>
+        <button (click)="showAdd.set(false)">✕</button>
+      </div>
+      <div class="tk-modal__body">
+        <div class="tk-field">
+          <label for="tk-title">Title *</label>
+          <input id="tk-title" class="tk-input" type="text" placeholder="Task title" [ngModel]="newTitle()" (ngModelChange)="newTitle.set($event)" />
+        </div>
+        <div class="tk-field">
+          <label for="tk-desc">Description</label>
+          <textarea id="tk-desc" class="tk-textarea" rows="2" placeholder="Optional details" [ngModel]="newDesc()" (ngModelChange)="newDesc.set($event)"></textarea>
+        </div>
+        <div class="tk-form-row">
+          <div class="tk-field">
+            <label for="tk-priority">Priority</label>
+            <select id="tk-priority" class="tk-select tk-select--full" [ngModel]="newPriority()" (ngModelChange)="newPriority.set($event)">
+              @for (p of priorities; track p) { <option [value]="p">{{ p.charAt(0).toUpperCase() + p.slice(1) }}</option> }
+            </select>
+          </div>
+          <div class="tk-field">
+            <label for="tk-due">Due Date</label>
+            <input id="tk-due" class="tk-input" type="date" [ngModel]="newDue()" (ngModelChange)="newDue.set($event)" />
+          </div>
+        </div>
+        <div class="tk-field">
+          <label for="tk-assignee">Assign To</label>
+          <select id="tk-assignee" class="tk-select tk-select--full" [ngModel]="newAssignee()" (ngModelChange)="newAssignee.set($event)">
+            <option value="">Unassigned</option>
+            @for (e of employees; track e.id) { <option [value]="e.id">{{ e.fullName }} – {{ e.department }}</option> }
+          </select>
+        </div>
+        <div class="tk-field">
+          <label for="tk-tags">Tags (comma separated)</label>
+          <input id="tk-tags" class="tk-input" type="text" placeholder="HR, Planning, …" [ngModel]="newTags()" (ngModelChange)="newTags.set($event)" />
+        </div>
+      </div>
+      <div class="tk-modal__foot">
+        <button class="tk-btn tk-btn--ghost" (click)="showAdd.set(false)">Cancel</button>
+        <button class="tk-btn tk-btn--primary" (click)="addTask()" [disabled]="!newTitle().trim()">Create Task</button>
+      </div>
+    </div>
+  </div>
+}

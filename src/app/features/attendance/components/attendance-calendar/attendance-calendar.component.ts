@@ -5,6 +5,9 @@ import {
   signal,
   Input,
   HostListener,
+  ElementRef,
+  AfterViewInit,
+  OnDestroy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
@@ -107,9 +110,22 @@ const DEMO: AttendanceRecord[] = [
   templateUrl: './attendance-calendar.component.html',
   styleUrl: './attendance-calendar.component.scss',
 })
-export class AttendanceCalendarComponent {
+export class AttendanceCalendarComponent implements AfterViewInit, OnDestroy {
 
   // ── Inputs ────────────────────────────────────────────────────────────────
+
+  constructor(private _el: ElementRef<HTMLElement>) {}
+
+  ngAfterViewInit(): void {
+    // Register as non-passive so preventDefault() can block the page scroll
+    this._el.nativeElement.addEventListener('wheel', this._wheelHandler, { passive: false });
+  }
+
+  ngOnDestroy(): void {
+    this._el.nativeElement.removeEventListener('wheel', this._wheelHandler);
+  }
+
+  private readonly _wheelHandler = (e: WheelEvent): void => this.onWheel(e);
 
   @Input() set records(val: AttendanceRecord[]) {
     this._recordMap.set(this._toMap(val));
@@ -273,7 +289,22 @@ export class AttendanceCalendarComponent {
 
   onWheel(e: WheelEvent): void {
     if (this._wheelCooldown) return;
-    // Only horizontal-dominant wheel events (trackpad horizontal scroll)
+
+    const isDesktop = window.innerWidth > 600;
+
+    if (isDesktop) {
+      // Desktop / laptop: vertical scroll (mouse wheel or trackpad up/down)
+      if (Math.abs(e.deltaY) >= 30) {
+        e.preventDefault();
+        this._wheelCooldown = true;
+        if (e.deltaY > 0) this.nextMonth();
+        else this.prevMonth();
+        setTimeout(() => { this._wheelCooldown = false; }, 600);
+        return;
+      }
+    }
+
+    // Horizontal trackpad swipe (all screen sizes)
     if (Math.abs(e.deltaX) < Math.abs(e.deltaY) * 2) return;
     this._wheelCooldown = true;
     if (e.deltaX > 30) this.nextMonth();

@@ -1,0 +1,132 @@
+<div class="pf-page">
+  <div class="pf-header">
+    <div><h1>Performance Management</h1><p>Track reviews, goals & KPIs across your organisation</p></div>
+  </div>
+
+  <!-- KPI row -->
+  <div class="pf-kpi-row">
+    @for (k of kpis; track k.label) {
+      <div class="pf-kpi">
+        <span class="pf-kpi__val">{{ k.value() }} <span class="pf-kpi__unit">{{ k.unit }}</span></span>
+        <span class="pf-kpi__lbl">{{ k.label }}</span>
+        @if (k.trend) {
+          <span class="pf-kpi__trend" [class.up]="k.up" [class.down]="!k.up">{{ k.up ? '↑' : '↓' }} {{ k.trend }}</span>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Tabs -->
+  <div class="pf-tabs">
+    <button [class.active]="activeTab() === 'reviews'" (click)="activeTab.set('reviews')">Reviews</button>
+    <button [class.active]="activeTab() === 'goals'"   (click)="activeTab.set('goals')">Goals & OKRs</button>
+    <button [class.active]="activeTab() === 'kpis'"    (click)="activeTab.set('kpis')">KPI Dashboard</button>
+
+    <select class="pf-filter" [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event)">
+      <option value="">All Status</option>
+      @if (activeTab() === 'reviews') {
+        <option value="pending">Pending</option>
+        <option value="in_progress">In Progress</option>
+        <option value="completed">Completed</option>
+      } @else {
+        <option value="on_track">On Track</option>
+        <option value="at_risk">At Risk</option>
+        <option value="behind">Behind</option>
+        <option value="completed">Completed</option>
+      }
+    </select>
+  </div>
+
+  <!-- Reviews tab -->
+  @if (activeTab() === 'reviews') {
+    <div class="pf-list">
+      @for (r of filteredReviews(); track r.id) {
+        <div class="pf-review-card">
+          <div class="pf-emp">
+            <div class="pf-avatar" [style.background]="r.avatarColor">{{ r.initials }}</div>
+            <div>
+              <div class="pf-name">{{ r.employeeName }}</div>
+              <div class="pf-sub">{{ r.department }} · {{ r.period }}</div>
+            </div>
+          </div>
+          <div class="pf-goals-prog">
+            <span class="pf-goals-label">Goals</span>
+            <div class="pf-bar"><div class="pf-bar__fill" [style.width.%]="(r.goalsCompleted / r.goals) * 100"></div></div>
+            <span class="pf-goals-val">{{ r.goalsCompleted }}/{{ r.goals }}</span>
+          </div>
+          @if (r.rating > 0) {
+            <div class="pf-stars">
+              @for (s of stars(r.rating); track $index) {
+                <span [class.filled]="s">★</span>
+              }
+              <span class="pf-rating-val">{{ r.rating }}</span>
+            </div>
+          }
+          <div>
+            <span class="pf-status pf-status--{{ r.status }}">{{ r.status | titlecase }}</span>
+          </div>
+          <div class="pf-reviewer">
+            <span>Reviewer:</span> {{ r.reviewer }}
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Goals tab -->
+  @if (activeTab() === 'goals') {
+    <div class="pf-list">
+      @for (g of filteredGoals(); track g.id) {
+        <div class="pf-goal-card">
+          <div class="pf-emp">
+            <div class="pf-avatar pf-avatar--sm" [style.background]="g.avatarColor">{{ g.initials }}</div>
+            <span class="pf-name">{{ g.employeeName }}</span>
+          </div>
+          <div class="pf-goal-info">
+            <div class="pf-goal-title">{{ g.title }}</div>
+            <div class="pf-goal-target">Target: {{ g.target }}</div>
+          </div>
+          <div class="pf-goal-prog">
+            <div class="pf-bar pf-bar--lg"><div class="pf-bar__fill pf-bar__fill--{{ g.status }}" [style.width.%]="g.progress"></div></div>
+            <span class="pf-prog-val">{{ g.progress }}%</span>
+          </div>
+          <div class="pf-goal-meta">
+            <span class="pf-status pf-status--{{ g.status }}">{{ g.status === 'on_track' ? 'On Track' : g.status === 'at_risk' ? 'At Risk' : g.status | titlecase }}</span>
+            <span class="pf-due" [class.overdue]="g.status === 'behind'">{{ g.due | date:'MMM d, yyyy' }}</span>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- KPIs tab -->
+  @if (activeTab() === 'kpis') {
+    <div class="pf-kpi-grid">
+      <div class="pf-kpi-chart-card">
+        <h3>Department Performance</h3>
+        <div class="pf-bar-chart">
+          @for (dept of [['Engineering',88],['Design',72],['Sales',81],['HR',95],['Finance',68],['Operations',75]]; track dept[0]) {
+            <div class="pf-bar-row">
+              <span class="pf-bar-lbl">{{ dept[0] }}</span>
+              <div class="pf-bar-track"><div class="pf-bar-fill-h" [style.width.%]="dept[1]"></div></div>
+              <span class="pf-bar-num">{{ dept[1] }}%</span>
+            </div>
+          }
+        </div>
+      </div>
+      <div class="pf-kpi-chart-card">
+        <h3>Rating Distribution</h3>
+        <div class="pf-dist">
+          @for (item of [[5,'Excellent',30],[4,'Good',45],[3,'Average',15],[2,'Below Avg',7],[1,'Poor',3]]; track item[0]) {
+            <div class="pf-dist-row">
+              <span class="pf-dist-star">★ {{ item[0] }}</span>
+              <div class="pf-bar-track"><div class="pf-bar-fill-h pf-bar-fill-h--dist" [style.width.%]="item[2]"></div></div>
+              <span class="pf-dist-pct">{{ item[2] }}%</span>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

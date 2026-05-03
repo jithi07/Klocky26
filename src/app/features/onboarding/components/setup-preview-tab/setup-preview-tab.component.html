@@ -110,6 +110,10 @@
     </span>
   </div>
   <div class="ob-preview-row">
+    <span class="ob-preview-key">Work Hours / Day</span>
+    <span class="ob-preview-val">{{ attendanceData.workHoursPerDay || 8 }} hrs</span>
+  </div>
+  <div class="ob-preview-row">
     <span class="ob-preview-key">Work Week</span>
     <span class="ob-preview-val">
       {{ attendanceData.workWeekStart || 'Monday' }} – {{ attendanceData.workWeekEnd || 'Friday' }}
@@ -126,6 +130,10 @@
     <span class="ob-preview-val">{{ attendanceData.gracePeriod || '10 minutes' }}</span>
   </div>
   <div class="ob-preview-row">
+    <span class="ob-preview-key">Half-Day Threshold</span>
+    <span class="ob-preview-val">{{ attendanceData.halfDayThresholdHrs || 4 }} hrs</span>
+  </div>
+  <div class="ob-preview-row">
     <span class="ob-preview-key">Late Threshold</span>
     <span class="ob-preview-val">{{ attendanceData.lateThreshold || 'After 15 minutes' }}</span>
   </div>
@@ -134,6 +142,10 @@
     <span class="ob-preview-val" [class.ob-preview-val-empty]="!attendanceData.locationRule">
       {{ attendanceData.locationRule || '—' }}
     </span>
+  </div>
+  <div class="ob-preview-row">
+    <span class="ob-preview-key">Overtime Tracking</span>
+    <span class="ob-preview-val">{{ attendanceData.overtimeEnabled ? 'Enabled (after ' + attendanceData.overtimeAfterHrs + ' hrs)' : 'Disabled' }}</span>
   </div>
   <div class="ob-preview-row">
     <span class="ob-preview-key">Require Photo</span>
@@ -146,6 +158,10 @@
   <div class="ob-preview-row">
     <span class="ob-preview-key">Selfie Verification</span>
     <span class="ob-preview-val">{{ attendanceData.selfieVerification ? 'Enabled' : 'Disabled' }}</span>
+  </div>
+  <div class="ob-preview-row">
+    <span class="ob-preview-key">Auto Check-Out</span>
+    <span class="ob-preview-val">{{ attendanceData.autoCheckoutEnabled ? 'Enabled at ' + attendanceData.autoCheckoutTime : 'Disabled' }}</span>
   </div>
 </div>
 

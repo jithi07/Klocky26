@@ -182,5 +182,228 @@
 @media (max-width: 520px) {
   .ed-page { padding: 16px; }
   .ed-stats-row { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .ed-greeting-bar { flex-direction: column; align-items: flex-start; }
+  .ed-greeting-bar { flex-direction: column; align-items: flex-start; gap: 14px; }
+
+  /* Large clock-in button on mobile */
+  .ed-clock-actions { width: 100%; }
+  .ed-btn-clockin {
+    width: 100%; height: 54px; font-size: 16px; justify-content: center;
+    border-radius: 14px; gap: 10px;
+    svg { width: 22px; height: 22px; }
+  }
+  .ed-clocked-state { width: 100%; flex-direction: column; align-items: stretch; }
+  .ed-btn-clockout { width: 100%; height: 48px; font-size: 15px; justify-content: center; border-radius: 12px; }
+
+  /* Face modal — full-screen bottom sheet on mobile */
+  .ed-face-overlay { padding: 0; align-items: flex-end; }
+  .ed-face-modal {
+    width: 100%; max-height: 95dvh; border-radius: 20px 20px 0 0;
+    overflow-y: auto;
+  }
+  /* Camera view fills the available width */
+  .ed-face-video-container { max-width: 100%; aspect-ratio: 3 / 4; }
+  .ed-face-cam-wrap { padding: 14px; gap: 12px; }
+}
+
+/* ── Face badge / geo label ──────────────────────────────── */
+.ed-face-id-badge { font-size: 10.5px; background: #eef2ff; color: #6366f1; padding: 1px 6px; border-radius: 4px; font-family: monospace; }
+.ed-geo-label { font-size: 11.5px; color: #22c55e; font-weight: 600; }
+
+/* ── Face scan modal — full-screen camera ────────────────── */
+.ed-face-overlay {
+  position: fixed; inset: 0; z-index: 2000;
+  background: #000;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Floating close button (top-right) */
+.ed-face-close-fab {
+  position: absolute; top: 16px; right: 16px; z-index: 10;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(255,255,255,.15); border: none;
+  color: #fff; font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(6px);
+  transition: background .15s;
+  &:hover { background: rgba(255,255,255,.28); }
+}
+
+/* ── Consent card (before camera) ───────────────────────── */
+.ed-face-consent-card {
+  background: #0f172a; border-radius: 24px;
+  width: min(400px, 92vw);
+  padding: 36px 28px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+  box-shadow: 0 32px 80px rgba(0,0,0,.6);
+}
+.ed-face-privacy-icon { font-size: 42px; }
+.ed-face-consent-title { font-size: 18px; font-weight: 800; color: #f1f5f9; margin: 0; }
+.ed-face-privacy-text {
+  font-size: 13.5px; color: #94a3b8; line-height: 1.6; margin: 0;
+  strong { color: #e2e8f0; }
+}
+.ed-face-allow-btn {
+  display: inline-flex; align-items: center; gap: 9px;
+  padding: 14px 32px; border: none; border-radius: 14px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff; font-size: 15px; font-weight: 700; cursor: pointer;
+  font-family: inherit; transition: opacity .15s; margin-top: 4px;
+  &:hover { opacity: .88; }
+}
+
+/* ── Full-screen camera view ─────────────────────────────── */
+.ed-face-fullcam {
+  position: relative; width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+
+/* Video fills the entire screen */
+.ed-face-video-full {
+  width: 100%; height: 100%; object-fit: cover;
+  transform: scaleX(-1); /* mirror for natural selfie */
+  display: block;
+}
+
+/* Top HUD bar */
+.ed-face-top-bar {
+  position: absolute; top: 0; left: 0; right: 0;
+  padding: 16px 20px; z-index: 5;
+  display: flex; align-items: center; justify-content: space-between;
+  background: linear-gradient(to bottom, rgba(0,0,0,.6) 0%, transparent 100%);
+}
+.ed-face-top-title {
+  color: #fff; font-size: 15px; font-weight: 700; letter-spacing: .01em;
+}
+.ed-face-live-badge {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(0,0,0,.45); border-radius: 20px; padding: 4px 10px;
+  font-size: 11px; font-weight: 700; color: #4ade80; letter-spacing: .06em;
+  backdrop-filter: blur(4px);
+}
+.ed-face-cam-dot {
+  display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  background: #22c55e;
+  animation: cam-dot-pulse 1.4s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes cam-dot-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: .4; transform: scale(.65); }
+}
+
+/* Scan overlay — sits on top of video */
+.ed-face-scan-frame {
+  position: absolute; inset: 0; pointer-events: none; z-index: 4;
+}
+.ed-corner {
+  position: absolute; width: 28px; height: 28px;
+  border-color: rgba(255,255,255,.85); border-style: solid;
+}
+.ed-corner--tl { top: 20%; left: 18%; border-width: 3px 0 0 3px; border-radius: 5px 0 0 0; }
+.ed-corner--tr { top: 20%; right: 18%; border-width: 3px 3px 0 0; border-radius: 0 5px 0 0; }
+.ed-corner--bl { bottom: 28%; left: 18%; border-width: 0 0 3px 3px; border-radius: 0 0 0 5px; }
+.ed-corner--br { bottom: 28%; right: 18%; border-width: 0 3px 3px 0; border-radius: 0 0 5px 0; }
+
+.ed-face-oval {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -52%);
+  width: 54%; aspect-ratio: 3 / 4;
+  border: 2.5px solid rgba(255,255,255,.6);
+  border-radius: 50%;
+  animation: oval-pulse 2.5s ease-in-out infinite;
+}
+@keyframes oval-pulse {
+  0%, 100% { border-color: rgba(255,255,255,.4); }
+  50%       { border-color: rgba(255,255,255,.9); }
+}
+
+.ed-scan-line {
+  position: absolute; left: 20%; right: 20%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.8), transparent);
+  animation: scan-move 2.2s ease-in-out infinite;
+  border-radius: 1px; z-index: 5;
+}
+@keyframes scan-move {
+  0%   { top: 20%; opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { top: 72%; opacity: 0; }
+}
+
+.ed-face-hint-center {
+  position: absolute; bottom: 110px; left: 0; right: 0;
+  text-align: center; font-size: 13px; color: rgba(255,255,255,.8);
+  font-weight: 500; pointer-events: none; z-index: 5;
+  text-shadow: 0 1px 4px rgba(0,0,0,.6);
+}
+
+/* ── Overlays (loading / processing / success) ───────────── */
+.ed-face-fullcam-overlay {
+  position: absolute; inset: 0; z-index: 8;
+  background: rgba(0,0,0,.75); backdrop-filter: blur(4px);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px;
+}
+.ed-face-fullcam-overlay--success {
+  background: rgba(0,0,0,.82);
+}
+.ed-face-fullcam-overlay--fail {
+  background: rgba(0,0,0,.82);
+}
+.ed-face-fail-icon {
+  width: 68px; height: 68px; border-radius: 50%;
+  background: #ef4444; color: #fff; font-size: 28px; font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 0 12px rgba(239,68,68,.18);
+}
+.ed-face-fail-text { font-size: 18px; font-weight: 800; color: #fca5a5; margin: 0; }
+
+.ed-face-spinner {
+  width: 56px; height: 56px; border-radius: 50%;
+  border: 3px solid rgba(255,255,255,.15); border-top-color: #6366f1;
+  animation: ed-spin .7s linear infinite;
+}
+@keyframes ed-spin { to { transform: rotate(360deg); } }
+.ed-face-proc-text { font-size: 16px; font-weight: 700; color: #f1f5f9; margin: 0; }
+.ed-face-proc-sub  { font-size: 13px; color: #94a3b8; margin: 0; }
+
+.ed-face-ok-icon {
+  width: 68px; height: 68px; border-radius: 50%;
+  background: #16a34a; color: #fff; font-size: 30px; font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 0 12px rgba(34,197,94,.18);
+  animation: ok-pop .35s cubic-bezier(.17,.67,.42,1.4) both;
+}
+@keyframes ok-pop {
+  from { transform: scale(.4); opacity: 0; }
+  to   { transform: scale(1);  opacity: 1; }
+}
+.ed-face-ok-name { font-size: 20px; font-weight: 800; color: #f1f5f9; margin: 0; }
+.ed-face-id-code { font-size: 15px; font-weight: 700; color: #a5b4fc; font-family: monospace; letter-spacing: 2px; }
+
+.ed-face-err {
+  font-size: 13px; color: #fca5a5; background: rgba(239,68,68,.15);
+  border: 1px solid rgba(239,68,68,.25); border-radius: 12px; padding: 11px 16px;
+}
+.ed-face-err--dark { max-width: 300px; text-align: center; }
+
+/* ── Shutter button (bottom bar) ─────────────────────────── */
+.ed-face-bottom-bar {
+  position: absolute; bottom: 32px; left: 0; right: 0; z-index: 6;
+  display: flex; align-items: center; justify-content: center;
+}
+.ed-face-shutter {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: rgba(255,255,255,.15); border: 3px solid #fff;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(6px); transition: transform .1s, background .15s;
+  &:hover  { background: rgba(255,255,255,.28); }
+  &:active { transform: scale(.92); }
+}
+.ed-face-shutter-inner {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: #fff; display: block;
+  transition: transform .1s;
 }

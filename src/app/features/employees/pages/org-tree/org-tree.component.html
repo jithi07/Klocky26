@@ -1,0 +1,88 @@
+<div class="ot-page">
+
+  <!-- Header -->
+  <div class="ot-header">
+    <div class="ot-header__left">
+      <button class="ot-back-btn" (click)="goBack()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+        </svg>
+        Employees
+      </button>
+      <h1 class="ot-title">Organisation Chart</h1>
+      <div class="ot-meta">
+        <span>{{ totalCount() }} people</span>
+        <span class="ot-dot"></span>
+        <span>{{ deptCount() }} departments</span>
+      </div>
+    </div>
+    <div class="ot-header__right">
+      <button class="ot-btn ot-btn--ghost" (click)="collapseAll()">Collapse All</button>
+      <button class="ot-btn ot-btn--ghost" (click)="expandAll()">Expand All</button>
+    </div>
+  </div>
+
+  <!-- Tree -->
+  <div class="ot-tree-wrap">
+    <div class="ot-tree">
+      @for (node of roots(); track node.emp.id) {
+        <ng-container *ngTemplateOutlet="treeNodeTpl; context: { node: node, depth: 0 }"></ng-container>
+      }
+    </div>
+  </div>
+
+</div>
+
+<ng-template #treeNodeTpl let-node="node" let-depth="depth">
+  <div class="ot-node-wrap" [style.--depth]="depth">
+
+    <div class="ot-node" [class.ot-node--has-children]="node.children.length > 0">
+
+      <!-- Expand toggle -->
+      @if (node.children.length > 0) {
+        <button class="ot-toggle" (click)="toggleNode(node)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            [style.transform]="node.expanded ? 'rotate(90deg)' : 'rotate(0deg)'">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+      } @else {
+        <span class="ot-leaf-dot"></span>
+      }
+
+      <!-- Avatar -->
+      <div class="ot-avatar" [style.background]="node.emp.avatarColor">
+        {{ node.emp.initials }}
+      </div>
+
+      <!-- Info -->
+      <div class="ot-info">
+        <span class="ot-name">{{ node.emp.fullName }}</span>
+        <span class="ot-desig">{{ node.emp.designation }}</span>
+        <span class="ot-dept">{{ node.emp.department }}</span>
+      </div>
+
+      <!-- Badges & actions -->
+      <div class="ot-meta-right">
+        <span class="ot-role-badge ot-role-badge--{{ node.emp.role }}">
+          {{ node.emp.role.charAt(0).toUpperCase() + node.emp.role.slice(1) }}
+        </span>
+        <span class="ot-status-dot ot-status-dot--{{ node.emp.status }}" [title]="node.emp.status"></span>
+        <button class="ot-view-btn" (click)="viewEmployee(node.emp.id)">View</button>
+        @if (node.children.length > 0) {
+          <span class="ot-child-count">{{ node.children.length }} direct report{{ node.children.length > 1 ? 's' : '' }}</span>
+        }
+      </div>
+    </div>
+
+    <!-- Children -->
+    @if (node.expanded && node.children.length > 0) {
+      <div class="ot-children">
+        @for (child of node.children; track child.emp.id) {
+          <ng-container *ngTemplateOutlet="treeNodeTpl; context: { node: child, depth: depth + 1 }"></ng-container>
+        }
+      </div>
+    }
+
+  </div>
+</ng-template>

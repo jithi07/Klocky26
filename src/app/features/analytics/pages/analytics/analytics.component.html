@@ -1,0 +1,126 @@
+<div class="an-page">
+  <div class="an-header">
+    <div><h1>HR Analytics & Reports</h1><p>Insights to drive better people decisions</p></div>
+    <div class="an-header__right">
+      <select class="an-select" [ngModel]="period()" (ngModelChange)="period.set($event)">
+        <option value="2026-Q1">Q1 2026</option>
+        <option value="2026-Q2">Q2 2026</option>
+        <option value="2025-Q4">Q4 2025</option>
+      </select>
+      <button class="an-btn an-btn--primary" (click)="exportReport()">↓ Export</button>
+    </div>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="an-summary">
+    @for (c of summaryCards; track c.label) {
+      <div class="an-summary-card">
+        <div class="an-summary-val">{{ c.value }}</div>
+        <div class="an-summary-lbl">{{ c.label }}</div>
+        <div class="an-summary-trend" [class.up]="c.up === true" [class.down]="c.up === false" [class.neutral]="c.up === null">{{ c.trend }}</div>
+      </div>
+    }
+  </div>
+
+  <!-- Report selector -->
+  <div class="an-report-tabs">
+    @for (r of reportOptions; track r.value) {
+      <button class="an-report-btn" [class.active]="activeReport() === r.value" (click)="activeReport.set(r.value)">
+        <span>{{ r.icon }}</span>{{ r.label }}
+      </button>
+    }
+  </div>
+
+  <!-- Headcount -->
+  @if (activeReport() === 'headcount') {
+    <div class="an-charts">
+      <div class="an-chart-card">
+        <h3>Headcount by Department</h3>
+        @for (d of headcountByDept; track d.dept) {
+          <div class="an-bar-row">
+            <span class="an-bar-lbl">{{ d.dept }}</span>
+            <div class="an-bar-track"><div class="an-bar-fill" [style.width.%]="d.pct"></div></div>
+            <span class="an-bar-val">{{ d.count }}</span>
+          </div>
+        }
+      </div>
+      <div class="an-chart-card">
+        <h3>Role Distribution</h3>
+        <div class="an-donut-legend">
+          @for (r of headcountByRole; track r.role) {
+            <div class="an-legend-row">
+              <span class="an-legend-dot" [style.background]="r.color"></span>
+              <span class="an-legend-lbl">{{ r.role }}</span>
+              <div class="an-bar-track"><div class="an-bar-fill" [style.width.%]="(r.count/20)*100" [style.background]="r.color"></div></div>
+              <span class="an-bar-val">{{ r.count }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Attendance -->
+  @if (activeReport() === 'attendance') {
+    <div class="an-chart-card an-chart-card--wide">
+      <h3>Monthly Attendance Breakdown (%)</h3>
+      <div class="an-att-chart">
+        @for (m of attendanceTrend; track m.month) {
+          @if (m.present > 0) {
+            <div class="an-att-col">
+              <div class="an-att-stack">
+                <div class="an-att-bar an-att-bar--absent"   [style.height.%]="m.absent"   [title]="'Absent: ' + m.absent + '%'"></div>
+                <div class="an-att-bar an-att-bar--late"     [style.height.%]="m.late"     [title]="'Late: ' + m.late + '%'"></div>
+                <div class="an-att-bar an-att-bar--present"  [style.height.%]="m.present"  [title]="'Present: ' + m.present + '%'"></div>
+              </div>
+              <span>{{ m.month }}</span>
+            </div>
+          }
+        }
+      </div>
+      <div class="an-legend-row an-legend-row--center">
+        <span class="an-legend-dot" style="background:#22c55e"></span><span>Present</span>
+        <span class="an-legend-dot" style="background:#f59e0b;margin-left:12px"></span><span>Late</span>
+        <span class="an-legend-dot" style="background:#ef4444;margin-left:12px"></span><span>Absent</span>
+      </div>
+    </div>
+  }
+
+  <!-- Leaves -->
+  @if (activeReport() === 'leaves') {
+    <div class="an-chart-card an-chart-card--wide">
+      <h3>Leave Usage by Type</h3>
+      @for (l of leaveByType; track l.type) {
+        <div class="an-leave-row">
+          <span class="an-bar-lbl">{{ l.type }}</span>
+          <div class="an-bar-track an-bar-track--lg">
+            <div class="an-bar-fill" [style.width.%]="l.total > 0 ? (l.used / l.total) * 100 : 50" [style.background]="l.color"></div>
+          </div>
+          <span class="an-bar-val">{{ l.used }} used{{ l.total > 0 ? ' / ' + l.total : '' }}</span>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Turnover -->
+  @if (activeReport() === 'turnover') {
+    <div class="an-chart-card an-chart-card--wide">
+      <h3>Hiring vs Attrition</h3>
+      <div class="an-turnover-chart">
+        @for (t of turnoverData; track t.month) {
+          <div class="an-tc-group">
+            <div class="an-tc-bars">
+              <div class="an-tc-bar an-tc-bar--hired" [style.height.px]="t.hired * 30" [title]="'Hired: ' + t.hired"></div>
+              <div class="an-tc-bar an-tc-bar--left"  [style.height.px]="t.left  * 30" [title]="'Left: '  + t.left"></div>
+            </div>
+            <span>{{ t.month }}</span>
+          </div>
+        }
+      </div>
+      <div class="an-legend-row an-legend-row--center" style="margin-top:12px">
+        <span class="an-legend-dot" style="background:#22c55e"></span><span>Hired</span>
+        <span class="an-legend-dot" style="background:#ef4444;margin-left:12px"></span><span>Left</span>
+      </div>
+    </div>
+  }
+</div>

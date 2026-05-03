@@ -1,0 +1,108 @@
+<div class="nt-page">
+
+  <div class="nt-header">
+    <div><h1>Notifications</h1><p>Send and manage notifications to your team</p></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="nt-tabs">
+    <button [class.active]="activeTab() === 'send'"    (click)="activeTab.set('send')">Compose</button>
+    <button [class.active]="activeTab() === 'history'" (click)="activeTab.set('history')">History</button>
+  </div>
+
+  <!-- Compose -->
+  @if (activeTab() === 'send') {
+    <div class="nt-compose-wrap">
+
+      <!-- Channel selector -->
+      <div class="nt-section">
+        <h3>Channel</h3>
+        <div class="nt-channel-grid">
+          @for (ch of channels; track ch.value) {
+            <button class="nt-channel-btn" [class.active]="channel() === ch.value" (click)="channel.set(ch.value)">
+              <span class="nt-channel-icon">{{ ch.icon }}</span>
+              <span>{{ ch.label }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Audience -->
+      <div class="nt-section">
+        <h3>Audience</h3>
+        <div class="nt-radio-group">
+          @for (a of [['all','All Employees'],['department','By Department'],['individual','Specific Employee']]; track a[0]) {
+            <label class="nt-radio" [class.active]="audience() === a[0]">
+              <input type="radio" name="audience" [value]="a[0]" [ngModel]="audience()" (ngModelChange)="audience.set($event); target.set('')" />
+              {{ a[1] }}
+            </label>
+          }
+        </div>
+
+        @if (audience() === 'department') {
+          <select class="nt-select" [ngModel]="target()" (ngModelChange)="target.set($event)">
+            <option value="">Select department</option>
+            @for (d of departments; track d) { <option [value]="d">{{ d }}</option> }
+          </select>
+        }
+        @if (audience() === 'individual') {
+          <select class="nt-select" [ngModel]="target()" (ngModelChange)="target.set($event)">
+            <option value="">Select employee</option>
+            @for (e of employees; track e.id) { <option [value]="e.id">{{ e.fullName }} – {{ e.department }}</option> }
+          </select>
+        }
+      </div>
+
+      <!-- Message -->
+      <div class="nt-section">
+        <h3>Message</h3>
+        <input class="nt-input" type="text" placeholder="Notification title" [ngModel]="title()" (ngModelChange)="title.set($event)" maxlength="80" />
+        <div class="nt-textarea-wrap">
+          <textarea class="nt-textarea" rows="4" placeholder="Write your message here…" [ngModel]="body()" (ngModelChange)="body.set($event)" maxlength="500"></textarea>
+          <span class="nt-char">{{ charCount() }} / 500</span>
+        </div>
+      </div>
+
+      <!-- Schedule (optional) -->
+      <div class="nt-section">
+        <h3>Schedule (optional)</h3>
+        <input class="nt-input" type="datetime-local" [ngModel]="schedule()" (ngModelChange)="schedule.set($event)" />
+        <p class="nt-hint">Leave empty to send immediately</p>
+      </div>
+
+      @if (sent()) {
+        <div class="nt-success">✓ Notification {{ schedule() ? 'scheduled' : 'sent' }} successfully!</div>
+      }
+
+      <div class="nt-actions">
+        <button class="nt-btn nt-btn--ghost" (click)="title.set(''); body.set(''); schedule.set('')">Clear</button>
+        <button class="nt-btn nt-btn--primary" (click)="sendNotification()" [disabled]="!title().trim() || !body().trim() || isSending()">
+          @if (isSending()) { <span class="nt-spin"></span> Sending… }
+          @else { {{ schedule() ? 'Schedule' : 'Send Now' }} }
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- History -->
+  @if (activeTab() === 'history') {
+    <div class="nt-history">
+      @for (n of history(); track n.id) {
+        <div class="nt-hist-card">
+          <div class="nt-hist-icon">{{ channelIcon(n.channel) }}</div>
+          <div class="nt-hist-info">
+            <div class="nt-hist-title">{{ n.title }}</div>
+            <div class="nt-hist-body">{{ n.body }}</div>
+            <div class="nt-hist-meta">
+              <span class="nt-badge nt-badge--{{ n.channel }}">{{ channelLabel(n.channel) }}</span>
+              <span>→ {{ n.target }}</span>
+              <span>{{ n.sentAt }}</span>
+            </div>
+          </div>
+          <span class="nt-hist-status nt-hist-status--{{ n.status }}">{{ n.status }}</span>
+        </div>
+      }
+    </div>
+  }
+
+</div>

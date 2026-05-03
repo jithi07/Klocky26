@@ -1,0 +1,127 @@
+<div class="fr-page">
+
+  <div class="fr-header">
+    <h2 class="fr-title">Face Roster</h2>
+    <p class="fr-subtitle">Enrol employee faces so they can clock in by face scan</p>
+  </div>
+
+  <!-- ── Enrolled list ────────────────────────────────────────────── -->
+  @if (mode() === 'list' || mode() === 'success') {
+
+    @if (mode() === 'success') {
+      <div class="fr-success-banner">
+        <span class="fr-success-icon">✓</span>
+        <strong>{{ enrolledName() }}</strong> has been enrolled successfully.
+      </div>
+    }
+
+    <div class="fr-enroll-bar">
+      <span class="fr-count">{{ roster().length }} face{{ roster().length !== 1 ? 's' : '' }} enrolled</span>
+      <button class="fr-add-btn" (click)="startEnroll()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Enrol New Face
+      </button>
+    </div>
+
+    @if (roster().length === 0) {
+      <div class="fr-empty">
+        <div class="fr-empty-icon">👤</div>
+        <p>No faces enrolled yet.<br>Tap <strong>Enrol New Face</strong> to get started.</p>
+      </div>
+    } @else {
+      <div class="fr-list">
+        @for (face of roster(); track trackById($index, face)) {
+          <div class="fr-card">
+            <div class="fr-card-avatar">{{ face.name.charAt(0).toUpperCase() }}</div>
+            <div class="fr-card-info">
+              <strong class="fr-card-name">{{ face.name }}</strong>
+              <span class="fr-card-id">{{ face.id }}</span>
+              <span class="fr-card-date">Enrolled {{ face.enrolledAt | date:'d MMM y, HH:mm' }}</span>
+            </div>
+            <button class="fr-remove-btn" (click)="removeFace(face)" title="Remove">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            </button>
+          </div>
+        }
+      </div>
+    }
+  }
+
+  <!-- ── Camera / enrol flow ──────────────────────────────────────── -->
+  @if (mode() === 'cam' || mode() === 'processing' || mode() === 'error') {
+    <div class="fr-cam-wrap">
+
+      <!-- Name input (always visible during cam) -->
+      @if (mode() === 'cam') {
+        <div class="fr-name-row">
+          <input
+            class="fr-name-input"
+            type="text"
+            placeholder="Enter person's full name…"
+            [(ngModel)]="nameInput"
+            (keyup.enter)="captureAndEnroll()"
+            autocomplete="off"
+          />
+        </div>
+      }
+
+      <!-- Full-screen camera -->
+      <div class="fr-cam-screen">
+        <video #enrollVideo autoplay playsinline muted class="fr-cam-video"></video>
+        <canvas #enrollCanvas style="display:none"></canvas>
+
+        <!-- Top bar -->
+        <div class="fr-cam-topbar">
+          <span class="fr-cam-title">Enrol Face</span>
+          <button class="fr-cam-close" (click)="cancelEnroll()">✕</button>
+        </div>
+
+        <!-- Overlay corners + oval guide -->
+        @if (mode() === 'cam') {
+          <div class="fr-scan-frame">
+            <div class="fr-corner fr-corner--tl"></div>
+            <div class="fr-corner fr-corner--tr"></div>
+            <div class="fr-corner fr-corner--bl"></div>
+            <div class="fr-corner fr-corner--br"></div>
+            <div class="fr-oval"></div>
+          </div>
+          <p class="fr-cam-hint">Centre your face · then tap Capture</p>
+        }
+
+        <!-- Status / spinner overlay — only covers when processing or before cam is live -->
+        @if (mode() === 'processing' || (statusMsg() && mode() !== 'cam')) {
+          <div class="fr-cam-overlay">
+            @if (mode() === 'processing') {
+              <div class="fr-spinner"></div>
+            }
+            <p class="fr-overlay-text">{{ statusMsg() }}</p>
+          </div>
+        }
+
+        <!-- Error overlay -->
+        @if (mode() === 'error') {
+          <div class="fr-cam-overlay fr-cam-overlay--err">
+            <p class="fr-overlay-err">⚠ {{ errMsg() }}</p>
+            <button class="fr-retry-btn" (click)="startEnroll()">Retry</button>
+          </div>
+        }
+
+        <!-- Error inside cam mode (no face detected etc.) -->
+        @if (mode() === 'cam' && errMsg()) {
+          <div class="fr-inline-err">⚠ {{ errMsg() }}</div>
+        }
+
+        <!-- Capture shutter -->
+        @if (mode() === 'cam') {
+          <div class="fr-shutter-bar">
+            <button class="fr-shutter" (click)="captureAndEnroll()" aria-label="Capture face">
+              <span class="fr-shutter-inner"></span>
+            </button>
+          </div>
+        }
+      </div>
+
+    </div>
+  }
+
+</div>

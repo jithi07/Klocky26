@@ -74,13 +74,65 @@ export const routes: Routes = [
           import('./features/ui-components/ui-components.routes').then((m) => m.routes),
       },
       {
-        // roleGuard example: only admin/hr can access settings
-        // Remove canActivate or change roles array once RBAC is finalised
         path: 'settings',
         canActivate: [roleGuard],
         data: { roles: ['admin', 'hr', 'super_admin'] },
         loadChildren: () =>
           import('./features/settings/settings.routes').then((m) => m.routes),
+      },
+      {
+        path: 'profile',
+        loadChildren: () =>
+          import('./features/profile/profile.routes').then((m) => m.profileRoutes),
+      },
+      {
+        path: 'leaves',
+        loadChildren: () =>
+          import('./features/leaves/leaves.routes').then((m) => m.leaveRoutes),
+      },
+      {
+        path: 'tasks',
+        loadChildren: () =>
+          import('./features/tasks/tasks.routes').then((m) => m.taskRoutes),
+      },
+      {
+        path: 'notifications',
+        loadChildren: () =>
+          import('./features/notifications/notifications.routes').then((m) => m.notificationRoutes),
+      },
+      {
+        path: 'performance',
+        loadChildren: () =>
+          import('./features/performance/performance.routes').then((m) => m.performanceRoutes),
+      },
+      {
+        path: 'analytics',
+        canActivate: [roleGuard],
+        data: { roles: ['admin', 'hr', 'super_admin'] },
+        loadChildren: () =>
+          import('./features/analytics/analytics.routes').then((m) => m.analyticsRoutes),
+      },
+      {
+        path: 'engagement',
+        loadChildren: () =>
+          import('./features/engagement/engagement.routes').then((m) => m.engagementRoutes),
+      },
+      {
+        path: 'recruitment',
+        loadChildren: () =>
+          import('./features/recruitment/recruitment.routes').then((m) => m.recruitmentRoutes),
+      },
+      {
+        path: 'roles',
+        canActivate: [roleGuard],
+        data: { roles: ['admin', 'super_admin'] },
+        loadChildren: () =>
+          import('./features/roles/roles.routes').then((m) => m.rolesRoutes),
+      },
+      {
+        path: 'shifts',
+        loadChildren: () =>
+          import('./features/shifts/shifts.routes').then((m) => m.shiftRoutes),
       },
     ],
   },

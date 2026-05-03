@@ -1,1 +1,273 @@
-<p>employee-list works!</p>
+<div class="el-page" (click)="closeMenus()">
+
+  <!-- Page Header -->
+  <div class="el-header">
+    <div class="el-header__left">
+      <h1 class="el-title">Employees</h1>
+      <span class="el-count">{{ filtered().length }} total</span>
+    </div>
+    <div class="el-header__right">
+      <button class="el-btn el-btn--ghost" (click)="viewOrgTree()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/>
+          <line x1="12" y1="7" x2="5" y2="17"/><line x1="12" y1="7" x2="19" y2="17"/>
+        </svg>
+        <span>Org Tree</span>
+      </button>
+      <button class="el-btn el-btn--primary" (click)="addEmployee()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        <span>Add Employee</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="el-toolbar">
+    <div class="el-toolbar__search">
+      <svg class="el-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input
+        class="el-search-input"
+        type="text"
+        placeholder="Search by name, email, code…"
+        [ngModel]="search()"
+        (ngModelChange)="setSearch($event)"
+      />
+      @if (search()) {
+        <button class="el-clear-btn" (click)="setSearch('')">✕</button>
+      }
+    </div>
+
+    <div class="el-toolbar__filters">
+      <select class="el-filter-select" [ngModel]="filterDept()" (ngModelChange)="setDept($event)">
+        <option value="">All Departments</option>
+        @for (d of departments; track d) {
+          <option [value]="d">{{ d }}</option>
+        }
+      </select>
+
+      <select class="el-filter-select" [ngModel]="filterRole()" (ngModelChange)="setRole($event)">
+        <option value="">All Roles</option>
+        @for (r of roles; track r) {
+          <option [value]="r">{{ roleLabel(r) }}</option>
+        }
+      </select>
+
+      <select class="el-filter-select" [ngModel]="filterStatus()" (ngModelChange)="setStatus($event)">
+        <option value="">All Status</option>
+        @for (s of statuses; track s) {
+          <option [value]="s">{{ statusLabel(s) }}</option>
+        }
+      </select>
+
+      @if (activeFilters) {
+        <button class="el-btn el-btn--ghost el-btn--sm" (click)="clearFilters()">Clear</button>
+      }
+    </div>
+  </div>
+
+  <!-- Bulk actions bar -->
+  @if (selectedCount > 0) {
+    <div class="el-bulk-bar">
+      <span>{{ selectedCount }} selected</span>
+      <button class="el-btn el-btn--ghost el-btn--sm">Export</button>
+      <button class="el-btn el-btn--danger el-btn--sm">Deactivate</button>
+    </div>
+  }
+
+  <!-- Desktop Table -->
+  <div class="el-table-wrap">
+    <table class="el-table">
+      <thead>
+        <tr>
+          <th class="el-th el-th--check">
+            <input type="checkbox" [checked]="allSelected()" (change)="toggleSelectAll()" />
+          </th>
+          <th class="el-th el-th--sortable" (click)="sort('fullName')">
+            Employee <span class="el-sort-icon el-sort-icon--{{ sortIcon('fullName') }}"></span>
+          </th>
+          <th class="el-th el-th--sortable" (click)="sort('department')">
+            Department <span class="el-sort-icon el-sort-icon--{{ sortIcon('department') }}"></span>
+          </th>
+          <th class="el-th el-th--sortable" (click)="sort('role')">
+            Role <span class="el-sort-icon el-sort-icon--{{ sortIcon('role') }}"></span>
+          </th>
+          <th class="el-th el-th--sortable" (click)="sort('dateOfJoining')">
+            Joined <span class="el-sort-icon el-sort-icon--{{ sortIcon('dateOfJoining') }}"></span>
+          </th>
+          <th class="el-th el-th--sortable" (click)="sort('status')">
+            Status <span class="el-sort-icon el-sort-icon--{{ sortIcon('status') }}"></span>
+          </th>
+          <th class="el-th"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (emp of paged(); track emp.id) {
+          <tr class="el-row" [class.el-row--selected]="selectedIds().has(emp.id)">
+            <td class="el-td el-td--check">
+              <input type="checkbox" [checked]="selectedIds().has(emp.id)" (change)="toggleSelect(emp.id)" />
+            </td>
+            <td class="el-td el-td--person">
+              <div class="el-avatar" [style.background]="emp.avatarColor">{{ emp.initials }}</div>
+              <div class="el-person-info">
+                <span class="el-person-name">{{ emp.fullName }}</span>
+                <span class="el-person-sub">{{ emp.email }}</span>
+                <span class="el-person-code">{{ emp.employeeCode }}</span>
+              </div>
+            </td>
+            <td class="el-td">
+              <div class="el-cell-primary">{{ emp.department }}</div>
+              <div class="el-cell-sub">{{ emp.designation }}</div>
+            </td>
+            <td class="el-td">
+              <span class="el-role-badge el-role-badge--{{ emp.role }}">{{ roleLabel(emp.role) }}</span>
+            </td>
+            <td class="el-td el-td--date">{{ emp.dateOfJoining | date:'MMM d, yyyy' }}</td>
+            <td class="el-td">
+              <span class="el-status-badge el-status-badge--{{ emp.status }}">{{ statusLabel(emp.status) }}</span>
+            </td>
+            <td class="el-td el-td--actions">
+              <div class="el-action-menu">
+                <button class="el-action-btn" (click)="openActionMenu(emp.id, $event)">⋯</button>
+                @if (actionMenuId() === emp.id) {
+                  <div class="el-action-dropdown">
+                    <button (click)="viewEmployee(emp.id)">View Profile</button>
+                    <button (click)="editEmployee(emp.id)">Edit</button>
+                    <button class="danger" (click)="confirmDeactivate(emp)">Deactivate</button>
+                  </div>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+        @if (paged().length === 0) {
+          <tr>
+            <td colspan="7" class="el-empty">
+              <div class="el-empty-inner">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                <p>No employees found</p>
+                @if (activeFilters) {
+                  <button class="el-btn el-btn--ghost el-btn--sm" (click)="clearFilters()">Clear filters</button>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Mobile card list -->
+  <div class="el-card-list">
+    @for (emp of paged(); track emp.id) {
+      <div class="el-card" [class.el-card--selected]="selectedIds().has(emp.id)">
+        <div class="el-card__header">
+          <div class="el-card__left">
+            <input type="checkbox" [checked]="selectedIds().has(emp.id)" (change)="toggleSelect(emp.id)" />
+            <div class="el-avatar" [style.background]="emp.avatarColor">{{ emp.initials }}</div>
+            <div class="el-person-info">
+              <span class="el-person-name">{{ emp.fullName }}</span>
+              <span class="el-person-code">{{ emp.employeeCode }}</span>
+            </div>
+          </div>
+          <div class="el-card__right">
+            <span class="el-status-badge el-status-badge--{{ emp.status }}">{{ statusLabel(emp.status) }}</span>
+            <div class="el-action-menu">
+              <button class="el-action-btn" (click)="openActionMenu(emp.id, $event)">⋯</button>
+              @if (actionMenuId() === emp.id) {
+                <div class="el-action-dropdown el-action-dropdown--left">
+                  <button (click)="viewEmployee(emp.id)">View Profile</button>
+                  <button (click)="editEmployee(emp.id)">Edit</button>
+                  <button class="danger" (click)="confirmDeactivate(emp)">Deactivate</button>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="el-card__body">
+          <div class="el-card__row">
+            <span class="el-card__label">Department</span>
+            <span class="el-card__value">{{ emp.department }}</span>
+          </div>
+          <div class="el-card__row">
+            <span class="el-card__label">Designation</span>
+            <span class="el-card__value">{{ emp.designation }}</span>
+          </div>
+          <div class="el-card__row">
+            <span class="el-card__label">Role</span>
+            <span class="el-role-badge el-role-badge--{{ emp.role }}">{{ roleLabel(emp.role) }}</span>
+          </div>
+          <div class="el-card__row">
+            <span class="el-card__label">Email</span>
+            <span class="el-card__value">{{ emp.email }}</span>
+          </div>
+          <div class="el-card__row">
+            <span class="el-card__label">Joined</span>
+            <span class="el-card__value">{{ emp.dateOfJoining | date:'MMM d, yyyy' }}</span>
+          </div>
+        </div>
+        <div class="el-card__actions">
+          <button class="el-btn el-btn--ghost el-btn--sm" (click)="viewEmployee(emp.id)">View</button>
+          <button class="el-btn el-btn--ghost el-btn--sm" (click)="editEmployee(emp.id)">Edit</button>
+        </div>
+      </div>
+    }
+    @if (paged().length === 0) {
+      <div class="el-empty">
+        <p>No employees found</p>
+        @if (activeFilters) {
+          <button class="el-btn el-btn--ghost el-btn--sm" (click)="clearFilters()">Clear filters</button>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Pagination -->
+  @if (filtered().length > 0) {
+    <div class="el-pagination">
+      <div class="el-pagination__info">
+        Showing {{ startResult() }}–{{ endResult() }} of {{ filtered().length }}
+      </div>
+      <div class="el-pagination__controls">
+        <select class="el-filter-select el-filter-select--sm" [ngModel]="pageSize()" (ngModelChange)="setPageSize(+$event)">
+          @for (ps of pageSizes; track ps) {
+            <option [value]="ps">{{ ps }} / page</option>
+          }
+        </select>
+        <button class="el-page-btn" [disabled]="currentPage() === 1" (click)="setPage(1)">«</button>
+        <button class="el-page-btn" [disabled]="currentPage() === 1" (click)="setPage(currentPage() - 1)">‹</button>
+        @for (p of pageNumbers(); track p) {
+          @if (pageNumbers().length <= 7 || p === 1 || p === totalPages() || (p >= currentPage() - 1 && p <= currentPage() + 1)) {
+            <button class="el-page-btn" [class.el-page-btn--active]="currentPage() === p" (click)="setPage(p)">{{ p }}</button>
+          }
+        }
+        <button class="el-page-btn" [disabled]="currentPage() === totalPages()" (click)="setPage(currentPage() + 1)">›</button>
+        <button class="el-page-btn" [disabled]="currentPage() === totalPages()" (click)="setPage(totalPages())">»</button>
+      </div>
+    </div>
+  }
+
+</div>
+
+<!-- Deactivate confirm modal -->
+@if (deactivateTarget()) {
+  <div class="el-modal-overlay" (click)="cancelDeactivate()">
+    <div class="el-modal" (click)="$event.stopPropagation()">
+      <h3>Deactivate Employee</h3>
+      <p>Are you sure you want to deactivate <strong>{{ deactivateTarget()?.fullName }}</strong>? They will lose access to the system.</p>
+      <div class="el-modal__actions">
+        <button class="el-btn el-btn--ghost" (click)="cancelDeactivate()">Cancel</button>
+        <button class="el-btn el-btn--danger" (click)="doDeactivate()">Deactivate</button>
+      </div>
+    </div>
+  </div>
+}
+

@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Klocky — DFD, ER Diagram &amp; Database Design</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  /* ── Cover Page ── */
+  .cover {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #0e4d6e 100%);
+    color: #fff;
+    page-break-after: always;
+    text-align: center;
+    padding: 60px 40px;
+  }
+  .cover-logo {
+    font-size: 52px;
+    font-weight: 800;
+    letter-spacing: -2px;
+    background: linear-gradient(90deg, #38bdf8, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 12px;
+  }
+  .cover-subtitle {
+    font-size: 20px;
+    color: #94a3b8;
+    margin-bottom: 48px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .cover-title {
+    font-size: 36px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 16px;
+  }
+  .cover-desc {
+    font-size: 15px;
+    color: #cbd5e1;
+    max-width: 500px;
+    line-height: 1.8;
+    margin-bottom: 48px;
+  }
+  .cover-meta {
+    font-size: 13px;
+    color: #64748b;
+    border-top: 1px solid #334155;
+    padding-top: 24px;
+    width: 100%;
+    max-width: 500px;
+  }
+  .cover-meta span { color: #94a3b8; }
+
+  /* ── TOC ── */
+  .toc-page {
+    padding: 60px 80px;
+    page-break-after: always;
+    min-height: 100vh;
+  }
+  .toc-page h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 32px;
+    padding-bottom: 12px;
+    border-bottom: 3px solid #0ea5e9;
+  }
+  .toc-item {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 10px 0;
+    border-bottom: 1px dashed #e2e8f0;
+    font-size: 14px;
+  }
+  .toc-num { color: #0ea5e9; font-weight: 700; width: 28px; flex-shrink: 0; }
+  .toc-label { flex: 1; color: #334155; font-weight: 500; }
+  .toc-page-num { color: #94a3b8; font-size: 12px; }
+
+  /* ── Section Pages ── */
+  .section {
+    padding: 50px 70px;
+    page-break-before: always;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 3px solid #0ea5e9;
+  }
+  .section-num {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, #0ea5e9, #6366f1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 800;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .section h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+  .section p.desc {
+    color: #475569;
+    margin-bottom: 28px;
+    font-size: 14px;
+    line-height: 1.7;
+    max-width: 800px;
+  }
+
+  /* ── Sub-section ── */
+  .subsection {
+    margin-bottom: 48px;
+  }
+  .subsection h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 8px;
+    padding-left: 10px;
+    border-left: 4px solid #0ea5e9;
+  }
+  .subsection p {
+    color: #64748b;
+    font-size: 13px;
+    margin-bottom: 16px;
+    padding-left: 14px;
+  }
+
+  /* ── Mermaid diagram wrapper ── */
+  .diagram-box {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 32px 24px;
+    margin-bottom: 16px;
+    overflow: visible;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    text-align: center;
+  }
+  .diagram-box .mermaid {
+    display: inline-block;
+    text-align: left;
+    max-width: 100%;
+  }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    padding: 12px 16px;
+    background: #f1f5f9;
+    border-radius: 8px;
+    font-size: 12px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .legend-swatch {
+    width: 16px; height: 16px; border-radius: 4px; flex-shrink: 0;
+  }
+
+  /* ── DB Design Tables ── */
+  .db-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 36px;
+    font-size: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .db-table caption {
+    text-align: left;
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+    padding: 10px 2px 8px;
+    caption-side: top;
+  }
+  .db-table thead tr {
+    background: linear-gradient(90deg, #0ea5e9, #6366f1);
+    color: #fff;
+  }
+  .db-table thead th {
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+  }
+  .db-table tbody tr:nth-child(even) { background: #f8fafc; }
+  .db-table tbody tr:hover { background: #e0f2fe; }
+  .db-table tbody td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: top;
+  }
+  .pk  { color: #c2410c; font-weight: 700; }
+  .fk  { color: #7c3aed; font-weight: 600; }
+  .uk  { color: #0369a1; font-weight: 600; }
+  .col-name { font-family: 'Courier New', monospace; font-weight: 600; }
+  .col-type { color: #0891b2; font-family: 'Courier New', monospace; }
+  .col-constraint { font-size: 11px; color: #64748b; }
+  .col-desc { color: #475569; }
+
+  .badge {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    margin-right: 3px;
+  }
+  .badge-pk  { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+  .badge-fk  { background: #f5f3ff; color: #7c3aed; border: 1px solid #ddd6fe; }
+  .badge-uk  { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+  .badge-nn  { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+  .badge-idx { background: #fefce8; color: #a16207; border: 1px solid #fde68a; }
+
+  /* ── Print ── */
+  @media print {
+    body { background: #fff; }
+    .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .diagram-box { page-break-inside: avoid; }
+    .db-table { page-break-inside: auto; }
+    .db-table tbody tr { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     COVER PAGE
+════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-logo">klocky</div>
+  <div class="cover-subtitle">Technical Design Documentation</div>
+  <div class="cover-title">Data Flow Diagram · ER Diagram<br/>Database Design</div>
+  <div class="cover-desc">
+    Comprehensive system design documentation for the Klocky multi-tenant
+    employee attendance &amp; time-tracking platform.
+  </div>
+  <div class="cover-meta">
+    <span>Prepared:</span> April 29, 2026 &nbsp;|&nbsp;
+    <span>Version:</span> 1.0 &nbsp;|&nbsp;
+    <span>Platform:</span> Angular 17 Web App
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TABLE OF CONTENTS
+════════════════════════════════════════════ -->
+<div class="toc-page">
+  <h2>Table of Contents</h2>
+  <div class="toc-item"><span class="toc-num">1</span><span class="toc-label">System Overview</span><span class="toc-page-num">Page 3</span></div>
+  <div class="toc-item"><span class="toc-num">2</span><span class="toc-label">DFD Level 0 — Context Diagram</span><span class="toc-page-num">Page 4</span></div>
+  <div class="toc-item"><span class="toc-num">3</span><span class="toc-label">DFD Level 1 — System Level Data Flows</span><span class="toc-page-num">Page 5</span></div>
+  <div class="toc-item"><span class="toc-num">4</span><span class="toc-label">Entity-Relationship (ER) Diagram</span><span class="toc-page-num">Page 6</span></div>
+  <div class="toc-item"><span class="toc-num">5</span><span class="toc-label">Database Design — Table Specifications</span><span class="toc-page-num">Page 7</span></div>
+  <div class="toc-item"><span class="toc-num">5.1</span><span class="toc-label">&nbsp;&nbsp;&nbsp;organizations</span><span class="toc-page-num"></span></div>
+  <div class="toc-item"><span class="toc-num">5.2</span><span class="toc-label">&nbsp;&nbsp;&nbsp;users</span><span class="toc-page-num"></span></div>
+  <div class="toc-item"><span class="toc-num">5.3</span><span class="toc-label">&nbsp;&nbsp;&nbsp;refresh_tokens</span><span class="toc-page-num"></span></div>
+  <div class="toc-item"><span class="toc-num">5.4</span><span class="toc-label">&nbsp;&nbsp;&nbsp;offices</span><span class="toc-page-num"></span></div>
+  <div class="toc-item"><span class="toc-num">5.5</span><span class="toc-label">&nbsp;&nbsp;&nbsp;departments</span><span class="toc-page-num"></span></div>
+  <div class="toc-item"><span class="toc-num">5.6</span><span class="toc-label">&nbsp;&nbsp;&nbsp;attendance_records</span><span class="toc-page-num"></span></div>
+  <div class="toc-item"><span class="toc-num">5.7</span><span class="toc-label">&nbsp;&nbsp;&nbsp;leave_types</span><span class="toc-page-num"></span></div>
+  <div class="toc-item"><span class="toc-num">5.8</span><span class="toc-label">&nbsp;&nbsp;&nbsp;leave_requests</span><span class="toc-page-num"></span></div>
+  <div class="toc-item"><span class="toc-num">5.9</span><span class="toc-label">&nbsp;&nbsp;&nbsp;leave_balances</span><span class="toc-page-num"></span></div>
+  <div class="toc-item"><span class="toc-num">5.10</span><span class="toc-label">&nbsp;&nbsp;&nbsp;holidays</span><span class="toc-page-num"></span></div>
+  <div class="toc-item"><span class="toc-num">5.11</span><span class="toc-label">&nbsp;&nbsp;&nbsp;announcements</span><span class="toc-page-num"></span></div>
+  <div class="toc-item"><span class="toc-num">5.12</span><span class="toc-label">&nbsp;&nbsp;&nbsp;demo_requests</span><span class="toc-page-num"></span></div>
+  <div class="toc-item"><span class="toc-num">6</span><span class="toc-label">Index &amp; Relationship Summary</span><span class="toc-page-num">Page 15</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 1 – SYSTEM OVERVIEW
+════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">1</div>
+    <h2>System Overview</h2>
+  </div>
+  <p class="desc">
+    <strong>Klocky</strong> is a <strong>multi-tenant, role-based employee attendance &amp; time-tracking SaaS platform</strong>.
+    Each organisation operates in an isolated workspace identified by a unique <em>org slug</em>.
+    The system supports five user roles — <code>super_admin</code>, <code>admin</code>, <code>hr</code>, <code>manager</code>, and <code>employee</code> — each with graduated access.
+  </p>
+
+  <div class="subsection">
+    <h3>Core Modules</h3>
+    <p></p>
+    <div class="mermaid" style="max-width:900px">
+mindmap
+  root((Klocky))
+    Authentication
+      Login · Logout
+      JWT Access + Refresh Tokens
+      Org Slug Lookup
+      Forgot · Reset Password
+    Attendance Management
+      Clock In / Clock Out
+      Geo-fencing
+      Selfie Verification
+      Calendar View
+    Leave Management
+      Leave Types
+      Leave Requests
+      Approval Workflow
+      Leave Balances
+    Employee Management
+      Employee Profiles
+      Departments
+      Onboarding
+    Organisation Settings
+      Org Profile & Branding
+      Offices
+      Attendance Policy
+      Holiday Calendar
+    Dashboard & Reports
+      Admin Dashboard
+      Employee Dashboard
+      Analytics
+    Klocky Admin Portal
+      Organisation Management
+      Demo Requests
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3>User Roles &amp; Permissions Summary</h3>
+    <p></p>
+    <table class="db-table">
+      <thead>
+        <tr>
+          <th>Role</th>
+          <th>Attendance</th>
+          <th>Leave</th>
+          <th>Employees</th>
+          <th>Settings</th>
+          <th>Reports</th>
+          <th>Klocky Admin</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>employee</td><td>Own records only</td><td>Self apply/view</td><td>—</td><td>—</td><td>Personal</td><td>—</td></tr>
+        <tr><td>manager</td><td>Team records</td><td>Approve team</td><td>View team</td><td>—</td><td>Team</td><td>—</td></tr>
+        <tr><td>hr</td><td>All org records</td><td>Manage all</td><td>Full CRUD</td><td>Leave policy</td><td>Full org</td><td>—</td></tr>
+        <tr><td>admin</td><td>All org records</td><td>Manage all</td><td>Full CRUD</td><td>Full org settings</td><td>Full org</td><td>—</td></tr>
+        <tr><td>super_admin</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Cross-org</td><td>Full access</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 2 – DFD LEVEL 0 (CONTEXT DIAGRAM)
+════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <h2>DFD Level 0 — Context Diagram</h2>
+  </div>
+  <p class="desc">
+    The context diagram shows Klocky as a single process interacting with all external entities.
+    Arrows represent data flows; the direction shows who initiates the data exchange.
+  </p>
+
+  <div class="diagram-box">
+    <div class="mermaid">
+flowchart TB
+    classDef entity fill:#1e40af,stroke:#1d4ed8,color:#fff,rx:6,ry:6
+    classDef system fill:#0f766e,stroke:#0d9488,color:#fff,font-size:16px,font-weight:bold
+    classDef datastore fill:#7c3aed,stroke:#6d28d9,color:#fff
+
+    EMP([👤 Employee]):::entity
+    ADM([🛡️ Admin / HR]):::entity
+    MGR([👔 Manager]):::entity
+    SUP([⭐ Super Admin]):::entity
+    EXT([🔒 Auth / Email\nService]):::entity
+
+    KS{{"⏱️ KLOCKY\nAttendance Management\nSystem"}}:::system
+
+    EMP -->|"Clock In / Out request\nLeave application\nProfile update"| KS
+    KS -->|"Attendance confirmation\nLeave status\nDashboard data\nAnnouncements"| EMP
+
+    ADM -->|"Employee CRUD\nLeave approval\nOrg settings\nAttendance override"| KS
+    KS -->|"Reports & analytics\nEmployee list\nLeave summaries\nSystem alerts"| ADM
+
+    MGR -->|"Team leave approval\nAttendance review"| KS
+    KS -->|"Team reports\nPending approvals\nNotifications"| MGR
+
+    SUP -->|"Org management\nDemo request review\nPlatform config"| KS
+    KS -->|"Cross-org analytics\nDemo request list\nOrg status"| SUP
+
+    KS <-->|"JWT issuance & validation\nPassword reset email\nOTP delivery"| EXT
+    </div>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch" style="background:#1e40af"></div>External Entity (Actor)</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#0f766e"></div>Central System Process</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#374151"></div>→ Data Flow Direction</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 3 – DFD LEVEL 1
+════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">3</div>
+    <h2>DFD Level 1 — System-Level Data Flows</h2>
+  </div>
+  <p class="desc">
+    Level 1 explodes the central process into its main sub-processes, showing data stores and inter-process flows.
+  </p>
+
+  <div class="diagram-box">
+    <div class="mermaid">
+flowchart LR
+    classDef process fill:#0369a1,stroke:#0284c7,color:#fff,border-radius:8px
+    classDef store   fill:#374151,stroke:#4b5563,color:#fff
+    classDef actor   fill:#6d28d9,stroke:#7c3aed,color:#fff,border-radius:50%
+
+    %% External Actors
+    E([Employee]):::actor
+    A([Admin/HR]):::actor
+    M([Manager]):::actor
+    SA([Super Admin]):::actor
+
+    %% Data Stores
+    DB_ORG[("D1 — Organizations")]:::store
+    DB_USR[("D2 — Users")]:::store
+    DB_ATT[("D3 — Attendance Records")]:::store
+    DB_LV[("D4 — Leave Data")]:::store
+    DB_POL[("D5 — Policies & Holidays")]:::store
+    DB_TKN[("D6 — Tokens")]:::store
+    DB_DEMO[("D7 — Demo Requests")]:::store
+
+    %% Processes
+    P1["1.0\nAuthentication\n& Session"]:::process
+    P2["2.0\nOrg &\nEmployee Mgmt"]:::process
+    P3["3.0\nAttendance\nTracking"]:::process
+    P4["4.0\nLeave\nManagement"]:::process
+    P5["5.0\nSettings &\nPolicies"]:::process
+    P6["6.0\nReporting &\nDashboard"]:::process
+    P7["7.0\nKlocky Admin\nPortal"]:::process
+
+    %% Auth flows
+    E -->|"Credentials + OrgSlug"| P1
+    A -->|"Credentials + OrgSlug"| P1
+    P1 <-->|"Verify org"| DB_ORG
+    P1 <-->|"Lookup user + password"| DB_USR
+    P1 <-->|"Store / revoke tokens"| DB_TKN
+    P1 -->|"JWT Access + Refresh"| E
+    P1 -->|"JWT Access + Refresh"| A
+
+    %% Employee mgmt
+    A -->|"Create / Update / Deactivate employee"| P2
+    P2 <-->|"Read / Write employees"| DB_USR
+    P2 <-->|"Org context"| DB_ORG
+    P2 -->|"Employee profile data"| A
+
+    %% Attendance
+    E -->|"Clock In / Out + geo/selfie"| P3
+    P3 <-->|"Write record"| DB_ATT
+    P3 <-->|"Read policy (grace, geo)"| DB_POL
+    P3 -->|"Confirmation & hours"| E
+    A -->|"Override / manual entry"| P3
+    P3 -->|"Attendance list"| A
+
+    %% Leave
+    E -->|"Leave application"| P4
+    M -->|"Approval / Rejection"| P4
+    A -->|"Admin override"| P4
+    P4 <-->|"Read / Write leave requests"| DB_LV
+    P4 <-->|"Check policy & balance"| DB_POL
+    P4 -->|"Status notification"| E
+    P4 -->|"Pending approvals"| M
+
+    %% Settings
+    A -->|"Org profile, policy, holidays"| P5
+    P5 <-->|"Read / Write org"| DB_ORG
+    P5 <-->|"Read / Write policies"| DB_POL
+
+    %% Reports
+    P3 -->|"Attendance data"| P6
+    P4 -->|"Leave data"| P6
+    P2 -->|"Employee stats"| P6
+    P6 -->|"Dashboard & reports"| A
+    P6 -->|"Personal dashboard"| E
+    P6 -->|"Team reports"| M
+
+    %% Admin portal
+    SA -->|"Review orgs, demo requests"| P7
+    P7 <-->|"Read / Write orgs"| DB_ORG
+    P7 <-->|"Read / Update demo requests"| DB_DEMO
+    P7 -->|"Analytics"| SA
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 4 – ER DIAGRAM
+════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">4</div>
+    <h2>Entity-Relationship (ER) Diagram</h2>
+  </div>
+  <p class="desc">
+    All entities, their attributes, and the relationships between them. PK = Primary Key, FK = Foreign Key, UK = Unique Key.
+  </p>
+
+  <div class="diagram-box">
+    <div class="mermaid">
+erDiagram
+    ORGANIZATIONS {
+        uuid id PK
+        string org_slug UK
+        string company_name
+        string legal_name
+        string company_type
+        string industry
+        string employee_count
+        string primary_email UK
+        string phone
+        string website
+        string default_timezone
+        string date_format
+        string currency
+        string week_start
+        int work_hours_per_day
+        string working_days
+        int grace_period_mins
+        float half_day_threshold_hrs
+        boolean overtime_enabled
+        int overtime_after_hrs
+        boolean geo_fencing_enabled
+        boolean remote_checkin_enabled
+        boolean selfie_checkin_enabled
+        boolean auto_checkout_enabled
+        string auto_checkout_time
+        string leave_year_start
+        int annual_leave_days
+        int sick_leave_days
+        int casual_leave_days
+        boolean carry_forward_enabled
+        int carry_forward_max_days
+        boolean comp_off_enabled
+        boolean lop_enabled
+        boolean encashment_enabled
+        string accent_color
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    USERS {
+        uuid id PK
+        uuid org_id FK
+        string email UK
+        string password_hash
+        string first_name
+        string last_name
+        string role
+        string avatar_url
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    REFRESH_TOKENS {
+        uuid id PK
+        uuid user_id FK
+        string token UK
+        boolean is_revoked
+        timestamp expires_at
+        timestamp created_at
+    }
+
+    OFFICES {
+        uuid id PK
+        uuid org_id FK
+        string name
+        string address
+        string city
+        string country
+        string timezone
+    }
+
+    DEPARTMENTS {
+        uuid id PK
+        uuid org_id FK
+        string name
+        string color
+        uuid manager_id FK
+    }
+
+    ATTENDANCE_RECORDS {
+        uuid id PK
+        uuid user_id FK
+        uuid org_id FK
+        date date
+        string status
+        float hours_worked
+        timestamp clock_in_time
+        timestamp clock_out_time
+        string ip_address
+        decimal latitude
+        decimal longitude
+        boolean selfie_verified
+        string notes
+        timestamp created_at
+    }
+
+    LEAVE_TYPES {
+        uuid id PK
+        uuid org_id FK
+        string name
+        int days_per_year
+        boolean is_paid
+        boolean carry_forward
+        string applicable_to
+        boolean is_system_type
+    }
+
+    LEAVE_REQUESTS {
+        uuid id PK
+        uuid user_id FK
+        uuid org_id FK
+        uuid leave_type_id FK
+        date from_date
+        date to_date
+        int days
+        string reason
+        string status
+        uuid approved_by FK
+        timestamp approved_at
+        string rejection_reason
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    LEAVE_BALANCES {
+        uuid id PK
+        uuid user_id FK
+        uuid leave_type_id FK
+        int year
+        int total_days
+        int used_days
+        int pending_days
+        int carried_forward
+    }
+
+    HOLIDAYS {
+        uuid id PK
+        uuid org_id FK
+        string name
+        int month
+        int day
+        string type
+    }
+
+    ANNOUNCEMENTS {
+        uuid id PK
+        uuid org_id FK
+        uuid created_by FK
+        string title
+        text body
+        string tag
+        string tag_color
+        date display_date
+        timestamp created_at
+    }
+
+    DEMO_REQUESTS {
+        uuid id PK
+        string full_name
+        string work_email
+        string phone
+        string company_name
+        string team_size
+        text message
+        string status
+        timestamp submitted_at
+        timestamp updated_at
+    }
+
+    ORGANIZATIONS ||--o{ USERS : "employs"
+    ORGANIZATIONS ||--o{ OFFICES : "has"
+    ORGANIZATIONS ||--o{ DEPARTMENTS : "organizes"
+    ORGANIZATIONS ||--o{ ATTENDANCE_RECORDS : "tracks"
+    ORGANIZATIONS ||--o{ LEAVE_TYPES : "defines"
+    ORGANIZATIONS ||--o{ LEAVE_REQUESTS : "manages"
+    ORGANIZATIONS ||--o{ HOLIDAYS : "observes"
+    ORGANIZATIONS ||--o{ ANNOUNCEMENTS : "publishes"
+    USERS ||--o{ REFRESH_TOKENS : "owns"
+    USERS ||--o{ ATTENDANCE_RECORDS : "has"
+    USERS ||--o{ LEAVE_REQUESTS : "submits"
+    USERS ||--o{ LEAVE_BALANCES : "holds"
+    USERS ||--o{ ANNOUNCEMENTS : "creates"
+    DEPARTMENTS ||--o| USERS : "led by"
+    LEAVE_TYPES ||--o{ LEAVE_REQUESTS : "used in"
+    LEAVE_TYPES ||--o{ LEAVE_BALANCES : "measured by"
+    USERS ||--o{ LEAVE_REQUESTS : "approves"
+    </div>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch" style="background:#0ea5e9"></div>||--o{ One-to-Many</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#6366f1"></div>||--o| One-to-One (optional)</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 5 – DATABASE DESIGN
+════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">5</div>
+    <h2>Database Design — Table Specifications</h2>
+  </div>
+  <p class="desc">
+    Each table below lists column names, data types, constraints, and descriptions.
+    <span class="badge badge-pk">PK</span> Primary Key &nbsp;
+    <span class="badge badge-fk">FK</span> Foreign Key &nbsp;
+    <span class="badge badge-uk">UK</span> Unique &nbsp;
+    <span class="badge badge-nn">NN</span> Not Null &nbsp;
+    <span class="badge badge-idx">IDX</span> Indexed
+  </p>
+
+  <!-- ── 5.1 organizations ── -->
+  <table class="db-table">
+    <caption>5.1 &nbsp; organizations</caption>
+    <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="col-name pk">id</span></td><td class="col-type">UUID</td><td><span class="badge badge-pk">PK</span><span class="badge badge-nn">NN</span></td><td>Auto-generated primary key</td></tr>
+      <tr><td><span class="col-name uk">org_slug</span></td><td class="col-type">VARCHAR(60)</td><td><span class="badge badge-uk">UK</span><span class="badge badge-nn">NN</span><span class="badge badge-idx">IDX</span></td><td>URL-safe workspace identifier (e.g. acme-corp)</td></tr>
+      <tr><td><span class="col-name">company_name</span></td><td class="col-type">VARCHAR(200)</td><td><span class="badge badge-nn">NN</span></td><td>Display company name</td></tr>
+      <tr><td><span class="col-name">legal_name</span></td><td class="col-type">VARCHAR(200)</td><td></td><td>Official registered legal name</td></tr>
+      <tr><td><span class="col-name">company_type</span></td><td class="col-type">VARCHAR(60)</td><td></td><td>Pvt Ltd, LLP, Partnership, etc.</td></tr>
+      <tr><td><span class="col-name">founded_year</span></td><td class="col-type">SMALLINT</td><td></td><td>Year of incorporation</td></tr>
+      <tr><td><span class="col-name">reg_number</span></td><td class="col-type">VARCHAR(80)</td><td></td><td>Company registration number</td></tr>
+      <tr><td><span class="col-name">gst_number</span></td><td class="col-type">VARCHAR(20)</td><td></td><td>GST identification number</td></tr>
+      <tr><td><span class="col-name">pan_number</span></td><td class="col-type">VARCHAR(20)</td><td></td><td>PAN number</td></tr>
+      <tr><td><span class="col-name">esic_number</span></td><td class="col-type">VARCHAR(40)</td><td></td><td>ESIC registration number</td></tr>
+      <tr><td><span class="col-name">pf_account</span></td><td class="col-type">VARCHAR(40)</td><td></td><td>Provident fund account number</td></tr>
+      <tr><td><span class="col-name uk">primary_email</span></td><td class="col-type">VARCHAR(255)</td><td><span class="badge badge-uk">UK</span><span class="badge badge-nn">NN</span></td><td>Primary contact email</td></tr>
+      <tr><td><span class="col-name">secondary_emails</span></td><td class="col-type">TEXT[]</td><td></td><td>Array of additional contact emails</td></tr>
+      <tr><td><span class="col-name">phone</span></td><td class="col-type">VARCHAR(20)</td><td></td><td>Primary phone number</td></tr>
+      <tr><td><span class="col-name">billing_email</span></td><td class="col-type">VARCHAR(255)</td><td></td><td>Billing / finance contact email</td></tr>
+      <tr><td><span class="col-name">website</span></td><td class="col-type">VARCHAR(255)</td><td></td><td>Company website URL</td></tr>
+      <tr><td><span class="col-name">industry</span></td><td class="col-type">VARCHAR(80)</td><td></td><td>Technology, Healthcare, Finance…</td></tr>
+      <tr><td><span class="col-name">employee_count</span></td><td class="col-type">VARCHAR(20)</td><td></td><td>Band: 1–10, 11–50, 51–200…</td></tr>
+      <tr><td><span class="col-name">hr_contact_name</span></td><td class="col-type">VARCHAR(120)</td><td></td><td>HR department contact name</td></tr>
+      <tr><td><span class="col-name">hr_contact_email</span></td><td class="col-type">VARCHAR(255)</td><td></td><td>HR contact email</td></tr>
+      <tr><td><span class="col-name">accent_color</span></td><td class="col-type">VARCHAR(10)</td><td></td><td>Hex brand colour (#rrggbb)</td></tr>
+      <tr><td><span class="col-name">default_timezone</span></td><td class="col-type">VARCHAR(60)</td><td><span class="badge badge-nn">NN</span></td><td>IANA timezone (e.g. Asia/Kolkata)</td></tr>
+      <tr><td><span class="col-name">date_format</span></td><td class="col-type">VARCHAR(20)</td><td></td><td>DD/MM/YYYY, YYYY-MM-DD…</td></tr>
+      <tr><td><span class="col-name">currency</span></td><td class="col-type">CHAR(3)</td><td></td><td>ISO 4217 currency code (INR, USD…)</td></tr>
+      <tr><td><span class="col-name">week_start</span></td><td class="col-type">VARCHAR(10)</td><td></td><td>Monday / Sunday</td></tr>
+      <tr><td><span class="col-name">work_hours_per_day</span></td><td class="col-type">SMALLINT</td><td><span class="badge badge-nn">NN</span></td><td>Default: 8</td></tr>
+      <tr><td><span class="col-name">working_days</span></td><td class="col-type">VARCHAR(10)</td><td></td><td>mon-fri, mon-sat, mon-sun, custom</td></tr>
+      <tr><td><span class="col-name">grace_period_mins</span></td><td class="col-type">SMALLINT</td><td></td><td>Late clock-in tolerance in minutes</td></tr>
+      <tr><td><span class="col-name">half_day_threshold_hrs</span></td><td class="col-type">NUMERIC(4,2)</td><td></td><td>Hours below which day is half-day</td></tr>
+      <tr><td><span class="col-name">overtime_enabled</span></td><td class="col-type">BOOLEAN</td><td></td><td>Whether overtime is tracked</td></tr>
+      <tr><td><span class="col-name">overtime_after_hrs</span></td><td class="col-type">SMALLINT</td><td></td><td>Hours threshold for overtime</td></tr>
+      <tr><td><span class="col-name">geo_fencing_enabled</span></td><td class="col-type">BOOLEAN</td><td></td><td>Restrict clock-in by GPS location</td></tr>
+      <tr><td><span class="col-name">remote_checkin_enabled</span></td><td class="col-type">BOOLEAN</td><td></td><td>Allow check-in from remote location</td></tr>
+      <tr><td><span class="col-name">selfie_checkin_enabled</span></td><td class="col-type">BOOLEAN</td><td></td><td>Require selfie photo on clock-in</td></tr>
+      <tr><td><span class="col-name">auto_checkout_enabled</span></td><td class="col-type">BOOLEAN</td><td></td><td>Auto clock-out at fixed time</td></tr>
+      <tr><td><span class="col-name">auto_checkout_time</span></td><td class="col-type">TIME</td><td></td><td>Auto clock-out time (HH:MM)</td></tr>
+      <tr><td><span class="col-name">leave_year_start</span></td><td class="col-type">VARCHAR(12)</td><td></td><td>January / April / July / October</td></tr>
+      <tr><td><span class="col-name">annual_leave_days</span></td><td class="col-type">SMALLINT</td><td></td><td>Annual leave entitlement</td></tr>
+      <tr><td><span class="col-name">sick_leave_days</span></td><td class="col-type">SMALLINT</td><td></td><td>Sick leave entitlement</td></tr>
+      <tr><td><span class="col-name">casual_leave_days</span></td><td class="col-type">SMALLINT</td><td></td><td>Casual leave entitlement</td></tr>
+      <tr><td><span class="col-name">carry_forward_enabled</span></td><td class="col-type">BOOLEAN</td><td></td><td>Allow unused leave to carry over</td></tr>
+      <tr><td><span class="col-name">carry_forward_max_days</span></td><td class="col-type">SMALLINT</td><td></td><td>Max days that can carry over</td></tr>
+      <tr><td><span class="col-name">comp_off_enabled</span></td><td class="col-type">BOOLEAN</td><td></td><td>Compensatory off feature</td></tr>
+      <tr><td><span class="col-name">lop_enabled</span></td><td class="col-type">BOOLEAN</td><td></td><td>Loss of pay deduction enabled</td></tr>
+      <tr><td><span class="col-name">encashment_enabled</span></td><td class="col-type">BOOLEAN</td><td></td><td>Leave encashment feature</td></tr>
+      <tr><td><span class="col-name">created_at</span></td><td class="col-type">TIMESTAMP</td><td><span class="badge badge-nn">NN</span></td><td>Record creation timestamp (UTC)</td></tr>
+      <tr><td><span class="col-name">updated_at</span></td><td class="col-type">TIMESTAMP</td><td><span class="badge badge-nn">NN</span></td><td>Last modification timestamp (UTC)</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── 5.2 users ── -->
+  <table class="db-table">
+    <caption>5.2 &nbsp; users</caption>
+    <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="col-name pk">id</span></td><td class="col-type">UUID</td><td><span class="badge badge-pk">PK</span><span class="badge badge-nn">NN</span></td><td>Auto-generated user identifier</td></tr>
+      <tr><td><span class="col-name fk">org_id</span></td><td class="col-type">UUID</td><td><span class="badge badge-fk">FK</span><span class="badge badge-nn">NN</span><span class="badge badge-idx">IDX</span></td><td>→ organizations.id</td></tr>
+      <tr><td><span class="col-name uk">email</span></td><td class="col-type">VARCHAR(255)</td><td><span class="badge badge-uk">UK</span><span class="badge badge-nn">NN</span><span class="badge badge-idx">IDX</span></td><td>Login email (unique per org, scoped by org_id)</td></tr>
+      <tr><td><span class="col-name">password_hash</span></td><td class="col-type">TEXT</td><td><span class="badge badge-nn">NN</span></td><td>bcrypt / Argon2 hashed password</td></tr>
+      <tr><td><span class="col-name">first_name</span></td><td class="col-type">VARCHAR(80)</td><td><span class="badge badge-nn">NN</span></td><td>Employee first name</td></tr>
+      <tr><td><span class="col-name">last_name</span></td><td class="col-type">VARCHAR(80)</td><td><span class="badge badge-nn">NN</span></td><td>Employee last name</td></tr>
+      <tr><td><span class="col-name">role</span></td><td class="col-type">VARCHAR(20)</td><td><span class="badge badge-nn">NN</span><span class="badge badge-idx">IDX</span></td><td>super_admin | admin | hr | manager | employee</td></tr>
+      <tr><td><span class="col-name fk">department_id</span></td><td class="col-type">UUID</td><td><span class="badge badge-fk">FK</span></td><td>→ departments.id (nullable)</td></tr>
+      <tr><td><span class="col-name">avatar_url</span></td><td class="col-type">TEXT</td><td></td><td>Profile picture URL (CDN path)</td></tr>
+      <tr><td><span class="col-name">is_active</span></td><td class="col-type">BOOLEAN</td><td><span class="badge badge-nn">NN</span></td><td>Soft-delete / deactivate flag</td></tr>
+      <tr><td><span class="col-name">phone</span></td><td class="col-type">VARCHAR(20)</td><td></td><td>Contact phone number</td></tr>
+      <tr><td><span class="col-name">employee_code</span></td><td class="col-type">VARCHAR(40)</td><td></td><td>Internal HR employee ID</td></tr>
+      <tr><td><span class="col-name">date_of_joining</span></td><td class="col-type">DATE</td><td></td><td>Employment start date</td></tr>
+      <tr><td><span class="col-name">created_at</span></td><td class="col-type">TIMESTAMP</td><td><span class="badge badge-nn">NN</span></td><td>Account creation timestamp (UTC)</td></tr>
+      <tr><td><span class="col-name">updated_at</span></td><td class="col-type">TIMESTAMP</td><td><span class="badge badge-nn">NN</span></td><td>Last update timestamp (UTC)</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── 5.3 refresh_tokens ── -->
+  <table class="db-table">
+    <caption>5.3 &nbsp; refresh_tokens</caption>
+    <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="col-name pk">id</span></td><td class="col-type">UUID</td><td><span class="badge badge-pk">PK</span></td><td>Token record identifier</td></tr>
+      <tr><td><span class="col-name fk">user_id</span></td><td class="col-type">UUID</td><td><span class="badge badge-fk">FK</span><span class="badge badge-nn">NN</span><span class="badge badge-idx">IDX</span></td><td>→ users.id (CASCADE DELETE)</td></tr>
+      <tr><td><span class="col-name uk">token</span></td><td class="col-type">TEXT</td><td><span class="badge badge-uk">UK</span><span class="badge badge-nn">NN</span></td><td>Opaque refresh token value (hashed)</td></tr>
+      <tr><td><span class="col-name">is_revoked</span></td><td class="col-type">BOOLEAN</td><td><span class="badge badge-nn">NN</span></td><td>Revocation flag for logout / rotation</td></tr>
+      <tr><td><span class="col-name">expires_at</span></td><td class="col-type">TIMESTAMP</td><td><span class="badge badge-nn">NN</span></td><td>Token expiry time (UTC)</td></tr>
+      <tr><td><span class="col-name">created_at</span></td><td class="col-type">TIMESTAMP</td><td><span class="badge badge-nn">NN</span></td><td>Issuance timestamp</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── 5.4 offices ── -->
+  <table class="db-table">
+    <caption>5.4 &nbsp; offices</caption>
+    <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="col-name pk">id</span></td><td class="col-type">UUID</td><td><span class="badge badge-pk">PK</span></td><td>Office identifier</td></tr>
+      <tr><td><span class="col-name fk">org_id</span></td><td class="col-type">UUID</td><td><span class="badge badge-fk">FK</span><span class="badge badge-nn">NN</span><span class="badge badge-idx">IDX</span></td><td>→ organizations.id</td></tr>
+      <tr><td><span class="col-name">name</span></td><td class="col-type">VARCHAR(120)</td><td><span class="badge badge-nn">NN</span></td><td>Office label (e.g. HQ, Bangalore Branch)</td></tr>
+      <tr><td><span class="col-name">address</span></td><td class="col-type">TEXT</td><td></td><td>Street address</td></tr>
+      <tr><td><span class="col-name">city</span></td><td class="col-type">VARCHAR(80)</td><td></td><td>City name</td></tr>
+      <tr><td><span class="col-name">country</span></td><td class="col-type">VARCHAR(80)</td><td></td><td>Country name</td></tr>
+      <tr><td><span class="col-name">timezone</span></td><td class="col-type">VARCHAR(60)</td><td></td><td>Office-specific IANA timezone override</td></tr>
+      <tr><td><span class="col-name">latitude</span></td><td class="col-type">DECIMAL(10,7)</td><td></td><td>GPS latitude for geo-fencing centre</td></tr>
+      <tr><td><span class="col-name">longitude</span></td><td class="col-type">DECIMAL(10,7)</td><td></td><td>GPS longitude for geo-fencing centre</td></tr>
+      <tr><td><span class="col-name">geo_radius_m</span></td><td class="col-type">SMALLINT</td><td></td><td>Geo-fencing radius in metres</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── 5.5 departments ── -->
+  <table class="db-table">
+    <caption>5.5 &nbsp; departments</caption>
+    <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="col-name pk">id</span></td><td class="col-type">UUID</td><td><span class="badge badge-pk">PK</span></td><td>Department identifier</td></tr>
+      <tr><td><span class="col-name fk">org_id</span></td><td class="col-type">UUID</td><td><span class="badge badge-fk">FK</span><span class="badge badge-nn">NN</span><span class="badge badge-idx">IDX</span></td><td>→ organizations.id</td></tr>
+      <tr><td><span class="col-name">name</span></td><td class="col-type">VARCHAR(120)</td><td><span class="badge badge-nn">NN</span></td><td>Department name (e.g. Engineering, HR)</td></tr>
+      <tr><td><span class="col-name">color</span></td><td class="col-type">VARCHAR(10)</td><td></td><td>Display colour hex for charts</td></tr>
+      <tr><td><span class="col-name fk">manager_id</span></td><td class="col-type">UUID</td><td><span class="badge badge-fk">FK</span></td><td>→ users.id (department manager)</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── 5.6 attendance_records ── -->
+  <table class="db-table">
+    <caption>5.6 &nbsp; attendance_records</caption>
+    <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="col-name pk">id</span></td><td class="col-type">UUID</td><td><span class="badge badge-pk">PK</span></td><td>Attendance record identifier</td></tr>
+      <tr><td><span class="col-name fk">user_id</span></td><td class="col-type">UUID</td><td><span class="badge badge-fk">FK</span><span class="badge badge-nn">NN</span><span class="badge badge-idx">IDX</span></td><td>→ users.id</td></tr>
+      <tr><td><span class="col-name fk">org_id</span></td><td class="col-type">UUID</td><td><span class="badge badge-fk">FK</span><span class="badge badge-nn">NN</span><span class="badge badge-idx">IDX</span></td><td>→ organizations.id (partition key)</td></tr>
+      <tr><td><span class="col-name">date</span></td><td class="col-type">DATE</td><td><span class="badge badge-nn">NN</span><span class="badge badge-idx">IDX</span></td><td>Calendar date (YYYY-MM-DD)</td></tr>
+      <tr><td><span class="col-name">status</span></td><td class="col-type">VARCHAR(10)</td><td><span class="badge badge-nn">NN</span></td><td>present | half | absent | leave | holiday | off</td></tr>
+      <tr><td><span class="col-name">hours_worked</span></td><td class="col-type">NUMERIC(5,2)</td><td></td><td>Actual hours recorded for the day</td></tr>
+      <tr><td><span class="col-name">clock_in_time</span></td><td class="col-type">TIMESTAMP</td><td></td><td>Clock-in timestamp (UTC)</td></tr>
+      <tr><td><span class="col-name">clock_out_time</span></td><td class="col-type">TIMESTAMP</td><td></td><td>Clock-out timestamp (UTC)</td></tr>
+      <tr><td><span class="col-name">ip_address</span></td><td class="col-type">VARCHAR(45)</td><td></td><td>IPv4/v6 address at clock-in</td></tr>
+      <tr><td><span class="col-name">latitude</span></td><td class="col-type">DECIMAL(10,7)</td><td></td><td>GPS latitude at clock-in</td></tr>
+      <tr><td><span class="col-name">longitude</span></td><td class="col-type">DECIMAL(10,7)</td><td></td><td>GPS longitude at clock-in</td></tr>
+      <tr><td><span class="col-name">selfie_verified</span></td><td class="col-type">BOOLEAN</td><td></td><td>Whether selfie verification passed</td></tr>
+      <tr><td><span class="col-name">is_manual_entry</span></td><td class="col-type">BOOLEAN</td><td></td><td>True if entry was manually corrected by admin</td></tr>
+      <tr><td><span class="col-name">notes</span></td><td class="col-type">TEXT</td><td></td><td>Admin notes for manual overrides</td></tr>
+      <tr><td><span class="col-name">created_at</span></td><td class="col-type">TIMESTAMP</td><td><span class="badge badge-nn">NN</span></td><td>Record creation timestamp</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px;color:#64748b;margin:-20px 0 32px;">
+    <strong>Unique constraint:</strong> (user_id, date) — one record per employee per day.
+  </p>
+
+  <!-- ── 5.7 leave_types ── -->
+  <table class="db-table">
+    <caption>5.7 &nbsp; leave_types</caption>
+    <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="col-name pk">id</span></td><td class="col-type">UUID</td><td><span class="badge badge-pk">PK</span></td><td>Leave type identifier</td></tr>
+      <tr><td><span class="col-name fk">org_id</span></td><td class="col-type">UUID</td><td><span class="badge badge-fk">FK</span><span class="badge badge-nn">NN</span><span class="badge badge-idx">IDX</span></td><td>→ organizations.id</td></tr>
+      <tr><td><span class="col-name">name</span></td><td class="col-type">VARCHAR(80)</td><td><span class="badge badge-nn">NN</span></td><td>Annual, Sick, Casual, Comp-off, LOP…</td></tr>
+      <tr><td><span class="col-name">days_per_year</span></td><td class="col-type">SMALLINT</td><td><span class="badge badge-nn">NN</span></td><td>Entitlement in days per year</td></tr>
+      <tr><td><span class="col-name">is_paid</span></td><td class="col-type">BOOLEAN</td><td><span class="badge badge-nn">NN</span></td><td>Whether leave is paid</td></tr>
+      <tr><td><span class="col-name">carry_forward</span></td><td class="col-type">BOOLEAN</td><td></td><td>Unused days carry over to next year</td></tr>
+      <tr><td><span class="col-name">applicable_to</span></td><td class="col-type">VARCHAR(10)</td><td></td><td>all | male | female</td></tr>
+      <tr><td><span class="col-name">is_system_type</span></td><td class="col-type">BOOLEAN</td><td></td><td>True for built-in types (Annual, Sick, Casual)</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── 5.8 leave_requests ── -->
+  <table class="db-table">
+    <caption>5.8 &nbsp; leave_requests</caption>
+    <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="col-name pk">id</span></td><td class="col-type">UUID</td><td><span class="badge badge-pk">PK</span></td><td>Leave request identifier</td></tr>
+      <tr><td><span class="col-name fk">user_id</span></td><td class="col-type">UUID</td><td><span class="badge badge-fk">FK</span><span class="badge badge-nn">NN</span><span class="badge badge-idx">IDX</span></td><td>→ users.id (applicant)</td></tr>
+      <tr><td><span class="col-name fk">org_id</span></td><td class="col-type">UUID</td><td><span class="badge badge-fk">FK</span><span class="badge badge-nn">NN</span><span class="badge badge-idx">IDX</span></td><td>→ organizations.id</td></tr>
+      <tr><td><span class="col-name fk">leave_type_id</span></td><td class="col-type">UUID</td><td><span class="badge badge-fk">FK</span><span class="badge badge-nn">NN</span></td><td>→ leave_types.id</td></tr>
+      <tr><td><span class="col-name">from_date</span></td><td class="col-type">DATE</td><td><span class="badge badge-nn">NN</span></td><td>Leave start date</td></tr>
+      <tr><td><span class="col-name">to_date</span></td><td class="col-type">DATE</td><td><span class="badge badge-nn">NN</span></td><td>Leave end date (inclusive)</td></tr>
+      <tr><td><span class="col-name">days</span></td><td class="col-type">SMALLINT</td><td><span class="badge badge-nn">NN</span></td><td>Calculated business days of leave</td></tr>
+      <tr><td><span class="col-name">reason</span></td><td class="col-type">TEXT</td><td></td><td>Employee-provided reason</td></tr>
+      <tr><td><span class="col-name">status</span></td><td class="col-type">VARCHAR(12)</td><td><span class="badge badge-nn">NN</span><span class="badge badge-idx">IDX</span></td><td>pending | approved | rejected | cancelled</td></tr>
+      <tr><td><span class="col-name fk">approved_by</span></td><td class="col-type">UUID</td><td><span class="badge badge-fk">FK</span></td><td>→ users.id (manager/admin who decided)</td></tr>
+      <tr><td><span class="col-name">approved_at</span></td><td class="col-type">TIMESTAMP</td><td></td><td>Decision timestamp</td></tr>
+      <tr><td><span class="col-name">rejection_reason</span></td><td class="col-type">TEXT</td><td></td><td>Reason if rejected</td></tr>
+      <tr><td><span class="col-name">created_at</span></td><td class="col-type">TIMESTAMP</td><td><span class="badge badge-nn">NN</span></td><td>Submission timestamp</td></tr>
+      <tr><td><span class="col-name">updated_at</span></td><td class="col-type">TIMESTAMP</td><td><span class="badge badge-nn">NN</span></td><td>Last status change timestamp</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── 5.9 leave_balances ── -->
+  <table class="db-table">
+    <caption>5.9 &nbsp; leave_balances</caption>
+    <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="col-name pk">id</span></td><td class="col-type">UUID</td><td><span class="badge badge-pk">PK</span></td><td>Balance record identifier</td></tr>
+      <tr><td><span class="col-name fk">user_id</span></td><td class="col-type">UUID</td><td><span class="badge badge-fk">FK</span><span class="badge badge-nn">NN</span><span class="badge badge-idx">IDX</span></td><td>→ users.id</td></tr>
+      <tr><td><span class="col-name fk">leave_type_id</span></td><td class="col-type">UUID</td><td><span class="badge badge-fk">FK</span><span class="badge badge-nn">NN</span></td><td>→ leave_types.id</td></tr>
+      <tr><td><span class="col-name">year</span></td><td class="col-type">SMALLINT</td><td><span class="badge badge-nn">NN</span></td><td>Leave year (e.g. 2026)</td></tr>
+      <tr><td><span class="col-name">total_days</span></td><td class="col-type">SMALLINT</td><td><span class="badge badge-nn">NN</span></td><td>Total entitlement including carry-forward</td></tr>
+      <tr><td><span class="col-name">used_days</span></td><td class="col-type">SMALLINT</td><td><span class="badge badge-nn">NN</span></td><td>Days consumed (approved leaves)</td></tr>
+      <tr><td><span class="col-name">pending_days</span></td><td class="col-type">SMALLINT</td><td></td><td>Days in pending leave requests</td></tr>
+      <tr><td><span class="col-name">carried_forward</span></td><td class="col-type">SMALLINT</td><td></td><td>Days carried over from previous year</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px;color:#64748b;margin:-20px 0 32px;">
+    <strong>Unique constraint:</strong> (user_id, leave_type_id, year).
+  </p>
+
+  <!-- ── 5.10 holidays ── -->
+  <table class="db-table">
+    <caption>5.10 &nbsp; holidays</caption>
+    <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="col-name pk">id</span></td><td class="col-type">UUID</td><td><span class="badge badge-pk">PK</span></td><td>Holiday identifier</td></tr>
+      <tr><td><span class="col-name fk">org_id</span></td><td class="col-type">UUID</td><td><span class="badge badge-fk">FK</span><span class="badge badge-nn">NN</span><span class="badge badge-idx">IDX</span></td><td>→ organizations.id</td></tr>
+      <tr><td><span class="col-name">name</span></td><td class="col-type">VARCHAR(120)</td><td><span class="badge badge-nn">NN</span></td><td>Holiday name (e.g. Republic Day)</td></tr>
+      <tr><td><span class="col-name">month</span></td><td class="col-type">SMALLINT</td><td><span class="badge badge-nn">NN</span></td><td>Month (1–12)</td></tr>
+      <tr><td><span class="col-name">day</span></td><td class="col-type">SMALLINT</td><td><span class="badge badge-nn">NN</span></td><td>Day of month (1–31)</td></tr>
+      <tr><td><span class="col-name">type</span></td><td class="col-type">VARCHAR(12)</td><td><span class="badge badge-nn">NN</span></td><td>national | optional | restricted</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── 5.11 announcements ── -->
+  <table class="db-table">
+    <caption>5.11 &nbsp; announcements</caption>
+    <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="col-name pk">id</span></td><td class="col-type">UUID</td><td><span class="badge badge-pk">PK</span></td><td>Announcement identifier</td></tr>
+      <tr><td><span class="col-name fk">org_id</span></td><td class="col-type">UUID</td><td><span class="badge badge-fk">FK</span><span class="badge badge-nn">NN</span><span class="badge badge-idx">IDX</span></td><td>→ organizations.id</td></tr>
+      <tr><td><span class="col-name fk">created_by</span></td><td class="col-type">UUID</td><td><span class="badge badge-fk">FK</span><span class="badge badge-nn">NN</span></td><td>→ users.id (admin who posted)</td></tr>
+      <tr><td><span class="col-name">title</span></td><td class="col-type">VARCHAR(200)</td><td><span class="badge badge-nn">NN</span></td><td>Announcement heading</td></tr>
+      <tr><td><span class="col-name">body</span></td><td class="col-type">TEXT</td><td><span class="badge badge-nn">NN</span></td><td>Full announcement text</td></tr>
+      <tr><td><span class="col-name">tag</span></td><td class="col-type">VARCHAR(40)</td><td></td><td>Category tag (Holiday, HR, Policy…)</td></tr>
+      <tr><td><span class="col-name">tag_color</span></td><td class="col-type">VARCHAR(10)</td><td></td><td>Display colour for the tag badge</td></tr>
+      <tr><td><span class="col-name">display_date</span></td><td class="col-type">DATE</td><td></td><td>Visible date shown on the announcement</td></tr>
+      <tr><td><span class="col-name">created_at</span></td><td class="col-type">TIMESTAMP</td><td><span class="badge badge-nn">NN</span></td><td>Post creation timestamp</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── 5.12 demo_requests ── -->
+  <table class="db-table">
+    <caption>5.12 &nbsp; demo_requests</caption>
+    <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="col-name pk">id</span></td><td class="col-type">UUID</td><td><span class="badge badge-pk">PK</span></td><td>Request identifier</td></tr>
+      <tr><td><span class="col-name">full_name</span></td><td class="col-type">VARCHAR(150)</td><td><span class="badge badge-nn">NN</span></td><td>Requester full name</td></tr>
+      <tr><td><span class="col-name">work_email</span></td><td class="col-type">VARCHAR(255)</td><td><span class="badge badge-nn">NN</span><span class="badge badge-idx">IDX</span></td><td>Business email address</td></tr>
+      <tr><td><span class="col-name">phone</span></td><td class="col-type">VARCHAR(20)</td><td></td><td>Contact phone number</td></tr>
+      <tr><td><span class="col-name">company_name</span></td><td class="col-type">VARCHAR(200)</td><td><span class="badge badge-nn">NN</span></td><td>Prospect company name</td></tr>
+      <tr><td><span class="col-name">team_size</span></td><td class="col-type">VARCHAR(20)</td><td></td><td>Declared team size band</td></tr>
+      <tr><td><span class="col-name">message</span></td><td class="col-type">TEXT</td><td></td><td>Additional message / requirements</td></tr>
+      <tr><td><span class="col-name">status</span></td><td class="col-type">VARCHAR(12)</td><td><span class="badge badge-nn">NN</span><span class="badge badge-idx">IDX</span></td><td>new | contacted | scheduled | completed | declined</td></tr>
+      <tr><td><span class="col-name">submitted_at</span></td><td class="col-type">TIMESTAMP</td><td><span class="badge badge-nn">NN</span></td><td>Form submission timestamp</td></tr>
+      <tr><td><span class="col-name">updated_at</span></td><td class="col-type">TIMESTAMP</td><td></td><td>Last status update timestamp</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 6 – INDEX & RELATIONSHIP SUMMARY
+════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">6</div>
+    <h2>Index &amp; Relationship Summary</h2>
+  </div>
+
+  <div class="subsection">
+    <h3>Foreign Key Relationships</h3>
+    <p></p>
+    <table class="db-table">
+      <thead><tr><th>Table (column)</th><th>References</th><th>On Delete</th></tr></thead>
+      <tbody>
+        <tr><td>users.org_id</td><td>organizations.id</td><td>RESTRICT</td></tr>
+        <tr><td>users.department_id</td><td>departments.id</td><td>SET NULL</td></tr>
+        <tr><td>refresh_tokens.user_id</td><td>users.id</td><td>CASCADE</td></tr>
+        <tr><td>offices.org_id</td><td>organizations.id</td><td>CASCADE</td></tr>
+        <tr><td>departments.org_id</td><td>organizations.id</td><td>CASCADE</td></tr>
+        <tr><td>departments.manager_id</td><td>users.id</td><td>SET NULL</td></tr>
+        <tr><td>attendance_records.user_id</td><td>users.id</td><td>RESTRICT</td></tr>
+        <tr><td>attendance_records.org_id</td><td>organizations.id</td><td>RESTRICT</td></tr>
+        <tr><td>leave_types.org_id</td><td>organizations.id</td><td>CASCADE</td></tr>
+        <tr><td>leave_requests.user_id</td><td>users.id</td><td>RESTRICT</td></tr>
+        <tr><td>leave_requests.org_id</td><td>organizations.id</td><td>RESTRICT</td></tr>
+        <tr><td>leave_requests.leave_type_id</td><td>leave_types.id</td><td>RESTRICT</td></tr>
+        <tr><td>leave_requests.approved_by</td><td>users.id</td><td>SET NULL</td></tr>
+        <tr><td>leave_balances.user_id</td><td>users.id</td><td>CASCADE</td></tr>
+        <tr><td>leave_balances.leave_type_id</td><td>leave_types.id</td><td>CASCADE</td></tr>
+        <tr><td>holidays.org_id</td><td>organizations.id</td><td>CASCADE</td></tr>
+        <tr><td>announcements.org_id</td><td>organizations.id</td><td>CASCADE</td></tr>
+        <tr><td>announcements.created_by</td><td>users.id</td><td>SET NULL</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="subsection">
+    <h3>Recommended Indexes</h3>
+    <p></p>
+    <table class="db-table">
+      <thead><tr><th>Index Name</th><th>Table</th><th>Columns</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td>idx_orgs_slug</td><td>organizations</td><td>org_slug</td><td>UNIQUE BTREE</td></tr>
+        <tr><td>idx_users_org</td><td>users</td><td>org_id</td><td>BTREE</td></tr>
+        <tr><td>idx_users_email_org</td><td>users</td><td>(email, org_id)</td><td>UNIQUE BTREE</td></tr>
+        <tr><td>idx_users_role</td><td>users</td><td>role</td><td>BTREE</td></tr>
+        <tr><td>idx_att_user_date</td><td>attendance_records</td><td>(user_id, date)</td><td>UNIQUE BTREE</td></tr>
+        <tr><td>idx_att_org_date</td><td>attendance_records</td><td>(org_id, date)</td><td>BTREE</td></tr>
+        <tr><td>idx_leave_req_user</td><td>leave_requests</td><td>(user_id, status)</td><td>BTREE</td></tr>
+        <tr><td>idx_leave_req_org</td><td>leave_requests</td><td>(org_id, status)</td><td>BTREE</td></tr>
+        <tr><td>idx_leave_bal_user_year</td><td>leave_balances</td><td>(user_id, leave_type_id, year)</td><td>UNIQUE BTREE</td></tr>
+        <tr><td>idx_tokens_user</td><td>refresh_tokens</td><td>user_id</td><td>BTREE</td></tr>
+        <tr><td>idx_holidays_org</td><td>holidays</td><td>(org_id, month, day)</td><td>BTREE</td></tr>
+        <tr><td>idx_demo_status</td><td>demo_requests</td><td>status</td><td>BTREE</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="subsection">
+    <h3>Enumerated Values Reference</h3>
+    <p></p>
+    <table class="db-table">
+      <thead><tr><th>Column</th><th>Table</th><th>Allowed Values</th></tr></thead>
+      <tbody>
+        <tr><td>role</td><td>users</td><td>super_admin, admin, hr, manager, employee</td></tr>
+        <tr><td>status</td><td>attendance_records</td><td>present, half, absent, leave, holiday, off</td></tr>
+        <tr><td>status</td><td>leave_requests</td><td>pending, approved, rejected, cancelled</td></tr>
+        <tr><td>applicable_to</td><td>leave_types</td><td>all, male, female</td></tr>
+        <tr><td>type</td><td>holidays</td><td>national, optional, restricted</td></tr>
+        <tr><td>status</td><td>demo_requests</td><td>new, contacted, scheduled, completed, declined</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    themeVariables: {
+      primaryColor: '#0ea5e9',
+      primaryTextColor: '#ffffff',
+      primaryBorderColor: '#0284c7',
+      lineColor: '#334155',
+      secondaryColor: '#6366f1',
+      tertiaryColor: '#f1f5f9',
+      background: '#ffffff',
+      mainBkg: '#0ea5e9',
+      nodeBorder: '#0284c7',
+      clusterBkg: '#f8fafc',
+      edgeLabelBackground: '#f8fafc',
+      fontFamily: 'Segoe UI, Arial, sans-serif',
+      fontSize: '13px',
+    },
+    flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' },
+    er: { useMaxWidth: true, diagramPadding: 20 },
+    mindmap: { useMaxWidth: true },
+  });
+</script>
+</body>
+</html>

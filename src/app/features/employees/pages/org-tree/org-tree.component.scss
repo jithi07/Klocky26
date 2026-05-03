@@ -1,0 +1,260 @@
+/* ═══════════════════════════════════════════════════════════
+   Org Tree
+═══════════════════════════════════════════════════════════ */
+:host { display: block; }
+
+.ot-page {
+  padding: 24px 28px 40px;
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ─── Header ────────────────────────────────────────────── */
+.ot-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ot-header__left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ot-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 2px;
+  &:hover { color: var(--accent, #6366f1); }
+}
+
+.ot-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 750;
+  color: #0f172a;
+}
+
+.ot-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.ot-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #cbd5e1;
+}
+
+.ot-header__right {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.ot-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid #e5e7eb;
+  background: #fff;
+  color: #374151;
+  transition: background 0.15s;
+
+  &:hover { background: #f9fafb; }
+  &--ghost { background: #fff; }
+}
+
+/* ─── Tree ──────────────────────────────────────────────── */
+.ot-tree-wrap {
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 20px;
+  overflow-x: auto;
+}
+
+.ot-tree { display: flex; flex-direction: column; gap: 2px; }
+
+/* ─── Node ──────────────────────────────────────────────── */
+.ot-node-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: calc(var(--depth, 0) * 28px);
+}
+
+.ot-node {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1.5px solid transparent;
+  transition: background 0.12s, border-color 0.12s;
+  cursor: default;
+
+  &:hover {
+    background: #f8fafc;
+    border-color: #e5e7eb;
+  }
+
+  &--has-children { }
+}
+
+.ot-toggle {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1.5px solid #e5e7eb;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.12s, transform 0.2s;
+  color: #64748b;
+
+  svg { transition: transform 0.2s; }
+  &:hover { background: #f1f5f9; }
+}
+
+.ot-leaf-dot {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #cbd5e1;
+  }
+}
+
+.ot-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.ot-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.ot-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.ot-desig {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.ot-dept {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.ot-meta-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.ot-role-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+
+  &--admin    { background: #ede9fe; color: #7c3aed; }
+  &--hr       { background: #fce7f3; color: #db2777; }
+  &--manager  { background: #dbeafe; color: #2563eb; }
+  &--employee { background: #f1f5f9; color: #475569; }
+}
+
+.ot-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  &--active   { background: #22c55e; }
+  &--inactive { background: #ef4444; }
+  &--on_leave { background: #f59e0b; }
+}
+
+.ot-view-btn {
+  padding: 4px 10px;
+  border-radius: 7px;
+  border: 1.5px solid #e5e7eb;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  &:hover { background: #f1f5f9; }
+}
+
+.ot-child-count {
+  font-size: 11px;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.ot-children {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-left: 2px solid #f1f5f9;
+  margin-left: 11px;
+  padding-left: 0;
+}
+
+/* ─── Responsive ────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .ot-page { padding: 16px 14px 32px; }
+  .ot-meta-right { display: none; }
+}

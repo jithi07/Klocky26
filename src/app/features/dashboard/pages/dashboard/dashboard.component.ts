@@ -1,6 +1,7 @@
-﻿import { Component, ChangeDetectionStrategy, computed } from '@angular/core';
+﻿import { Component, ChangeDetectionStrategy, computed, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { AttendanceStateService } from '../../../../core/services/attendance-state.service';
 
 // ── API integration reference ──────────────────────────────────────────────
 // When wiring real data, inject these services:
@@ -60,9 +61,13 @@ interface Announcement {
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnDestroy {
 
   constructor(private router: Router) {}
+
+  readonly attendanceSvc = inject(AttendanceStateService);
+
+  ngOnDestroy() { /* service manages its own lifecycle */ }
 
   today = new Date();
 

@@ -36,10 +36,14 @@ export class CompanySetupComponent {
   };
 
   attendanceData: AttendanceSetupData = {
-    clockInMethods: [], workWeekStart: 'Monday', workWeekEnd: 'Friday',
+    clockInMethods: [], workHoursPerDay: 8,
+    workWeekStart: 'Monday', workWeekEnd: 'Friday',
     workDayStart: '09:00', workDayEnd: '18:00',
-    gracePeriod: '10 mins', lateThreshold: '', locationRule: '',
+    gracePeriod: '10 mins', halfDayThresholdHrs: 4,
+    lateThreshold: '', locationRule: '',
+    overtimeEnabled: false, overtimeAfterHrs: 9,
     requirePhoto: false, ipRestriction: false, selfieVerification: false,
+    autoCheckoutEnabled: false, autoCheckoutTime: '20:00',
   };
 
   readonly tabs: { id: SetupTab; label: string; num: number }[] = [

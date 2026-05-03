@@ -8,4 +8,32 @@ export const routes: Routes = [
         m => m.EmployeeListComponent
       ),
   },
+  {
+    path: 'add',
+    loadComponent: () =>
+      import('./pages/employee-add/employee-add.component').then(
+        m => m.EmployeeAddComponent
+      ),
+  },
+  {
+    path: 'tree',
+    loadComponent: () =>
+      import('./pages/org-tree/org-tree.component').then(
+        m => m.OrgTreeComponent
+      ),
+  },
+  {
+    path: ':id',
+    loadComponent: () =>
+      import('./pages/employee-detail/employee-detail.component').then(
+        m => m.EmployeeDetailComponent
+      ),
+  },
+  {
+    path: ':id/edit',
+    loadComponent: () =>
+      import('./pages/employee-add/employee-add.component').then(
+        m => m.EmployeeAddComponent
+      ),
+  },
 ];

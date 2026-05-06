@@ -68,11 +68,11 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/attendance/attendance.routes').then((m) => m.routes),
       },
-      // {
-      //   path: 'ui-components',
-      //   loadChildren: () =>
-      //     import('./features/ui-components/ui-components.routes').then((m) => m.routes),
-      // },
+      {
+        path: 'ui-components',
+        loadChildren: () =>
+          import('./features/ui-components/ui-components.routes').then((m) => m.routes),
+      },
       {
         path: 'settings',
         canActivate: [roleGuard],

@@ -4,12 +4,14 @@
 :host { display: block; }
 
 .ot-page {
-  padding: 24px 28px 40px;
-  max-width: 1280px;
+  padding: 20px;
+  max-width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* ─── Header ────────────────────────────────────────────── */
@@ -43,9 +45,14 @@
 
 .ot-title {
   margin: 0;
-  font-size: 22px;
-  font-weight: 750;
+  font-size: 26px;
+  font-weight: 850;
   color: #0f172a;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .ot-meta {
@@ -73,141 +80,292 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 14px;
-  border-radius: 9px;
+  padding: 9px 18px;
+  border-radius: 12px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  border: 1.5px solid #e5e7eb;
+  border: 2px solid #e2e8f0;
   background: #fff;
-  color: #374151;
-  transition: background 0.15s;
+  color: #475569;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.04);
 
-  &:hover { background: #f9fafb; }
-  &--ghost { background: #fff; }
+  &:hover { 
+    background: #f8fafc;
+    border-color: var(--accent, #6366f1);
+    color: var(--accent, #6366f1);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(15, 23, 42, 0.08);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  &--ghost { 
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(8px);
+  }
 }
 
 /* ─── Tree ──────────────────────────────────────────────── */
 .ot-tree-wrap {
-  background: #fff;
-  border: 1.5px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 20px;
-  overflow-x: auto;
+  background: #fafafa;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 40px 24px;
+  overflow: auto;
+  flex: 1;
+  position: relative;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.ot-tree { display: flex; flex-direction: column; gap: 2px; }
-
-/* ─── Node ──────────────────────────────────────────────── */
-.ot-node-wrap {
+.ot-tree-vertical {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding-left: calc(var(--depth, 0) * 28px);
+  align-items: center;
+  gap: 0;
+  width: 100%;
+  min-width: fit-content;
+  position: relative;
 }
 
-.ot-node {
+/* ─── Node Container (vertical layout) ─────────────────────── */
+.ot-node-container {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1.5px solid transparent;
-  transition: background 0.12s, border-color 0.12s;
-  cursor: default;
+  position: relative;
+  
+  &.ot-root {
+    margin-bottom: 20px;
+    
+    .ot-node-card {
+      animation-delay: 0.05s;
+    }
+  }
+  
+  /* Stagger animations for children */
+  .ot-child-slot:nth-child(1) .ot-node-card { animation-delay: 0.1s; }
+  .ot-child-slot:nth-child(2) .ot-node-card { animation-delay: 0.15s; }
+  .ot-child-slot:nth-child(3) .ot-node-card { animation-delay: 0.2s; }
+  .ot-child-slot:nth-child(4) .ot-node-card { animation-delay: 0.25s; }
+  .ot-child-slot:nth-child(5) .ot-node-card { animation-delay: 0.3s; }
+}
+
+/* ─── Node Card ──────────────────────────────────────────────── */
+.ot-node-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--accent, #6366f1) 35%, transparent);
+  background: linear-gradient(135deg, 
+    color-mix(in srgb, var(--accent, #6366f1) 25%, #1a1a1a) 0%,
+    color-mix(in srgb, var(--accent, #6366f1) 18%, #0f0f0f) 100%);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--accent, #6366f1) 15%, rgba(0, 0, 0, 0.3));
+  min-width: 180px;
+  max-width: 200px;
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  animation: fadeInCard 0.3s ease-out backwards;
+
+  @keyframes fadeInCard {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
 
   &:hover {
-    background: #f8fafc;
-    border-color: #e5e7eb;
+    background: linear-gradient(135deg, 
+      color-mix(in srgb, var(--accent, #6366f1) 32%, #1a1a1a) 0%,
+      color-mix(in srgb, var(--accent, #6366f1) 25%, #0f0f0f) 100%);
+    border-color: color-mix(in srgb, var(--accent, #6366f1) 50%, transparent);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--accent, #6366f1) 25%, rgba(0, 0, 0, 0.4));
+    transform: translateY(-1px);
   }
 
-  &--has-children { }
-}
+  &.ot-has-children {
+    /* No special styling for parent cards */
+  }
 
-.ot-toggle {
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
-  border: 1.5px solid #e5e7eb;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background 0.12s, transform 0.2s;
-  color: #64748b;
-
-  svg { transition: transform 0.2s; }
-  &:hover { background: #f1f5f9; }
-}
-
-.ot-leaf-dot {
-  width: 22px;
-  height: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-
-  &::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #cbd5e1;
+  /* Root card (selected employee) */
+  .ot-node-container[data-level="0"] & {
+    min-width: 220px;
+    max-width: 240px;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, 
+      color-mix(in srgb, var(--accent, #6366f1) 35%, #1a1a1a) 0%,
+      color-mix(in srgb, var(--accent, #6366f1) 28%, #0f0f0f) 100%);
+    border-color: color-mix(in srgb, var(--accent, #6366f1) 45%, transparent);
+    box-shadow: 0 3px 10px color-mix(in srgb, var(--accent, #6366f1) 20%, rgba(0, 0, 0, 0.35));
+    
+    .ot-card-avatar {
+      width: 44px;
+      height: 44px;
+      font-size: 17px;
+    }
+    
+    .ot-card-name {
+      font-size: 13px;
+    }
+    
+    &:hover {
+      background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--accent, #6366f1) 42%, #1a1a1a) 0%,
+        color-mix(in srgb, var(--accent, #6366f1) 35%, #0f0f0f) 100%);
+      border-color: color-mix(in srgb, var(--accent, #6366f1) 60%, transparent);
+      box-shadow: 0 5px 16px color-mix(in srgb, var(--accent, #6366f1) 30%, rgba(0, 0, 0, 0.4));
+    }
   }
 }
 
-.ot-avatar {
+.ot-card-avatar {
   width: 38px;
   height: 38px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   flex-shrink: 0;
+  border: none;
+  position: relative;
+  transition: transform 0.2s;
+  
+  .ot-node-card:hover & {
+    transform: scale(1.05);
+  }
 }
 
-.ot-info {
-  flex: 1;
-  min-width: 0;
+.ot-card-info {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: left;
+  flex: 1;
+  min-width: 0;
 }
 
-.ot-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: #1e293b;
-}
-
-.ot-desig {
+.ot-card-name {
   font-size: 12px;
-  color: #64748b;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
 }
 
-.ot-dept {
-  font-size: 11px;
-  color: #94a3b8;
+.ot-card-title {
+  font-size: 10px;
+  font-weight: 500;
+  color: #d1d5db;
+  margin: 0;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
 }
 
-.ot-meta-right {
+.ot-card-dept {
+  font-size: 9px;
+  font-weight: 500;
+  color: #9ca3af;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.ot-card-badges {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.ot-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   flex-shrink: 0;
+}
+
+.ot-card-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 3px;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+
+  svg { 
+    transition: transform 0.2s;
+    stroke-width: 2.5;
+    width: 14px;
+    height: 14px;
+  }
+
+  &:hover {
+    background: color-mix(in srgb, var(--accent, #6366f1) 25%, rgba(255, 255, 255, 0.2));
+    border-color: var(--accent, #6366f1);
+    transform: scale(1.1);
+  }
+  
+  &--expand:hover {
+    background: color-mix(in srgb, var(--accent, #6366f1) 30%, rgba(255, 255, 255, 0.25));
+    border-color: var(--accent, #6366f1);
+  }
+}
+
+.ot-reports-badge {
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  font-size: 10px;
+  font-weight: 600;
+  color: #6b7280;
+  white-space: nowrap;
+  z-index: 10;
 }
 
 .ot-role-badge {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   padding: 2px 8px;
-  border-radius: 20px;
+  border-radius: 12px;
 
   &--admin    { background: #ede9fe; color: #7c3aed; }
   &--hr       { background: #fce7f3; color: #db2777; }
@@ -226,35 +384,347 @@
   &--on_leave { background: #f59e0b; }
 }
 
-.ot-view-btn {
-  padding: 4px 10px;
-  border-radius: 7px;
-  border: 1.5px solid #e5e7eb;
-  background: #fff;
-  font-size: 12px;
-  font-weight: 600;
-  color: #374151;
-  cursor: pointer;
-  &:hover { background: #f1f5f9; }
+/* ─── Tree Connectors ──────────────────────────────────────── */
+/* Vertical line from parent card to horizontal sibling line */
+.ot-parent-connector {
+  width: 1px;
+  height: 24px;
+  background: #d1d5db;
+  margin: 0 auto;
+  position: relative;
+  animation: drawLine 0.3s ease-out;
+  
+  @keyframes drawLine {
+    from {
+      height: 0;
+      opacity: 0;
+    }
+    to {
+      height: 24px;
+      opacity: 1;
+    }
+  }
 }
 
-.ot-child-count {
-  font-size: 11px;
-  color: #94a3b8;
-  white-space: nowrap;
-}
-
-.ot-children {
+/* Container for all children and their connecting lines */
+.ot-children-wrapper {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  border-left: 2px solid #f1f5f9;
-  margin-left: 11px;
-  padding-left: 0;
+  align-items: center;
+  margin-top: 0;
+
+  /* Draw horizontal line connecting siblings using pseudo-element */
+  &[data-child-count]:not([data-child-count="1"])::before {
+    content: '';
+    position: absolute;
+    top: 22px;
+    height: 1px;
+    background: #d1d5db;
+    z-index: 1;
+    animation: expandLine 0.4s ease-out;
+    
+    @keyframes expandLine {
+      from {
+        transform: scaleX(0);
+        opacity: 0;
+      }
+      to {
+        transform: scaleX(1);
+        opacity: 1;
+      }
+    }
+  }
+
+  /* 2 children */
+  &[data-child-count="2"]::before {
+    left: calc(50% - 105px);
+    right: calc(50% - 105px);
+  }
+
+  /* 3 children */
+  &[data-child-count="3"]::before {
+    left: calc(50% - 210px);
+    right: calc(50% - 210px);
+  }
+
+  /* 4 children */
+  &[data-child-count="4"]::before {
+    left: calc(50% - 315px);
+    right: calc(50% - 315px);
+  }
+
+  /* 5 children */
+  &[data-child-count="5"]::before {
+    left: calc(50% - 420px);
+    right: calc(50% - 420px);
+  }
+  
+  /* 6+ children - general formula */
+  &[data-child-count="6"]::before,
+  &[data-child-count="7"]::before,
+  &[data-child-count="8"]::before {
+    left: 8%;
+    right: 8%;
+  }
+}
+
+/* Row containing all child nodes horizontally */
+.ot-children-row {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: nowrap;
+  position: relative;
+  z-index: 2;
+  margin-top: 0;
+  
+  &.ot-single {
+    gap: 0;
+    
+    .ot-drop-line {
+      display: block;
+    }
+  }
+}
+
+/* Individual child slot */
+.ot-child-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex-shrink: 0;
+  margin-top: 0;
+}
+
+/* Vertical line dropping from sibling line to child card */
+.ot-drop-line {
+  width: 1px;
+  height: 22px;
+  background: #d1d5db;
+  margin: 0;
+  position: relative;
+  z-index: 3;
+  flex-shrink: 0;
+  animation: dropLine 0.3s ease-out 0.1s backwards;
+  
+  @keyframes dropLine {
+    from {
+      height: 0;
+      opacity: 0;
+    }
+    to {
+      height: 22px;
+      opacity: 1;
+    }
+  }
+}
+
+/* Calculate horizontal line positioning */
+.ot-children-row:not(.ot-single) .ot-sibling-line {
+  /* Line spans from center of first child to center of last child */
+  left: 0;
+  right: 0;
 }
 
 /* ─── Responsive ────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .ot-page { padding: 16px 14px 32px; }
-  .ot-meta-right { display: none; }
+  .ot-page { 
+    padding: 16px 14px 32px;
+    max-width: 100%;
+  }
+  
+  .ot-title {
+    font-size: 22px;
+  }
+  
+  .ot-tree-wrap {
+    padding: 24px 16px;
+  }
+
+  .ot-children-row {
+    gap: 32px;
+  }
+
+  .ot-node-card {
+    min-width: 170px;
+    max-width: 190px;
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .ot-card-avatar {
+    width: 34px;
+    height: 34px;
+    font-size: 13px;
+  }
+  
+  .ot-node-container[data-level="0"] .ot-node-card {
+    min-width: 200px;
+    max-width: 220px;
+    padding: 10px 12px;
+    
+    .ot-card-avatar {
+      width: 40px;
+      height: 40px;
+      font-size: 16px;
+    }
+  }
+
+  /* Adjust horizontal line for smaller gaps */
+  .ot-children-wrapper[data-child-count="2"]::before {
+    left: calc(50% - 105px);
+    right: calc(50% - 105px);
+  }
+
+  .ot-children-wrapper[data-child-count="3"]::before {
+    left: calc(50% - 210px);
+    right: calc(50% - 210px);
+  }
+
+  .ot-children-wrapper[data-child-count="4"]::before {
+    left: calc(50% - 315px);
+    right: calc(50% - 315px);
+  }
+  
+  .ot-children-wrapper[data-child-count="5"]::before,
+  .ot-children-wrapper[data-child-count="6"]::before {
+    left: 10%;
+    right: 10%;
+  }
+}
+
+@media (max-width: 480px) {
+  .ot-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .ot-title {
+    font-size: 20px;
+  }
+  
+  .ot-tree-wrap {
+    padding: 30px 16px;
+    border-radius: 16px;
+  }
+  
+  .ot-children-row {
+    gap: 18px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 0 16px;
+    scroll-snap-type: x mandatory;
+    
+    &::-webkit-scrollbar {
+      height: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: rgba(148, 163, 184, 0.1);
+      border-radius: 3px;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.3);
+      border-radius: 3px;
+      
+      &:hover {
+        background: rgba(148, 163, 184, 0.5);
+      }
+    }
+  }
+  
+  .ot-child-slot {
+    scroll-snap-align: center;
+  }
+
+  .ot-node-card {
+    min-width: 165px;
+    max-width: 180px;
+    padding: 8px 10px;
+    gap: 6px;
+  }
+
+  .ot-card-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+  }
+  
+  .ot-node-container[data-level="0"] .ot-node-card {
+    min-width: 190px;
+    max-width: 210px;
+    padding: 10px 12px;
+    
+    .ot-card-avatar {
+      width: 36px;
+      height: 36px;
+      font-size: 15px;
+    }
+  }
+  
+  .ot-parent-connector {
+    height: 24px;
+  }
+  
+  .ot-drop-line {
+    height: 24px;
+    
+    @keyframes dropLine {
+      from {
+        height: 0;
+        opacity: 0;
+      }
+      to {
+        height: 24px;
+        opacity: 1;
+      }
+    }
+  }
+  
+  .ot-children-wrapper[data-child-count]:not([data-child-count="1"])::before {
+    top: 22px;
+  }
+  
+  /* Adjust for smaller gaps on mobile */
+  .ot-children-wrapper[data-child-count="2"]::before {
+    left: calc(50% - 100px);
+    right: calc(50% - 100px);
+  }
+
+  .ot-children-wrapper[data-child-count="3"]::before {
+    left: 12%;
+    right: 12%;
+  }
+
+  .ot-children-wrapper[data-child-count="4"]::before,
+  .ot-children-wrapper[data-child-count="5"]::before {
+    left: 8%;
+    right: 8%;
+  }
+
+  /* For mobile, allow horizontal scrolling */
+  .ot-tree-wrap {
+    overflow-x: auto;
+    overflow-y: visible;
+  }
+  
+  /* Adjust button sizes */
+  .ot-btn {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+  
+  .ot-card-action-btn {
+    width: 24px;
+    height: 24px;
+    
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
 }

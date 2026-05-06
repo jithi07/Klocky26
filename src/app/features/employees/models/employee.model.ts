@@ -46,6 +46,70 @@ export interface EmployeeRow {
   status: EmployeeStatus;
 }
 
+// Simplified interface for org chart display
+export interface OrgChartNode {
+  id: string;
+  name: string;
+  designation: string;
+  initials: string;
+  avatarColor: string;
+  reportingManagerId: string | null;
+  directReportsCount: number;
+  level: number;
+}
+
+// Mapper function to convert employees to org chart nodes
+export function mapToOrgChartNodes(employees: EmployeeRow[]): OrgChartNode[] {
+  // Create a map to count direct reports for each employee
+  const directReportsMap = new Map<string, number>();
+  
+  employees.forEach(emp => {
+    if (emp.reportingManagerId) {
+      const count = directReportsMap.get(emp.reportingManagerId) || 0;
+      directReportsMap.set(emp.reportingManagerId, count + 1);
+    }
+  });
+
+  // Create a map to calculate levels
+  const levelMap = new Map<string, number>();
+  
+  function calculateLevel(empId: string, visited = new Set<string>()): number {
+    if (levelMap.has(empId)) {
+      return levelMap.get(empId)!;
+    }
+    
+    if (visited.has(empId)) {
+      return 0; // Circular reference protection
+    }
+    
+    const emp = employees.find(e => e.id === empId);
+    if (!emp || !emp.reportingManagerId) {
+      levelMap.set(empId, 0);
+      return 0;
+    }
+    
+    visited.add(empId);
+    const level = calculateLevel(emp.reportingManagerId, visited) + 1;
+    levelMap.set(empId, level);
+    return level;
+  }
+
+  // Calculate levels for all employees
+  employees.forEach(emp => calculateLevel(emp.id));
+
+  // Map to org chart nodes
+  return employees.map(emp => ({
+    id: emp.id,
+    name: emp.fullName,
+    designation: emp.designation,
+    initials: emp.initials,
+    avatarColor: emp.avatarColor,
+    reportingManagerId: emp.reportingManagerId,
+    directReportsCount: directReportsMap.get(emp.id) || 0,
+    level: levelMap.get(emp.id) || 0,
+  }));
+}
+
 export const DEPARTMENTS = [
   'Engineering', 'Design', 'Marketing', 'Sales',
   'Operations', 'Finance', 'HR', 'Product', 'Legal',
@@ -97,7 +161,7 @@ export const MOCK_EMPLOYEES: EmployeeRow[] = [
   mkRow('1','EMP001','Riya',    'Sharma',   'riya.sharma@acme.com',    '+91 98765 43210','admin',   'HR',          'HR Manager',        null, null,               'Mumbai HQ',    '2021-03-15','active',  0),
   mkRow('2','EMP002','Arjun',   'Mehta',    'arjun.mehta@acme.com',    '+91 98765 43211','manager', 'Engineering', 'Engineering Manager','1',  'Riya Sharma',      'Mumbai HQ',    '2020-07-01','active',  1),
   mkRow('3','EMP003','Priya',   'Nair',     'priya.nair@acme.com',     '+91 98765 43212','hr',      'HR',          'HR Executive',      '1',  'Riya Sharma',      'Mumbai HQ',    '2022-01-10','active',  2),
-  mkRow('4','EMP004','Rohan',   'Desai',    'rohan.desai@acme.com',    '+91 98765 43213','employee','Engineering', 'Senior Engineer',   '2',  'Arjun Mehta',      'Bangalore',    '2021-09-20','active',  3),
+  mkRow('4','EMP004','Rohan',   'Desai',    'rohan.desai@acme.com',    '+91 98765 43213','employee','Engineering', 'Senior Engineer',   '1',  'Arjun Mehta',      'Bangalore',    '2021-09-20','active',  3),
   mkRow('5','EMP005','Sneha',   'Kapoor',   'sneha.kapoor@acme.com',   '+91 98765 43214','employee','Design',      'UI Designer',       '2',  'Arjun Mehta',      'Mumbai HQ',    '2022-06-05','active',  4),
   mkRow('6','EMP006','Vivek',   'Sharma',   'vivek.sharma@acme.com',   '+91 98765 43215','manager', 'Sales',       'Sales Manager',     '1',  'Riya Sharma',      'Delhi',        '2020-11-12','active',  5),
   mkRow('7','EMP007','Kavya',   'Iyer',     'kavya.iyer@acme.com',     '+91 98765 43216','employee','Design',      'UX Designer',       '5',  'Sneha Kapoor',     'Mumbai HQ',    '2023-04-18','active',  6),

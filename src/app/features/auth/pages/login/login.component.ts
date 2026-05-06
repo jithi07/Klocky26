@@ -31,7 +31,7 @@ import { DEMO_THEME_SLUGS } from '../../../../core/config/org-themes.const';
 //   }
 // ──────────────────────────────────────────────────────────────────────────────
 
-type LoginStep = 'org' | 'credentials';
+type LoginStep = 'org' | 'credentials' | 'loading';
 
 @Component({
   selector: 'klocky-login',
@@ -49,10 +49,61 @@ type LoginStep = 'org' | 'credentials';
         @case ('credentials') {
           <klocky-email-step (loggedIn)="onLoggedIn()" (back)="onBack()" />
         }
+        @case ('loading') {
+          <div class="login-loading">
+            <div class="login-loading-spinner"></div>
+            <h2 class="login-loading-title">Welcome back!</h2>
+            <p class="login-loading-text">Setting up your workspace...</p>
+          </div>
+        }
       }
     </klocky-auth-shell>
   `,
-  styles: [':host { display: block; height: 100dvh; overflow: hidden; }'],
+  styles: [`
+    :host { display: block; height: 100dvh; overflow: hidden; }
+    
+    .login-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      padding: 40px 20px;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .login-loading-spinner {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: 4px solid rgba(255, 255, 255, 0.2);
+      border-top-color: #fff;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .login-loading-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+      margin: 0;
+      letter-spacing: -0.5px;
+    }
+
+    .login-loading-text {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.8);
+      margin: 0;
+    }
+  `],
 })
 export class LoginComponent implements OnInit {
   step: LoginStep = 'org';
@@ -68,7 +119,7 @@ export class LoginComponent implements OnInit {
   }
 
   onBack(): void {
-    if (this.step === 'credentials') {
+    if (this.step === 'credentials' || this.step === 'loading') {
       this.authState.resetToOrgStep();
       this.orgTheme.reset();
       this.step = 'org';
@@ -76,8 +127,10 @@ export class LoginComponent implements OnInit {
   }
 
   async onLoggedIn(): Promise<void> {
-    this.loginSuccess = true;
-     const randomSlug = DEMO_THEME_SLUGS[Math.floor(Math.random() * DEMO_THEME_SLUGS.length)];
+    // Show loading screen
+    this.step = 'loading';
+    const randomSlug = DEMO_THEME_SLUGS[Math.floor(Math.random() * DEMO_THEME_SLUGS.length)];
+    
     // ── Demo session — replace with real API call when backend is ready ──
     await this.appState.patch({
       accessToken:  'demo-token',
@@ -98,7 +151,10 @@ export class LoginComponent implements OnInit {
     });
     // ─────────────────────────────────────────────────────────────────────
 
-    await this.delay(1400);
+    // Show loading state for 2 seconds before navigating
+    await this.delay(2000);
+    this.loginSuccess = true;
+    await this.delay(600);
     await this.router.navigate(['/app/dashboard']); 
     this.orgTheme.apply(randomSlug);
   }

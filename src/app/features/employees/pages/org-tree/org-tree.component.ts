@@ -4,6 +4,8 @@ import {
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MOCK_EMPLOYEES, EmployeeRow } from '../../models/employee.model';
+import { RolePermissionModalComponent } from '../../components/role-permission-modal/role-permission-modal.component';
+import { OrgThemeService } from '../../../../core/services/org-theme.service';
 
 export interface TreeNode {
   emp: EmployeeRow;
@@ -15,16 +17,20 @@ export interface TreeNode {
   selector: 'app-org-tree',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, RolePermissionModalComponent],
   templateUrl: './org-tree.component.html',
   styleUrl: './org-tree.component.scss',
 })
 export class OrgTreeComponent implements OnInit {
-  constructor(private router: Router) {}
+  constructor(private router: Router, readonly orgTheme: OrgThemeService) {}
 
   roots = signal<TreeNode[]>([]);
   searchQuery = signal('');
   expandedIds = signal<Set<string>>(new Set());
+  
+  // Role modal state
+  roleModalOpen = signal(false);
+  selectedEmployee = signal<EmployeeRow | null>(null);
 
   ngOnInit() {
     this.roots.set(this.buildTree(MOCK_EMPLOYEES));
@@ -53,6 +59,24 @@ export class OrgTreeComponent implements OnInit {
 
   viewEmployee(id: string) { this.router.navigate(['/app/employees', id]); }
   goBack()                 { this.router.navigate(['/app/employees']); }
+  
+  manageRole(emp: EmployeeRow) {
+    this.selectedEmployee.set(emp);
+    this.roleModalOpen.set(true);
+  }
+  
+  closeRoleModal() {
+    this.roleModalOpen.set(false);
+    this.selectedEmployee.set(null);
+  }
+  
+  onRoleChange(data: { role: string; permissions: string[] }) {
+    console.log('Role updated:', data);
+    // In a real app, call an API to update role and permissions
+    // this.employeeService.updateRole(this.selectedEmployee()!.id, data).subscribe(...);
+    this.roleModalOpen.set(false);
+    this.selectedEmployee.set(null);
+  }
 
   expandAll() {
     this.setAll(this.roots(), true);

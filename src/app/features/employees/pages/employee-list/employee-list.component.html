@@ -136,6 +136,7 @@
                   <div class="el-action-dropdown">
                     <button (click)="viewEmployee(emp.id)">View Profile</button>
                     <button (click)="editEmployee(emp.id)">Edit</button>
+                    <button (click)="manageRole(emp)">Manage Role</button>
                     <button class="danger" (click)="confirmDeactivate(emp)">Deactivate</button>
                   </div>
                 }
@@ -186,6 +187,7 @@
                 <div class="el-action-dropdown el-action-dropdown--left">
                   <button (click)="viewEmployee(emp.id)">View Profile</button>
                   <button (click)="editEmployee(emp.id)">Edit</button>
+                  <button (click)="manageRole(emp)">Manage Role</button>
                   <button class="danger" (click)="confirmDeactivate(emp)">Deactivate</button>
                 </div>
               }
@@ -270,4 +272,13 @@
     </div>
   </div>
 }
+
+<!-- Role permission modal -->
+<app-role-permission-modal 
+  [isOpen]="roleModalOpen()" 
+  [employeeName]="selectedEmployee()?.fullName || 'Employee'"
+  [currentRole]="selectedEmployee()?.role || 'employee'"
+  (close)="closeRoleModal()"
+  (saveChanges)="onRoleChange($event)"
+></app-role-permission-modal>
 

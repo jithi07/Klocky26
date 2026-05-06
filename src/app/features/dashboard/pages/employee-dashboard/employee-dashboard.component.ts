@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, signal, inject, ViewChild, ElementRef, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AttendanceStateService } from '../../../../core/services/attendance-state.service';
 import { FaceRosterService } from '../../../../core/services/face-roster.service';
 import * as faceapi from '@vladmandic/face-api';
@@ -31,7 +31,7 @@ interface Activity {
   selector: 'app-employee-dashboard',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './employee-dashboard.component.html',
   styleUrl: './employee-dashboard.component.scss',
 })

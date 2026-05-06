@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MOCK_EMPLOYEES, EmployeeRow, DEPARTMENTS } from '../../models/employee.model';
+import { RolePermissionModalComponent } from '../../components/role-permission-modal/role-permission-modal.component';
 
 type SortField = 'fullName' | 'employeeCode' | 'department' | 'role' | 'dateOfJoining' | 'status';
 type SortDir   = 'asc' | 'desc';
@@ -13,7 +14,7 @@ type SortDir   = 'asc' | 'desc';
   selector: 'app-employee-list',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RolePermissionModalComponent],
   templateUrl: './employee-list.component.html',
   styleUrl: './employee-list.component.scss',
 })
@@ -34,6 +35,10 @@ export class EmployeeListComponent implements OnInit {
   selectedIds   = signal<Set<string>>(new Set());
   actionMenuId  = signal<string | null>(null);
   deactivateTarget = signal<EmployeeRow | null>(null);
+  
+  // Role modal state
+  roleModalOpen = signal(false);
+  selectedEmployee = signal<EmployeeRow | null>(null);
 
   readonly departments = DEPARTMENTS;
   readonly roles       = ['admin','hr','manager','employee'];
@@ -152,6 +157,35 @@ export class EmployeeListComponent implements OnInit {
   }
 
   cancelDeactivate() { this.deactivateTarget.set(null); }
+
+  manageRole(emp: EmployeeRow) {
+    this.selectedEmployee.set(emp);
+    this.roleModalOpen.set(true);
+    this.actionMenuId.set(null);
+  }
+
+  closeRoleModal() {
+    this.roleModalOpen.set(false);
+    this.selectedEmployee.set(null);
+  }
+
+  onRoleChange(data: { role: string; permissions: string[] }) {
+    const emp = this.selectedEmployee();
+    if (!emp) return;
+    
+    console.log('Role updated for', emp.fullName, ':', data);
+    // Update employee role in the list
+    const idx = this.allEmployees.findIndex(e => e.id === emp.id);
+    if (idx !== -1) {
+      this.allEmployees[idx] = { 
+        ...this.allEmployees[idx], 
+        role: data.role as any 
+      };
+      this.allEmployees = [...this.allEmployees];
+      this.search.set(this.search()); // force re-compute
+    }
+    this.closeRoleModal();
+  }
 
   statusLabel(s: string) { return s === 'on_leave' ? 'On Leave' : (s.charAt(0).toUpperCase() + s.slice(1)); }
   roleLabel(r: string)   { return r.charAt(0).toUpperCase() + r.slice(1); }

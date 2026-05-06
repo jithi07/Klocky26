@@ -4,15 +4,15 @@ export const routes: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./pages/dashboard/dashboard.component').then(
-        m => m.DashboardComponent
+      import('./pages/employee-dashboard/employee-dashboard.component').then(
+        m => m.EmployeeDashboardComponent
       ),
   },
   {
-    path: 'employee',
+    path: 'admin',
     loadComponent: () =>
-      import('./pages/employee-dashboard/employee-dashboard.component').then(
-        m => m.EmployeeDashboardComponent
+      import('./pages/dashboard/dashboard.component').then(
+        m => m.DashboardComponent
       ),
   },
 ];

@@ -22,165 +22,108 @@
     }
   </div>
 
-  <!-- ── Main Navigation ───────────────────────────────────────── -->
+  <!-- ── Main Navigation with Collapsible Sections ───────────────────────────────────────── -->
   <nav class="nav-main">
+    @for (section of menuSections; track section.id) {
+      <div class="nav-section" 
+           [class.expanded]="isSectionExpanded(section.id)"
+           [class.has-active-child]="hasSectionActiveChild(section)">
+        
+        <!-- Section Header (Clickable) -->
+        <button class="nav-section-header" (click)="toggleSection(section.id)" type="button">
+          <span class="nav-section-icon">
+            @switch (section.icon) {
+              @case ('home') {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+              }
+              @case ('employees') {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              }
+              @case ('clock') {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+              }
+              @case ('leaves') {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/><polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+              }
+              @case ('performance') {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+              }
+            }
+          </span>
+          <span class="nav-section-label label">{{ section.label }}</span>
+          <svg class="nav-section-arrow label" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
 
-    <!-- Main -->
-    <span class="nav-group-label">Main</span>
+        <!-- Section Items (Sub-menu) -->
+        @if (isSectionExpanded(section.id)) {
+          <div class="nav-section-items">
+            @for (item of section.items; track item.route) {
+              <a 
+                [routerLink]="item.route" 
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="item.exact ? {exact: true} : {exact: false}"
+                [title]="item.label"
+                (click)="onMenuItemClick()"
+                class="nav-item">
+                <span class="nav-item-dot"></span>
+                <span class="nav-item-label label">{{ item.label }}</span>
+              </a>
+            }
+          </div>
+        }
+      </div>
+    }
 
-    <a routerLink="/app/dashboard" routerLinkActive="active"
-       [routerLinkActiveOptions]="{exact:true}" title="Dashboard">
-      <span class="nav-icon"><icon-home [size]="19"></icon-home></span>
-      <span class="nav-text label">Dashboard</span>
-    </a>
-
-    <a routerLink="/app/dashboard/employee" routerLinkActive="active" title="My Dashboard">
-      <span class="nav-icon"><icon-user [size]="19"></icon-user></span>
-      <span class="nav-text label">My Dashboard</span>
-    </a>
-
-    <a routerLink="/app/profile" routerLinkActive="active" title="My Profile">
-      <span class="nav-icon">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-      </span>
-      <span class="nav-text label">My Profile</span>
-    </a>
-
-    <!-- People & Org -->
-    <span class="nav-group-label">People &amp; Org</span>
-
-    <a routerLink="/app/employees" routerLinkActive="active" title="Employees">
-      <span class="nav-icon"><icon-employees [size]="19"></icon-employees></span>
-      <span class="nav-text label">Employees</span>
-    </a>
-
-    <a routerLink="/app/employees/tree" routerLinkActive="active" title="Org Tree">
-      <span class="nav-icon">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><rect x="2" y="16" width="6" height="4" rx="1"/><rect x="16" y="16" width="6" height="4" rx="1"/><path d="M12 6v4m-6 6V12h12v4"/></svg>
-      </span>
-      <span class="nav-text label">Org Tree</span>
-    </a>
-
-    <a routerLink="/app/roles" routerLinkActive="active" title="Roles & Permissions">
-      <span class="nav-icon">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-      </span>
-      <span class="nav-text label">Roles &amp; Permissions</span>
-    </a>
-
-    <!-- Attendance -->
-    <span class="nav-group-label">Attendance</span>
-
-    <a routerLink="/app/attendance" routerLinkActive="active"
-       [routerLinkActiveOptions]="{exact:true}" title="Attendance">
-      <span class="nav-icon"><icon-clock [size]="19"></icon-clock></span>
-      <span class="nav-text label">Attendance</span>
-    </a>
-
-    <a routerLink="/app/shifts" routerLinkActive="active" title="Shifts & Roster">
-      <span class="nav-icon">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
-      </span>
-      <span class="nav-text label">Shifts &amp; Roster</span>
-    </a>
-
-    <a routerLink="/app/attendance/geofence" routerLinkActive="active" title="Geo-fencing">
-      <span class="nav-icon">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 1 8 8c0 5-8 12-8 12S4 15 4 10a8 8 0 0 1 8-8z"/></svg>
-      </span>
-      <span class="nav-text label">Geo-fencing</span>
-    </a>
-
-    <a routerLink="/app/attendance/face-scan" routerLinkActive="active" title="Face Scan">
-      <span class="nav-icon">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8V5a2 2 0 0 1 2-2h3M2 16v3a2 2 0 0 0 2 2h3M22 8V5a2 2 0 0 0-2-2h-3M22 16v3a2 2 0 0 1-2 2h-3"/><circle cx="12" cy="12" r="3"/></svg>
-      </span>
-      <span class="nav-text label">Face Scan</span>
-    </a>
-
-    <a routerLink="/app/attendance/face-roster" routerLinkActive="active" title="Face Roster">
-      <span class="nav-icon">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M19 8l2 2 4-4"/></svg>
-      </span>
-      <span class="nav-text label">Face Roster</span>
-    </a>
-
-    <!-- Time Off & Work -->
-    <span class="nav-group-label">Time Off &amp; Work</span>
-
-    <a routerLink="/app/leaves" routerLinkActive="active" title="Leaves">
-      <span class="nav-icon">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      </span>
-      <span class="nav-text label">Leave Approvals</span>
-    </a>
-
-    <a routerLink="/app/tasks" routerLinkActive="active" title="Tasks">
-      <span class="nav-icon">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-      </span>
-      <span class="nav-text label">Tasks</span>
-    </a>
-
-    <a routerLink="/app/notifications" routerLinkActive="active" title="Notifications">
-      <span class="nav-icon">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      </span>
-      <span class="nav-text label">Notifications</span>
-    </a>
-
-    <!-- Performance & HR -->
-    <span class="nav-group-label">Performance &amp; HR</span>
-
-    <a routerLink="/app/performance" routerLinkActive="active" title="Performance">
-      <span class="nav-icon">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-      </span>
-      <span class="nav-text label">Performance</span>
-    </a>
-
-    <a routerLink="/app/analytics" routerLinkActive="active" title="HR Analytics">
-      <span class="nav-icon">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10"/><polyline points="12 6 12 12 16 14"/></svg>
-      </span>
-      <span class="nav-text label">HR Analytics</span>
-    </a>
-
-    <a routerLink="/app/engagement" routerLinkActive="active" title="Engagement">
-      <span class="nav-icon">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      </span>
-      <span class="nav-text label">Engagement</span>
-    </a>
-
-    <a routerLink="/app/recruitment" routerLinkActive="active" title="Recruitment">
-      <span class="nav-icon">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-      </span>
-      <span class="nav-text label">Recruitment</span>
-    </a>
-
-    <!-- Dev -->
-    <span class="nav-group-label">Dev</span>
-
-    <a routerLink="/app/ui-components" routerLinkActive="active" title="UI Components">
-      <span class="nav-icon"><icon-palette [size]="19"></icon-palette></span>
-      <span class="nav-text label">UI Components</span>
-    </a>
+    <!-- Dev Section (standalone) -->
+    <!-- <div class="nav-dev-section">
+      <a routerLink="/app/ui-components" routerLinkActive="active" title="UI Components" class="nav-item">
+        <span class="nav-item-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/>
+            <circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
+          </svg>
+        </span>
+        <span class="nav-item-label label">UI Components</span>
+      </a>
+    </div> -->
 
   </nav>
 
   <!-- ── Bottom ────────────────────────────────────────────────── -->
   <div class="nav-bottom">
 
-    <a routerLink="/app/settings/org-profile" routerLinkActive="active" title="Settings">
-      <span class="nav-icon"><icon-settings [size]="18"></icon-settings></span>
-      <span class="nav-text label">Settings</span>
+    <a routerLink="/app/settings/org-profile" routerLinkActive="active" title="Settings" class="nav-item">
+      <span class="nav-item-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 1v6m0 6v6M5.6 5.6l4.2 4.2m4.2 4.2l4.2 4.2M1 12h6m6 0h6M5.6 18.4l4.2-4.2m4.2-4.2l4.2-4.2"/>
+        </svg>
+      </span>
+      <span class="nav-item-label label">Settings</span>
     </a>
 
-    <button class="nav-logout" (click)="logout()" title="Logout">
-      <span class="nav-icon"><icon-logout [size]="18"></icon-logout></span>
-      <span class="nav-text label">Logout</span>
+    <button class="nav-logout" (click)="logout()" title="Logout" type="button">
+      <span class="nav-item-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      </span>
+      <span class="nav-item-label label">Logout</span>
     </button>
 
     <!-- Powered by footer -->

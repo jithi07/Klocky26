@@ -1,32 +1,7 @@
-import { Component, ChangeDetectionStrategy, signal, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, computed, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-
-export interface OrgRecord {
-  id: string;
-  name: string;
-  slug: string;
-  adminEmail: string;
-  industry: string;
-  employeeCount: number;
-  plan: 'free' | 'starter' | 'pro' | 'enterprise';
-  status: 'active' | 'suspended' | 'pending';
-  registeredAt: string;
-  country: string;
-}
-
-// Mock data — replace with API calls
-const MOCK_ORGS: OrgRecord[] = [
-  { id: '1',  name: 'Acme Technologies',    slug: 'acme',     adminEmail: 'admin@acme.com',        industry: 'Technology',         employeeCount: 142, plan: 'pro',        status: 'active',    registeredAt: '2025-11-03', country: 'India'          },
-  { id: '2',  name: 'Globex Inc',           slug: 'globex',   adminEmail: 'it@globex.com',          industry: 'Finance & Banking',  employeeCount: 530, plan: 'enterprise', status: 'active',    registeredAt: '2025-09-14', country: 'United States'  },
-  { id: '3',  name: 'Stark Industries',     slug: 'stark',    adminEmail: 'tony@stark.io',          industry: 'Manufacturing',      employeeCount: 870, plan: 'enterprise', status: 'active',    registeredAt: '2025-08-01', country: 'United States'  },
-  { id: '4',  name: 'Wayne Enterprises',    slug: 'wayne',    adminEmail: 'hr@wayne.com',           industry: 'Consulting',         employeeCount: 210, plan: 'pro',        status: 'active',    registeredAt: '2025-12-22', country: 'United Kingdom' },
-  { id: '5',  name: 'Initech Corp',         slug: 'initech',  adminEmail: 'admin@initech.biz',      industry: 'Technology',         employeeCount: 48,  plan: 'starter',    status: 'suspended', registeredAt: '2025-10-05', country: 'Canada'         },
-  { id: '6',  name: 'Umbrella Healthcare',  slug: 'umbrella', adminEmail: 'ops@umbrella.org',       industry: 'Healthcare',         employeeCount: 320, plan: 'pro',        status: 'active',    registeredAt: '2026-01-18', country: 'India'          },
-  { id: '7',  name: 'Pied Piper',           slug: 'piedpiper',adminEmail: 'richard@piedpiper.com',  industry: 'Technology',         employeeCount: 12,  plan: 'free',       status: 'active',    registeredAt: '2026-02-10', country: 'United States'  },
-  { id: '8',  name: 'Dunder Mifflin',       slug: 'dunder',   adminEmail: 'michael@dundermifflin.com', industry: 'Retail & E-commerce',employeeCount: 65,  plan: 'starter',    status: 'active',    registeredAt: '2026-03-01', country: 'United States'  },
-  { id: '9',  name: 'Hooli',               slug: 'hooli',    adminEmail: 'ceo@hooli.xyz',          industry: 'Technology',         employeeCount: 4200,plan: 'enterprise', status: 'active',    registeredAt: '2025-07-14', country: 'United States'  },
-  { id: '10', name: 'Prestige Worldwide',   slug: 'prestige', adminEmail: 'info@prestige.net',      industry: 'Media & Entertainment', employeeCount: 88, plan: 'starter',   status: 'pending',   registeredAt: '2026-04-20', country: 'Australia'      },
-];
+import { PlatformAdminService } from '../../../../core/services/platform-admin.service';
+import { PlatformOrgListItem } from '../../../../core/models/platform-auth.model';
 
 @Component({
   selector: 'klocky-admin-dashboard',
@@ -36,20 +11,36 @@ const MOCK_ORGS: OrgRecord[] = [
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.scss',
 })
-export class AdminDashboardComponent {
-  readonly orgs = signal<OrgRecord[]>(MOCK_ORGS);
+export class AdminDashboardComponent implements OnInit {
+  private readonly platformAdmin = inject(PlatformAdminService);
+
+  readonly orgs    = signal<PlatformOrgListItem[]>([]);
+  readonly loading = signal(false);
+  readonly loadError = signal('');
+
   readonly search = signal('');
-  readonly statusFilter = signal<'all' | OrgRecord['status']>('all');
+  readonly statusFilter = signal<'all' | 'active' | 'inactive'>('all');
+
+  ngOnInit(): void {
+    this.platformAdmin.listOrganisations().subscribe({
+      next: (res) => { this.orgs.set(res.data); this.loading.set(false); },
+      error: (err) => {
+        this.loading.set(false);
+        this.loadError.set(err?.error?.message ?? 'Could not load organisations.');
+      },
+    });
+    this.loading.set(true);
+  }
 
   // ── Stats ─────────────────────────────────────────────────────
-  readonly totalOrgs       = computed(() => this.orgs().length);
-  readonly activeOrgs      = computed(() => this.orgs().filter(o => o.status === 'active').length);
-  readonly suspendedOrgs   = computed(() => this.orgs().filter(o => o.status === 'suspended').length);
-  readonly totalEmployees  = computed(() => this.orgs().reduce((s, o) => s + o.employeeCount, 0));
-  readonly newThisMonth    = computed(() => {
+  readonly totalOrgs    = computed(() => this.orgs().length);
+  readonly activeOrgs   = computed(() => this.orgs().filter(o => o.isActive).length);
+  readonly inactiveOrgs = computed(() => this.orgs().filter(o => !o.isActive).length);
+  readonly trialOrgs    = computed(() => this.orgs().filter(o => o.subscriptionStatus === 'trial').length);
+  readonly newThisMonth = computed(() => {
     const now = new Date();
     const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    return this.orgs().filter(o => o.registeredAt.startsWith(ym)).length;
+    return this.orgs().filter(o => o.createdAt?.startsWith(ym)).length;
   });
 
   // ── Filtered list ──────────────────────────────────────────────
@@ -57,33 +48,32 @@ export class AdminDashboardComponent {
     const q = this.search().toLowerCase();
     const s = this.statusFilter();
     return this.orgs().filter(o => {
-      const matchSearch = !q || o.name.toLowerCase().includes(q) || o.slug.includes(q) || o.adminEmail.toLowerCase().includes(q);
-      const matchStatus = s === 'all' || o.status === s;
+      const matchSearch = !q || o.companyName.toLowerCase().includes(q) || o.orgSlug.includes(q) || o.primaryEmail.toLowerCase().includes(q);
+      const matchStatus = s === 'all' || (s === 'active' ? o.isActive : !o.isActive);
       return matchSearch && matchStatus;
     });
   });
 
   // ── Actions ───────────────────────────────────────────────────
-  selectedOrg = signal<OrgRecord | null>(null);
+  selectedOrg = signal<PlatformOrgListItem | null>(null);
 
-  viewOrg(org: OrgRecord): void { this.selectedOrg.set(org); }
+  viewOrg(org: PlatformOrgListItem): void { this.selectedOrg.set(org); }
   closeDetail(): void { this.selectedOrg.set(null); }
 
-  toggleSuspend(org: OrgRecord): void {
-    this.orgs.update(list =>
-      list.map(o => o.id === org.id
-        ? { ...o, status: o.status === 'suspended' ? 'active' : 'suspended' }
-        : o
-      )
-    );
-    if (this.selectedOrg()?.id === org.id) {
-      this.selectedOrg.set(this.orgs().find(o => o.id === org.id) ?? null);
-    }
+  /** Maps to PUT .../organisations/{slug} { isActive } — there's no separate "suspend" endpoint. */
+  toggleActive(org: PlatformOrgListItem): void {
+    this.platformAdmin.updateOrganisation(org.orgSlug, { isActive: !org.isActive }).subscribe({
+      next: (res) => {
+        this.orgs.update(list => list.map(o => o.orgSlug === org.orgSlug ? res.data : o));
+        if (this.selectedOrg()?.orgSlug === org.orgSlug) this.selectedOrg.set(res.data);
+      },
+    });
   }
 
   // ── Helpers ───────────────────────────────────────────────────
-  planLabel(plan: OrgRecord['plan']): string {
-    return { free: 'Free', starter: 'Starter', pro: 'Pro', enterprise: 'Enterprise' }[plan];
+  formatDate(iso: string | null): string {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
   }
 
   onSearch(event: Event): void {

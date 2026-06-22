@@ -89,6 +89,36 @@ export const COUNTRIES: string[] = [
   'Other',
 ];
 
+// ── Country → default timezone (IANA) ──────────────────────────────────────────
+// A best-effort default for auto-filling the timezone field once a country is
+// picked — purely a client-side UX nicety, not authoritative. Several of these
+// countries span multiple zones (US, Canada, Australia, Brazil); the value
+// here is just the most common/capital-city zone, and the user can still
+// change the timezone field afterward. No server endpoint provides this
+// mapping (GET /api/tenant/options returns flat, unrelated countries/timezones
+// lists) and there's no reason to ask for one — the server can't pick a
+// single "right" zone for a multi-zone country any better than this can.
+//
+// Every value here is deliberately one already present in TIMEZONE_OPTIONS
+// above, so the timezone dropdown shows a real selection (not a blank
+// placeholder) immediately after picking a country — Canada/France/South
+// Africa map to the closest equivalent-offset zone already in that list
+// rather than their own capital's zone.
+export const COUNTRY_DEFAULT_TIMEZONE: Record<string, string> = {
+  'India':          'Asia/Kolkata',
+  'United States':  'America/New_York',
+  'United Kingdom': 'Europe/London',
+  'Canada':         'America/New_York',
+  'Australia':      'Australia/Sydney',
+  'Germany':        'Europe/Berlin',
+  'France':         'Europe/Berlin',
+  'Singapore':      'Asia/Singapore',
+  'UAE':            'Asia/Dubai',
+  'South Africa':   'Africa/Cairo',
+  'Brazil':         'America/Sao_Paulo',
+  'Japan':          'Asia/Tokyo',
+};
+
 // ── Company legal types ───────────────────────────────────────────────────────
 export const COMPANY_TYPES: string[] = [
   'Private Limited',

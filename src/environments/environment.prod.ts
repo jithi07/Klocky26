@@ -6,7 +6,10 @@ export const environment = {
   production: true,
 
   /** Production API base URL. Override via CI/CD env var → fileReplacement. */
-  apiBaseUrl: 'https://api.klocky.app/v1',
+  apiBaseUrl: 'https://klock-api.onrender.com/api',
+
+  /** SignalR notifications hub — same host as the API, root path (not under /api). */
+  realtimeHubUrl: 'https://klock-api.onrender.com/hubs/notifications',
 
   enableApiLogging: false,
 

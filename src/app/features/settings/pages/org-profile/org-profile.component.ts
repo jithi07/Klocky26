@@ -6,12 +6,15 @@ import {
   inject,
   OnInit,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UiInputComponent } from '../../../../shared/components/ui-input/ui-input.component';
 import { UiTextareaComponent } from '../../../../shared/components/ui-textarea/ui-textarea.component';
 import { UiSelectComponent } from '../../../../shared/components/ui-select/ui-select.component';
 import { UiToggleComponent } from '../../../../shared/components/ui-toggle/ui-toggle.component';
+import { UiModalComponent } from '../../../../shared/components/ui-modal/ui-modal.component';
 import { OrgThemeService } from '../../../../core/services/org-theme.service';
+import { AppStateService } from '../../../../core/services/app-state.service';
+import { OrgAuthService } from '../../../../core/services/org-auth.service';
 import {
   INDUSTRIES,
   COMPANY_SIZES,
@@ -21,11 +24,11 @@ import {
   DATE_FORMATS,
   WEEK_STARTS,
   COMPANY_TYPES,
-  WORKING_DAY_OPTIONS,
   GRACE_PERIOD_OPTIONS,
   HALF_DAY_THRESHOLD_OPTIONS,
   LEAVE_YEAR_MONTHS,
   ACCENT_PRESETS,
+  WEEKDAYS,
 } from '../../../../core/config/form-options.const';
 
 export interface Office {
@@ -89,7 +92,7 @@ const HOLIDAY_TYPE_LABELS: Record<Holiday['type'], string> = {
 @Component({
   selector: 'org-profile',
   standalone: true,
-  imports: [FormsModule, UiInputComponent, UiTextareaComponent, UiSelectComponent, UiToggleComponent],
+  imports: [FormsModule, ReactiveFormsModule, UiInputComponent, UiTextareaComponent, UiSelectComponent, UiToggleComponent, UiModalComponent],
   templateUrl: './org-profile.component.html',
   styleUrl: './org-profile.component.scss',
 })
@@ -98,6 +101,41 @@ export class OrgProfileComponent implements OnInit {
   @ViewChild('colorInput') colorInputRef!: ElementRef<HTMLInputElement>;
 
   private readonly orgThemeService = inject(OrgThemeService);
+  private readonly appState        = inject(AppStateService);
+  private readonly orgAuth         = inject(OrgAuthService);
+  private readonly fb              = inject(FormBuilder);
+
+  // ── Org-admin step-up (POST /api/org/auth/login) ────────────────────
+  readonly stepUpOpen       = signal(false);
+  readonly stepUpSubmitting = signal(false);
+  readonly stepUpError      = signal('');
+  readonly stepUpForm: FormGroup = this.fb.group({
+    password: ['', Validators.required],
+  });
+
+  submitStepUp(): void {
+    this.stepUpForm.markAllAsTouched();
+    if (this.stepUpForm.invalid || this.stepUpSubmitting()) return;
+    this.stepUpError.set('');
+    this.stepUpSubmitting.set(true);
+
+    this.orgAuth.orgLogin({
+      orgSlug: this.appState.orgSlug() ?? '',
+      email: this.appState.user()?.email ?? this.primaryEmail,
+      password: this.stepUpForm.value.password,
+    }).subscribe({
+      next: () => {
+        this.stepUpSubmitting.set(false);
+        this.stepUpOpen.set(false);
+        this.stepUpForm.reset();
+        this._doSave();
+      },
+      error: (err) => {
+        this.stepUpSubmitting.set(false);
+        this.stepUpError.set(err?.error?.message ?? 'Incorrect password.');
+      },
+    });
+  }
 
   ngOnInit(): void {
     // Initialize accent color from current theme
@@ -105,19 +143,32 @@ export class OrgProfileComponent implements OnInit {
     if (currentTheme?.accent) {
       this.accentColor = currentTheme.accent.toLowerCase();
     }
+
+    // GET /api/tenant/options (§1.6) — replace the local country list with
+    // the server's; keep the local fallback if the call fails.
+    this.orgAuth.getTenantOptions().subscribe({
+      next: (res) => {
+        if (res.data.countries?.length) this.countries.set(res.data.countries);
+      },
+      error: () => { /* keep the local fallback list */ },
+    });
   }
 
   // ── Reference data ────────────────────────────────────────────
+  // Timezone keeps the local {label,value} list (richer than the API's plain
+  // string[] — see SERVER_CHANGES_REQUEST.md for the format ambiguity).
   readonly timezones           = TIMEZONES;
   readonly industries          = INDUSTRIES;
-  readonly countries           = COUNTRIES;
+  // Countries start from the local constant, replaced by GET /api/tenant/options
+  // (§1.6) once it resolves — see ngOnInit.
+  readonly countries           = signal<string[]>(COUNTRIES);
   readonly employeeBands       = EMPLOYEE_BANDS;
   readonly currencies          = CURRENCIES;
   readonly dateFormats         = DATE_FORMATS;
   readonly weekStarts          = WEEK_STARTS;
+  readonly weekdays            = WEEKDAYS;
   readonly accentPresets       = ACCENT_PRESETS;
   readonly companyTypes        = COMPANY_TYPES;
-  readonly workingDayOptions   = WORKING_DAY_OPTIONS;
   readonly gracePeriodOptions  = GRACE_PERIOD_OPTIONS;
   readonly halfDayOptions      = HALF_DAY_THRESHOLD_OPTIONS;
   readonly leaveYearMonths     = LEAVE_YEAR_MONTHS;
@@ -169,6 +220,10 @@ export class OrgProfileComponent implements OnInit {
   hrContactName  = '';
   hrContactEmail = '';
 
+  // Not yet on this screen's UI — required by the register-complete API (see
+  // SERVER_CHANGES_REQUEST.md §2c). Defaulted here until a real control exists.
+  country = 'India';
+
   // Localisation
   defaultTimezone = 'Asia/Kolkata';
   dateFormat      = 'DD/MM/YYYY';
@@ -176,8 +231,15 @@ export class OrgProfileComponent implements OnInit {
   weekStart       = 'Monday';
 
   // Attendance Policy
+  // Two explicit weekdays — matches the registration screen exactly
+  // (RegisterComponent.profileForm.workWeekStart/workWeekEnd) and what the
+  // API actually models (weekStartDay/weekEndDay, §1.5). Replaces a former
+  // 'mon-fri'|'mon-sat'|'mon-sun'|'custom' enum that couldn't represent the
+  // same data the registration screen collects, and had no real "custom"
+  // backing on the server anyway — see SERVER_CHANGES_REQUEST.md.
   workHoursPerDay      = 8;
-  workingDays          = 'mon-fri';
+  workWeekStartDay     = 'Monday';
+  workWeekEndDay       = 'Friday';
   gracePeriodMins      = 10;
   halfDayThresholdHrs  = 4;
   overtimeEnabled      = false;
@@ -473,38 +535,70 @@ export class OrgProfileComponent implements OnInit {
   }
 
   // ── Save / Discard ─────────────────────────────────────────────
-  async save(): Promise<void> {
-    this.saving.set(true);
-    
-    try {
-      // ────────────────────────────────────────────────────────────
-      // API Integration Example:
-      // Only send the accent color to your backend
-      // ────────────────────────────────────────────────────────────
-      const payload = {
-        companyName: this.companyName,
-        brandColor: this.accentColor,  // Single color! 🎨
-        // ... other org profile fields
-      };
-      
-      // await this.apiService.updateOrgProfile(payload);
-      await new Promise(r => setTimeout(r, 900)); // Simulated API call
-      
-      // ────────────────────────────────────────────────────────────
-      // After save: Generate complete theme and apply it
-      // ────────────────────────────────────────────────────────────
-      const completeTheme = this.orgThemeService.generateThemeFromColor(this.accentColor);
-      this.orgThemeService.apply(completeTheme);
-      
-      // Optional: Log to see the auto-generated colors
-      console.log('Generated theme from single color:', completeTheme);
-      
-      this.saving.set(false);
-      this.isDirty.set(false);
-    } catch (error) {
-      this.saving.set(false);
-      console.error('Failed to save org profile:', error);
+
+  /**
+   * Org details (§2.3) + org-wide policy defaults (§1.5) both require the
+   * org-admin step-up token, not the day-to-day employee token. If we don't
+   * have one (or it expired), collect the admin password once before saving.
+   */
+  save(): void {
+    if (!this.appState.isOrgAdminAuthenticated()) {
+      this.stepUpError.set('');
+      this.stepUpOpen.set(true);
+      return;
     }
+    this._doSave();
+  }
+
+  private _doSave(): void {
+    this.saving.set(true);
+
+    const details$ = this.orgAuth.updateOrgDetails({
+      companyName: this.companyName,
+      legalName: this.legalName,
+      industry: this.industry,
+      website: this.website,
+      about: this.description,
+      phone: this.phone,
+      accentColor: this.accentColor,
+    });
+
+    details$.subscribe({
+      next: () => {
+        this.orgAuth.registerComplete({
+          companyName: this.companyName,
+          displayName: this.companyName,
+          primaryEmail: this.primaryEmail,
+          industry: this.industry,
+          companySize: this.employeeCount as any,
+          country: this.country,
+          defaultTimezone: this.defaultTimezone,
+          clockInMethods: this.remoteCheckinEnabled ? ['web', 'mobile'] : ['web'],
+          weekStartDay: this.workWeekStartDay.toLowerCase(),
+          weekEndDay: this.workWeekEndDay.toLowerCase(),
+          workHours: this.workHoursPerDay,
+          checkInRuleType: 'none',
+          halfDayThresholdHrs: this.halfDayThresholdHrs,
+          locationPolicy: this.geoFencingEnabled ? 'geo_fenced_area' : 'no_restrictions',
+          overtimeEnabled: this.overtimeEnabled,
+          overtimeAfterHrs: this.overtimeAfterHrs,
+          autoCheckoutEnabled: this.autoCheckoutEnabled,
+          autoCheckoutTime: this.autoCheckoutTime ? `${this.autoCheckoutTime}:00` : undefined,
+          geoFencingEnabled: this.geoFencingEnabled,
+          geofencePingIntervalMinutes: 5,
+          geofenceMissedPingGraceMinutes: 15,
+        }).subscribe({
+          next: () => {
+            const completeTheme = this.orgThemeService.generateThemeFromColor(this.accentColor);
+            this.orgThemeService.apply(completeTheme);
+            this.saving.set(false);
+            this.isDirty.set(false);
+          },
+          error: () => { this.saving.set(false); },
+        });
+      },
+      error: () => { this.saving.set(false); },
+    });
   }
 
   discard(): void {

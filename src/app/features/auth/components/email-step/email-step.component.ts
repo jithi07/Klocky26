@@ -1,7 +1,8 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthStateService } from '../../services/auth-state.service';
+import { UserAuthService } from '../../../../core/services/user-auth.service';
 
 @Component({
   selector: 'klocky-email-step',
@@ -11,6 +12,7 @@ import { AuthStateService } from '../../services/auth-state.service';
   styleUrl: './email-step.component.scss',
 })
 export class EmailStepComponent {
+  /** Emits once POST /api/users/auth/login succeeds and the session is persisted. */
   @Output() loggedIn = new EventEmitter<void>();
   @Output() back = new EventEmitter<void>();
 
@@ -19,6 +21,8 @@ export class EmailStepComponent {
   showPassword = false;
 
   form: FormGroup;
+
+  private userAuth = inject(UserAuthService);
 
   constructor(public state: AuthStateService, private fb: FormBuilder) {
     this.form = this.fb.group({
@@ -41,20 +45,30 @@ export class EmailStepComponent {
     this.showPassword = !this.showPassword;
   }
 
-  async login(): Promise<void> {
+  login(): void {
     this.form.markAllAsTouched();
     if (this.form.invalid || this.loading) return;
     this.error = '';
     this.loading = true;
-    await this.delay(1000);
-    this.loading = false;
-    this.state.setEmail(this.form.value.emailInput.trim());
-    console.log('[Login] credentials:', {
-      email: this.form.value.emailInput.trim(),
-      password: '***',
-    });
-    this.loggedIn.emit();
-  }
 
-  private delay(ms: number) { return new Promise(r => setTimeout(r, ms)); }
+    const email = this.form.value.emailInput.trim();
+    this.state.setEmail(email);
+
+    this.userAuth.login({
+      orgSlug: this.state.orgIdentifier(),
+      email,
+      password: this.form.value.passwordInput,
+    }).subscribe({
+      next: () => {
+        this.loading = false;
+        this.loggedIn.emit();
+      },
+      error: (err) => {
+        this.loading = false;
+        this.error = err?.status === 402
+          ? 'Your organisation’s trial/subscription has expired. Please contact your administrator to renew access.'
+          : (err?.error?.message ?? 'Invalid email or password.');
+      },
+    });
+  }
 }

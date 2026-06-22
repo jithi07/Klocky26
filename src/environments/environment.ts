@@ -11,7 +11,10 @@ export const environment = {
   production: false,
 
   /** Base URL for all API calls. No trailing slash. */
-  apiBaseUrl: 'http://localhost:3000/api/v1',
+  apiBaseUrl: 'https://klock-api.onrender.com/api',
+
+  /** SignalR notifications hub — same host as the API, root path (not under /api). */
+  realtimeHubUrl: 'https://klock-api.onrender.com/hubs/notifications',
 
   /** If true, HTTP requests/responses are logged to the console */
   enableApiLogging: true,

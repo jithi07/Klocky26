@@ -1,24 +1,7 @@
-import { Component, ChangeDetectionStrategy, signal, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, computed, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { OrgRecord } from '../admin-dashboard/admin-dashboard.component';
-
-const MOCK_ORGS: OrgRecord[] = [
-  { id: '1',  name: 'Acme Technologies',   slug: 'acme',      adminEmail: 'admin@acme.com',            industry: 'Technology',            employeeCount: 142,  plan: 'pro',        status: 'active',    registeredAt: '2025-11-03', country: 'India'          },
-  { id: '2',  name: 'Globex Inc',          slug: 'globex',    adminEmail: 'it@globex.com',             industry: 'Finance & Banking',     employeeCount: 530,  plan: 'enterprise', status: 'active',    registeredAt: '2025-09-14', country: 'United States'  },
-  { id: '3',  name: 'Stark Industries',    slug: 'stark',     adminEmail: 'tony@stark.io',             industry: 'Manufacturing',         employeeCount: 870,  plan: 'enterprise', status: 'active',    registeredAt: '2025-08-01', country: 'United States'  },
-  { id: '4',  name: 'Wayne Enterprises',   slug: 'wayne',     adminEmail: 'hr@wayne.com',              industry: 'Consulting',            employeeCount: 210,  plan: 'pro',        status: 'active',    registeredAt: '2025-12-22', country: 'United Kingdom' },
-  { id: '5',  name: 'Initech Corp',        slug: 'initech',   adminEmail: 'admin@initech.biz',         industry: 'Technology',            employeeCount: 48,   plan: 'starter',    status: 'suspended', registeredAt: '2025-10-05', country: 'Canada'         },
-  { id: '6',  name: 'Umbrella Healthcare', slug: 'umbrella',  adminEmail: 'ops@umbrella.org',          industry: 'Healthcare',            employeeCount: 320,  plan: 'pro',        status: 'active',    registeredAt: '2026-01-18', country: 'India'          },
-  { id: '7',  name: 'Pied Piper',          slug: 'piedpiper', adminEmail: 'richard@piedpiper.com',     industry: 'Technology',            employeeCount: 12,   plan: 'free',       status: 'active',    registeredAt: '2026-02-10', country: 'United States'  },
-  { id: '8',  name: 'Dunder Mifflin',      slug: 'dunder',    adminEmail: 'michael@dundermifflin.com', industry: 'Retail & E-commerce',   employeeCount: 65,   plan: 'starter',    status: 'active',    registeredAt: '2026-03-01', country: 'United States'  },
-  { id: '9',  name: 'Hooli',              slug: 'hooli',     adminEmail: 'ceo@hooli.xyz',             industry: 'Technology',            employeeCount: 4200, plan: 'enterprise', status: 'active',    registeredAt: '2025-07-14', country: 'United States'  },
-  { id: '10', name: 'Prestige Worldwide',  slug: 'prestige',  adminEmail: 'info@prestige.net',         industry: 'Media & Entertainment', employeeCount: 88,   plan: 'starter',    status: 'pending',   registeredAt: '2026-04-20', country: 'Australia'      },
-  { id: '11', name: 'Soylent Corp',        slug: 'soylent',   adminEmail: 'admin@soylent.co',          industry: 'Healthcare',            employeeCount: 230,  plan: 'pro',        status: 'active',    registeredAt: '2026-04-01', country: 'Canada'         },
-  { id: '12', name: 'Massive Dynamic',     slug: 'massive',   adminEmail: 'nina@massivedynamic.com',   industry: 'Technology',            employeeCount: 1100, plan: 'enterprise', status: 'active',    registeredAt: '2025-06-15', country: 'United States'  },
-];
-
-export type OrgPlan = OrgRecord['plan'];
-export type OrgStatus = OrgRecord['status'];
+import { PlatformAdminService } from '../../../../core/services/platform-admin.service';
+import { PlatformOrgListItem, SubscriptionStatus, OrgEmailType } from '../../../../core/models/platform-auth.model';
 
 @Component({
   selector: 'klocky-admin-organisations',
@@ -28,65 +11,308 @@ export type OrgStatus = OrgRecord['status'];
   templateUrl: './admin-organisations.component.html',
   styleUrl: './admin-organisations.component.scss',
 })
-export class AdminOrganisationsComponent {
-  readonly orgs = signal<OrgRecord[]>(MOCK_ORGS);
+export class AdminOrganisationsComponent implements OnInit {
+  private readonly platformAdmin = inject(PlatformAdminService);
 
-  readonly search       = signal('');
-  readonly statusFilter = signal<'all' | OrgStatus>('all');
-  readonly planFilter   = signal<'all' | OrgPlan>('all');
+  readonly orgs    = signal<PlatformOrgListItem[]>([]);
+  readonly loading = signal(false);
+  readonly loadError = signal('');
 
-  readonly selectedOrg  = signal<OrgRecord | null>(null);
-  readonly showInvite   = signal(false);
-  readonly inviteEmail  = signal('');
+  readonly search             = signal('');
+  readonly subscriptionFilter = signal<'all' | SubscriptionStatus>('all');
+
+  readonly selectedOrg  = signal<PlatformOrgListItem | null>(null);
+
+  // ── Add organisation ─────────────────────────────────────────────
+  readonly showAdd        = signal(false);
+  readonly addSubmitting  = signal(false);
+  readonly addError       = signal('');
+  readonly addResult      = signal<{ orgSlug: string; temporaryPassword: string } | null>(null);
+  newOrgCompanyName = '';
+  newOrgPrimaryEmail = '';
+  newOrgIndustry = '';
+
+  // ── Edit organisation (PUT /api/platform/organisations/{slug}) ────
+  readonly editingOrg     = signal<PlatformOrgListItem | null>(null);
+  readonly editSubmitting = signal(false);
+  readonly editError      = signal('');
+  editCompanyName = '';
+  editAccentColor = '';
+  editIsActive = true;
+  editSubscriptionStatus: SubscriptionStatus = 'trial';
+  editSubscriptionPlan = '';
+  editTrialEndsAt = '';
+  editSubscriptionExpiresAt = '';
+  editMaxEmployees: number | null = null;
+  editMaxAdminAccounts: number | null = null;
+  editInactivityRetentionDays: number | null = null;
+
+  // ── Reset org-admin password — REQUESTED endpoint, not live yet (SERVER_CHANGES_REQUEST.md §0) ──
+  readonly resetPwSubmitting = signal(false);
+  readonly resetPwError      = signal('');
+  readonly resetPwResult     = signal('');
+
+  // ── Database configuration — UI shell only, NOT wired to any backend.
+  // No endpoint exists for this anywhere in INTEGRATION_GUIDE.md, and tenant
+  // DB credentials shouldn't transit a web UI at all (see SERVER_CHANGES_REQUEST.md
+  // §0) — these fields never leave the browser.
+  readonly dbConfigNotice = signal('');
+  dbHost = '';
+  dbName = '';
+  dbUsername = '';
+  dbPassword = '';
+
+  // ── Agent integration status — local biometric-sync agent per org.
+  // UI shell only, no backend endpoint exists yet (SERVER_CHANGES_REQUEST.md §0).
+  readonly agentStatusNotice = signal('');
+  agentStatus: 'active' | 'pending' | 'inactive' = 'pending';
+
+  // ── Send email — REQUESTED endpoint, not live yet (SERVER_CHANGES_REQUEST.md §0d) ──
+  readonly emailSubmitting = signal(false);
+  readonly emailError      = signal('');
+  readonly emailSent       = signal('');
+  emailType: OrgEmailType = 'resend_welcome';
+  emailCustomSubject = '';
+  emailCustomMessage = '';
+
+  ngOnInit(): void {
+    this.refresh();
+  }
+
+  refresh(): void {
+    this.loading.set(true);
+    this.loadError.set('');
+    this.platformAdmin.listOrganisations().subscribe({
+      next: (res) => { this.orgs.set(res.data); this.loading.set(false); },
+      error: (err) => {
+        this.loading.set(false);
+        this.loadError.set(err?.error?.message ?? 'Could not load organisations.');
+      },
+    });
+  }
 
   // ── Filtered list ─────────────────────────────────────────────
   readonly filtered = computed(() => {
     const q = this.search().toLowerCase();
-    const s = this.statusFilter();
-    const p = this.planFilter();
+    const s = this.subscriptionFilter();
     return this.orgs().filter(o => {
-      const matchQ = !q || o.name.toLowerCase().includes(q)
-                       || o.slug.includes(q)
-                       || o.adminEmail.toLowerCase().includes(q)
-                       || o.country.toLowerCase().includes(q);
-      const matchS = s === 'all' || o.status === s;
-      const matchP = p === 'all' || o.plan === p;
-      return matchQ && matchS && matchP;
+      const matchQ = !q || o.companyName.toLowerCase().includes(q)
+                       || o.orgSlug.includes(q)
+                       || o.primaryEmail.toLowerCase().includes(q);
+      const matchS = s === 'all' || o.subscriptionStatus === s;
+      return matchQ && matchS;
     });
   });
 
   // ── Stats ─────────────────────────────────────────────────────
-  readonly totalOrgs      = computed(() => this.orgs().length);
-  readonly activeOrgs     = computed(() => this.orgs().filter(o => o.status === 'active').length);
-  readonly suspendedOrgs  = computed(() => this.orgs().filter(o => o.status === 'suspended').length);
-  readonly pendingOrgs    = computed(() => this.orgs().filter(o => o.status === 'pending').length);
-  readonly enterpriseOrgs = computed(() => this.orgs().filter(o => o.plan === 'enterprise').length);
+  readonly totalOrgs    = computed(() => this.orgs().length);
+  readonly activeOrgs   = computed(() => this.orgs().filter(o => o.isActive).length);
+  readonly inactiveOrgs = computed(() => this.orgs().filter(o => !o.isActive).length);
+  readonly trialOrgs    = computed(() => this.orgs().filter(o => o.subscriptionStatus === 'trial').length);
+  readonly expiredOrgs  = computed(() => this.orgs().filter(o => o.subscriptionStatus === 'expired' || o.subscriptionStatus === 'cancelled').length);
 
   // ── Actions ───────────────────────────────────────────────────
-  viewOrg(org: OrgRecord): void  { this.selectedOrg.set(org); }
-  closeDetail(): void            { this.selectedOrg.set(null); }
+  viewOrg(org: PlatformOrgListItem): void { this.selectedOrg.set(org); }
+  closeDetail(): void { this.selectedOrg.set(null); }
 
-  toggleSuspend(org: OrgRecord): void {
-    const next = org.status === 'suspended' ? 'active' : 'suspended';
-    this.orgs.update(list => list.map(o => o.id === org.id ? { ...o, status: next } : o));
-    if (this.selectedOrg()?.id === org.id) {
-      this.selectedOrg.set(this.orgs().find(o => o.id === org.id) ?? null);
-    }
+  /** Maps to PUT .../organisations/{slug} { isActive } — there's no separate "suspend" endpoint. */
+  toggleActive(org: PlatformOrgListItem): void {
+    const nextActive = !org.isActive;
+    this.platformAdmin.updateOrganisation(org.orgSlug, { isActive: nextActive }).subscribe({
+      next: (res) => {
+        this.orgs.update(list => list.map(o => o.orgSlug === org.orgSlug ? res.data : o));
+        if (this.selectedOrg()?.orgSlug === org.orgSlug) this.selectedOrg.set(res.data);
+      },
+    });
   }
 
-  setOrgPlan(org: OrgRecord, plan: OrgPlan): void {
-    this.orgs.update(list => list.map(o => o.id === org.id ? { ...o, plan } : o));
-    if (this.selectedOrg()?.id === org.id) {
-      this.selectedOrg.set(this.orgs().find(o => o.id === org.id) ?? null);
-    }
+  // ── Add organisation (POST /api/platform/organisations) ────────
+  openAdd(): void {
+    this.addError.set('');
+    this.addResult.set(null);
+    this.newOrgCompanyName = '';
+    this.newOrgPrimaryEmail = '';
+    this.newOrgIndustry = '';
+    this.showAdd.set(true);
+  }
+
+  closeAdd(): void {
+    this.showAdd.set(false);
+  }
+
+  submitAdd(): void {
+    if (this.addSubmitting() || !this.newOrgCompanyName.trim() || !this.newOrgPrimaryEmail.trim()) return;
+    this.addError.set('');
+    this.addSubmitting.set(true);
+
+    this.platformAdmin.createOrganisation({
+      companyName: this.newOrgCompanyName.trim(),
+      primaryEmail: this.newOrgPrimaryEmail.trim(),
+      industry: this.newOrgIndustry.trim() || undefined,
+    }).subscribe({
+      next: (res) => {
+        this.addSubmitting.set(false);
+        this.addResult.set(res.data);
+        this.refresh();
+      },
+      error: (err) => {
+        this.addSubmitting.set(false);
+        this.addError.set(err?.error?.message ?? 'Could not create the organisation.');
+      },
+    });
+  }
+
+  // ── Edit organisation ─────────────────────────────────────────
+  openEdit(org: PlatformOrgListItem): void {
+    this.editError.set('');
+    this.resetPwError.set('');
+    this.resetPwResult.set('');
+    this.dbConfigNotice.set('');
+    this.agentStatusNotice.set('');
+    this.emailError.set('');
+    this.emailSent.set('');
+    this.emailType = 'resend_welcome';
+    this.emailCustomSubject = '';
+    this.emailCustomMessage = '';
+
+    this.editCompanyName = org.companyName;
+    this.editAccentColor = org.accentColor ?? '';
+    this.editIsActive = org.isActive;
+    this.editSubscriptionStatus = org.subscriptionStatus;
+    this.editSubscriptionPlan = org.subscriptionPlan ?? '';
+    this.editTrialEndsAt = org.trialEndsAt ? org.trialEndsAt.slice(0, 10) : '';
+    this.editSubscriptionExpiresAt = org.subscriptionExpiresAt ? org.subscriptionExpiresAt.slice(0, 10) : '';
+    this.editMaxEmployees = org.maxEmployees;
+    this.editMaxAdminAccounts = org.maxAdminAccounts;
+    this.editInactivityRetentionDays = org.inactivityRetentionDays;
+
+    // Placeholder sections — never populated from any real source.
+    this.dbHost = '';
+    this.dbName = '';
+    this.dbUsername = '';
+    this.dbPassword = '';
+    this.agentStatus = 'pending';
+
+    this.editingOrg.set(org);
+  }
+
+  closeEdit(): void {
+    this.editingOrg.set(null);
+  }
+
+  submitEdit(): void {
+    const org = this.editingOrg();
+    if (!org || this.editSubmitting()) return;
+    this.editError.set('');
+    this.editSubmitting.set(true);
+
+    this.platformAdmin.updateOrganisation(org.orgSlug, {
+      companyName: this.editCompanyName.trim(),
+      accentColor: this.editAccentColor.trim() || undefined,
+      isActive: this.editIsActive,
+      subscriptionStatus: this.editSubscriptionStatus,
+      subscriptionPlan: this.editSubscriptionPlan.trim() || undefined,
+      trialEndsAt: this.editTrialEndsAt || undefined,
+      subscriptionExpiresAt: this.editSubscriptionExpiresAt || undefined,
+      maxEmployees: this.editMaxEmployees ?? undefined,
+      maxAdminAccounts: this.editMaxAdminAccounts ?? undefined,
+      inactivityRetentionDays: this.editInactivityRetentionDays ?? undefined,
+    }).subscribe({
+      next: (res) => {
+        this.editSubmitting.set(false);
+        this.orgs.update(list => list.map(o => o.orgSlug === org.orgSlug ? res.data : o));
+        this.editingOrg.set(res.data);
+        if (this.selectedOrg()?.orgSlug === org.orgSlug) this.selectedOrg.set(res.data);
+      },
+      error: (err) => {
+        this.editSubmitting.set(false);
+        this.editError.set(err?.error?.message ?? 'Could not save changes.');
+      },
+    });
+  }
+
+  /** Calls the requested-but-not-yet-built reset-admin-password endpoint — see SERVER_CHANGES_REQUEST.md §0. */
+  resetAdminPassword(): void {
+    const org = this.editingOrg();
+    if (!org || this.resetPwSubmitting()) return;
+    this.resetPwError.set('');
+    this.resetPwResult.set('');
+    this.resetPwSubmitting.set(true);
+
+    this.platformAdmin.resetOrgAdminPassword(org.orgSlug).subscribe({
+      next: (res) => {
+        this.resetPwSubmitting.set(false);
+        this.resetPwResult.set(res.data.temporaryPassword);
+      },
+      error: (err) => {
+        this.resetPwSubmitting.set(false);
+        this.resetPwError.set(
+          err?.status === 404
+            ? 'This action needs a backend endpoint that doesn\'t exist yet (see SERVER_CHANGES_REQUEST.md).'
+            : (err?.error?.message ?? 'Could not reset the password.'),
+        );
+      },
+    });
+  }
+
+  /** Calls the requested-but-not-yet-built send-email endpoint — see SERVER_CHANGES_REQUEST.md §0d. */
+  sendEmail(): void {
+    const org = this.editingOrg();
+    if (!org || this.emailSubmitting()) return;
+    if (this.emailType === 'custom' && (!this.emailCustomSubject.trim() || !this.emailCustomMessage.trim())) return;
+
+    this.emailError.set('');
+    this.emailSent.set('');
+    this.emailSubmitting.set(true);
+
+    this.platformAdmin.sendOrgEmail(org.orgSlug, {
+      type: this.emailType,
+      ...(this.emailType === 'custom' ? { subject: this.emailCustomSubject.trim(), message: this.emailCustomMessage.trim() } : {}),
+    }).subscribe({
+      next: () => {
+        this.emailSubmitting.set(false);
+        this.emailSent.set(`Sent to ${org.primaryEmail}.`);
+      },
+      error: (err) => {
+        this.emailSubmitting.set(false);
+        this.emailError.set(
+          err?.status === 404
+            ? 'This action needs a backend endpoint that doesn\'t exist yet (see SERVER_CHANGES_REQUEST.md).'
+            : (err?.error?.message ?? 'Could not send the email.'),
+        );
+      },
+    });
+  }
+
+  /** UI shell only — intentionally never sends these fields anywhere. See class-level comment. */
+  saveDbConfig(): void {
+    this.dbConfigNotice.set('Not connected to any backend — see SERVER_CHANGES_REQUEST.md §0.');
+  }
+
+  /** UI shell only — intentionally never sends this field anywhere. See class-level comment. */
+  saveAgentStatus(): void {
+    this.agentStatusNotice.set('Not connected to any backend — see SERVER_CHANGES_REQUEST.md §0.');
   }
 
   // ── Helpers ───────────────────────────────────────────────────
-  planLabel(plan: OrgPlan): string {
-    return { free: 'Free', starter: 'Starter', pro: 'Pro', enterprise: 'Enterprise' }[plan];
+  emailTypeLabel(t: OrgEmailType): string {
+    return {
+      resend_welcome: 'Resend Welcome Email',
+      resend_otp: 'Resend Verification Code',
+      subscription_alert: 'Subscription / Payment Alert',
+      custom: 'Custom Message',
+    }[t];
   }
 
-  onSearch(e: Event): void       { this.search.set((e.target as HTMLInputElement).value); }
-  onStatusFilter(e: Event): void { this.statusFilter.set((e.target as HTMLSelectElement).value as any); }
-  onPlanFilter(e: Event): void   { this.planFilter.set((e.target as HTMLSelectElement).value as any); }
+  subscriptionLabel(s: SubscriptionStatus): string {
+    return { trial: 'Trial', active: 'Active', expired: 'Expired', cancelled: 'Cancelled' }[s];
+  }
+
+  formatDate(iso: string | null): string {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  onSearch(e: Event): void             { this.search.set((e.target as HTMLInputElement).value); }
+  onSubscriptionFilter(e: Event): void { this.subscriptionFilter.set((e.target as HTMLSelectElement).value as any); }
 }

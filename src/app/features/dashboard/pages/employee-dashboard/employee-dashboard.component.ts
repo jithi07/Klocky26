@@ -1,10 +1,8 @@
-import { Component, ChangeDetectionStrategy, signal, inject, ViewChild, ElementRef, OnDestroy, ChangeDetectorRef, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, inject, OnDestroy, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { AttendanceStateService } from '../../../../core/services/attendance-state.service';
-import { FaceRosterService } from '../../../../core/services/face-roster.service';
 import { AppStateService } from '../../../../core/services/app-state.service';
-import * as faceapi from '@vladmandic/face-api';
 
 interface LeaveBalance {
   type: string;
@@ -40,10 +38,8 @@ export class EmployeeDashboardComponent implements OnDestroy {
   constructor(private router: Router) {}
 
   readonly attendanceSvc = inject(AttendanceStateService);
-  readonly rosterSvc     = inject(FaceRosterService);
-  private  cdr           = inject(ChangeDetectorRef);
   private  appState      = inject(AppStateService);
-  
+
   // Org-scoped route prefix for routerLink bindings
   orgPrefix = computed(() => `/${this.appState.orgSlug() || 'default'}`);
 
@@ -56,169 +52,32 @@ export class EmployeeDashboardComponent implements OnDestroy {
 
   private timerRef?: ReturnType<typeof setInterval>;
 
-  // ── Face scan modal ─────────────────────────────────────────────
-  @ViewChild('edVideo')  edVideo!:  ElementRef<HTMLVideoElement>;
-  @ViewChild('edCanvas') edCanvas!: ElementRef<HTMLCanvasElement>;
-
-  faceModalOpen = signal(false);
-  faceMode      = signal<'idle' | 'cam' | 'processing' | 'success' | 'fail'>('idle');
-  faceStatus    = signal('');
-  faceId        = signal('');
-  faceName      = signal('');   // recognised person's name
-  faceConsent   = signal(false);
-  faceCamErr    = signal('');
-  private _stream: MediaStream | null = null;
-  private static _modelsLoaded = false;
-
-  openFaceModal() {
-    if (this.attendanceSvc.isClockedIn()) {
-      this.attendanceSvc.manualClockOut();
-      this._stopTimer();
-      return;
-    }
-    this.faceModalOpen.set(true);
-    this.faceMode.set('idle');
-    if (this.faceConsent()) {
-      setTimeout(() => this.startFaceCam(), 80);
-    }
-  }
-
-  grantConsentAndStart() {
-    this.faceConsent.set(true);
-    this.startFaceCam();
-  }
-
-  closeFaceModal() {
-    this._stopCam();
-    this.faceModalOpen.set(false);
-    this.faceMode.set('idle');
-  }
-
-  async startFaceCam() {
-    if (!this.faceConsent()) return;
-    this.faceCamErr.set('');
-    this.faceStatus.set('Loading AI models…');
-    this.cdr.markForCheck();
-
-    // Load face-api models once
-    if (!EmployeeDashboardComponent._modelsLoaded) {
-      try {
-        await Promise.all([
-          faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
-          faceapi.nets.faceLandmark68TinyNet.loadFromUri('/models'),
-          faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
-        ]);
-        EmployeeDashboardComponent._modelsLoaded = true;
-        console.log('[Klocky Face] AI models ready');
-      } catch (e) {
-        this.faceCamErr.set('Failed to load AI models.');
-        this.faceMode.set('idle');
-        this.cdr.markForCheck();
-        return;
-      }
-    }
-
-    this.faceStatus.set('');
-    if (!navigator.mediaDevices?.getUserMedia) {
-      this.faceCamErr.set('Camera not supported.');
-      this.cdr.markForCheck();
-      return;
-    }
-
-    try {
-      this._stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
-        audio: false,
-      });
-      console.log(`[Klocky Face] Camera: ${this._stream.getVideoTracks()[0]?.label}`);
-
-      setTimeout(() => {
-        const vid = this.edVideo?.nativeElement;
-        if (vid && this._stream) {
-          vid.srcObject = this._stream;
-          vid.onloadedmetadata = () => {
-            this.faceStatus.set('Camera active — align your face then tap the button');
-            this.cdr.markForCheck();
-          };
-          this.faceMode.set('cam');
-          this.cdr.markForCheck();
-        }
-      }, 80);
-    } catch (e: unknown) {
-      const err = e as { name?: string };
-      this.faceCamErr.set(err.name === 'NotAllowedError' ? 'Camera access denied.' : 'Could not start camera.');
-      this.cdr.markForCheck();
-    }
-  }
-
-  async captureAndVerify() {
-    const video = this.edVideo?.nativeElement;
-    if (!video || video.readyState < 2 || !video.videoWidth) {
-      this.faceStatus.set('Camera not ready — try again');
-      this.cdr.markForCheck();
-      return;
-    }
-
-    // Switch to processing overlay but keep stream alive so faceapi can read the frame
-    this.faceMode.set('processing');
-    this.cdr.markForCheck();
-
-    console.log('[Klocky Face] Running face detection…');
-
-    try {
-      const detection = await faceapi
-        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.35 }))
-        .withFaceLandmarks(true)
-        .withFaceDescriptor();
-
-      // Stop camera only after detection has finished reading the frame
-      this._stopCam();
-
-      if (!detection) {
-        this.faceCamErr.set('No face detected. Please look directly at the camera.');
-        this.faceMode.set('cam');
-        this.cdr.markForCheck();
-        console.warn('[Klocky Face] No face detected in frame');
-        // Restart the camera so the user can try again
-        await this.startFaceCam();
-        return;
-      }
-
-      console.log(`[Klocky Face] Face detected — score ${detection.detection.score.toFixed(3)}`);
-
-      const match = this.rosterSvc.recognise(detection.descriptor);
-
-      if (!match) {
-        this.faceCamErr.set('Face not in roster. Go to Attendance → Face Roster to enrol first.');
-        this.faceMode.set('fail');
-        this.cdr.markForCheck();
-        return;
-      }
-
-      const { face, distance } = match;
-      console.log(`[Klocky Face] ✅ Matched "${face.name}" — ID: ${face.id} | distance: ${distance.toFixed(4)}`);
-
-      this.faceId.set(face.id);
-      this.faceName.set(face.name);
-      this.faceMode.set('success');
-      this.attendanceSvc.clockIn(face.id);
+  /**
+   * Clock in via geolocation. No face verification today — there is no
+   * backend face-verification endpoint yet. Once one exists, a 'face' method
+   * clock-in should call attendanceSvc.clockIn('face', { photoUrl }) with an
+   * uploaded capture instead of re-introducing client-side face matching here.
+   */
+  clockIn(): void {
+    if (!navigator.geolocation) {
+      this.attendanceSvc.clockIn('web');
       this._startTimer();
-      this.cdr.markForCheck();
-      setTimeout(() => this.closeFaceModal(), 2000);
-    } catch (e) {
-      this._stopCam();
-      this.faceCamErr.set('Detection error — please try again.');
-      this.faceMode.set('idle');
-      this.cdr.markForCheck();
-      console.error('[Klocky Face] Detection error:', e);
+      return;
     }
-  }
-
-  private _stopCam() {
-    this._stream?.getTracks().forEach(t => t.stop());
-    this._stream = null;
-    const vid = this.edVideo?.nativeElement;
-    if (vid) vid.srcObject = null;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        this.attendanceSvc.clockIn('mobile', {
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+        });
+        this._startTimer();
+      },
+      () => {
+        this.attendanceSvc.clockIn('web');
+        this._startTimer();
+      },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
   }
 
   private _startTimer() {
@@ -242,7 +101,6 @@ export class EmployeeDashboardComponent implements OnDestroy {
   }
 
   ngOnDestroy() {
-    this._stopCam();
     this._stopTimer();
   }
 

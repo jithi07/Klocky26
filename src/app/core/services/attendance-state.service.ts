@@ -1,163 +1,168 @@
-import { Injectable, OnDestroy, signal } from '@angular/core';
+import { Injectable, OnDestroy, signal, inject } from '@angular/core';
+import { ApiService } from './api.service';
+import { RealtimeService } from './realtime.service';
+import { ApiResponse } from '../models/api-response.model';
+import { ClockInMethod } from '../models/user.model';
+import {
+  AttendanceRecordResponse,
+  ClockInRequest,
+  ClockOutRequest,
+  LocationPingResponse,
+} from '../models/attendance.model';
 
 export type GeoStatus = 'idle' | 'locating' | 'watching' | 'error';
+export type ToastType = 'success' | 'warn' | 'info' | 'error';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AttendanceStateService — INTEGRATION_GUIDE.md §4 (clock-in/out/today/ping)
+//
+// Backed by the real API + SignalR `attendance.updated` push. Geofence
+// enforcement itself happens server-side (§6) — this service just starts a
+// ping timer when the clock-in response says to (geofencePingIntervalMinutes
+// non-null) and stops it the moment the server reports autoClockedOut.
+//
+// Extension point for later: face-verification clock-in. There is no backend
+// face endpoint yet — when one exists, call clockIn('face', { photoUrl })
+// with the captured frame uploaded first; do not re-introduce client-side
+// face matching/hashing here.
+// ─────────────────────────────────────────────────────────────────────────────
 
 @Injectable({ providedIn: 'root' })
 export class AttendanceStateService implements OnDestroy {
 
+  private readonly api      = inject(ApiService);
+  private readonly realtime = inject(RealtimeService);
+
   // ── Shared state ─────────────────────────────────────────────────────
-  isClockedIn   = signal(false);
-  geoStatus     = signal<GeoStatus>('idle');
-  geoError      = signal('');
-  clockInTime   = signal<Date | null>(null);
-  clockInFaceId = signal('');
-  geoToast      = signal('');
+  readonly status       = signal<AttendanceRecordResponse | null>(null);
+  readonly isClockedIn  = signal(false);
+  readonly geoStatus    = signal<GeoStatus>('idle');
+  readonly geoError     = signal('');
+  readonly clockInTime  = signal<Date | null>(null);
+  readonly geoToast     = signal('');
 
-  /** 100 metres movement → auto clock-out */
-  readonly MOVE_THRESHOLD_M = 100;
-  /** 5 minutes max session → auto clock-out */
-  readonly MAX_DURATION_MS  = 5 * 60 * 1000;
-
-  private _watchId: number | null = null;
+  private _pingTimer: ReturnType<typeof setInterval> | null = null;
   private _toastTimer: ReturnType<typeof setTimeout> | null = null;
-  private _autoTimer:  ReturnType<typeof setTimeout> | null = null;
+
+  constructor() {
+    this.realtime.on<AttendanceRecordResponse>('attendance.updated').subscribe((record) => {
+      this._applyRecord(record);
+    });
+  }
+
+  // ── Initial load ───────────────────────────────────────────────────────
+
+  /** GET /api/attendance/today — call once when the attendance widget/shell mounts. */
+  refreshToday(): void {
+    this.api.get<ApiResponse<AttendanceRecordResponse> | null>('/attendance/today').subscribe({
+      next: (res) => this._applyRecord(res?.data ?? null),
+      error: () => this._applyRecord(null),
+    });
+  }
 
   // ── Clock In ─────────────────────────────────────────────────────────
-  /**
-   * Call after a successful face scan. Pass the formatted face ID string.
-   * Starts geo tracking and the 5-minute auto clock-out timer.
-   */
-  clockIn(faceId: string) {
-    this.clockInFaceId.set(faceId);
-    this.clockInTime.set(new Date());
-    this.isClockedIn.set(true);
-    this._startGeo();
-    this._startAutoTimer();
-    this.showToast(`Clocked in`, 'success');
-    console.log(`Clock-In successful. Face ID: ${faceId}`);
+
+  /** POST /api/attendance/clock-in */
+  clockIn(method: ClockInMethod, extra: Partial<Omit<ClockInRequest, 'method'>> = {}): void {
+    const payload: ClockInRequest = { method, ...extra };
+    this.api.post<ApiResponse<AttendanceRecordResponse>>('/attendance/clock-in', payload).subscribe({
+      next: (res) => {
+        this._applyRecord(res.data);
+        this.showToast('Clocked in', 'success');
+      },
+      error: (err) => {
+        this.geoStatus.set('idle');
+        this.showToast(err?.error?.message ?? 'Could not clock in.', 'error');
+      },
+    });
   }
 
   // ── Clock Out ────────────────────────────────────────────────────────
-  clockOut(reason: string) {
-    const t = this.clockInTime();
-    const duration = t ? this._formatDuration(Date.now() - t.getTime()) : '';
-    this._stopGeo();
-    this._stopAutoTimer();
-    this.isClockedIn.set(false);
-    this.geoStatus.set('idle');
-    this.clockInTime.set(null);
-    this.clockInFaceId.set('');
-    this.showToast(` Clocked out${duration ? ' · ' + duration : ''}. ${reason}`, 'warn');
-    this._sendNotification('Clock-Out', reason || 'You have been clocked out.');
+
+  /** POST /api/attendance/clock-out */
+  clockOut(extra: ClockOutRequest = {}): void {
+    this.api.post<ApiResponse<AttendanceRecordResponse>>('/attendance/clock-out', extra).subscribe({
+      next: (res) => {
+        this._applyRecord(res.data);
+        this.showToast('Clocked out', 'success');
+      },
+      error: (err) => {
+        this.showToast(err?.error?.message ?? 'Could not clock out.', 'error');
+      },
+    });
   }
 
-  // ── Manual toggle (header button when already clocked in) ────────────
-  manualClockOut() {
-    this.clockOut('Manual clock-out.');
+  /** Manual clock-out (header / dashboard button when already clocked in) */
+  manualClockOut(): void {
+    this.clockOut();
   }
 
-  // ── Geo ──────────────────────────────────────────────────────────────
-  private _startGeo() {
-    if (!navigator.geolocation) {
-      this.showToast('⚠ Geolocation not supported — time-based auto clock-out only.', 'warn');
-      return;
+  // ── Geofence ping (only runs when geofencePingIntervalMinutes is non-null) ─
+
+  private _startPingTimer(intervalMinutes: number): void {
+    this._stopPingTimer();
+    this._pingTimer = setInterval(() => this._sendPing(), intervalMinutes * 60 * 1000);
+  }
+
+  private _stopPingTimer(): void {
+    if (this._pingTimer !== null) {
+      clearInterval(this._pingTimer);
+      this._pingTimer = null;
     }
+  }
 
-    this.geoStatus.set('locating');
+  private _sendPing(): void {
+    if (!navigator.geolocation) return; // no GPS — the server's missed-ping grace window auto-clocks-out as fallback
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const origin = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        this.geoStatus.set('watching');
-
-        this._watchId = navigator.geolocation.watchPosition(
-          (p) => {
-            if (!this.isClockedIn()) return;
-            const dist = this._haversineM(origin.lat, origin.lng, p.coords.latitude, p.coords.longitude);
-            if (dist > this.MOVE_THRESHOLD_M) {
-              this.clockOut(`Moved ${Math.round(dist)}m from clock-in location.`);
+        this.api.post<ApiResponse<LocationPingResponse>>('/attendance/location-ping', {
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+        }).subscribe({
+          next: (res) => {
+            this._applyRecord(res.data.status);
+            if (res.data.autoClockedOut) {
+              this.showToast(
+                res.data.status.autoClockedOutReason === 'geofence_exit'
+                  ? `Auto clocked-out — you're ${Math.round(res.data.distanceMeters)}m outside the zone.`
+                  : 'Auto clocked-out.',
+                'warn',
+              );
             }
           },
-          () => { /* GPS glitch — keep watching */ },
-          { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
-        );
+          error: () => { /* transient ping failure — try again next interval */ },
+        });
       },
-      (err) => {
-        this.geoStatus.set('error');
-        const msg = err.code === err.PERMISSION_DENIED
-          ? 'Location denied — time-based auto clock-out only.'
-          : 'Location unavailable — time-based auto clock-out only.';
-        this.showToast(`⚠ ${msg}`, 'warn');
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
+      () => { /* geolocation denied mid-session — let the server's grace window catch it */ },
+      { enableHighAccuracy: true, timeout: 10000 },
     );
   }
 
-  private _stopGeo() {
-    if (this._watchId !== null) {
-      navigator.geolocation?.clearWatch(this._watchId);
-      this._watchId = null;
-    }
-  }
+  // ── Apply a record from any source (HTTP response or SignalR push) ────
 
-  // ── 5-min auto clock-out ─────────────────────────────────────────────
-  private _startAutoTimer() {
-    this._stopAutoTimer();
-    this._autoTimer = setTimeout(() => {
-      if (this.isClockedIn()) {
-        this.clockOut(' Auto clock-out after 5 minutes.');
-      }
-    }, this.MAX_DURATION_MS);
-  }
+  private _applyRecord(record: AttendanceRecordResponse | null): void {
+    this.status.set(record);
+    const clockedIn = !!record && !record.clockOutTime;
+    this.isClockedIn.set(clockedIn);
+    this.clockInTime.set(record?.clockInTime ? new Date(record.clockInTime) : null);
 
-  private _stopAutoTimer() {
-    if (this._autoTimer !== null) {
-      clearTimeout(this._autoTimer);
-      this._autoTimer = null;
+    if (clockedIn && record?.geofencePingIntervalMinutes) {
+      this._startPingTimer(record.geofencePingIntervalMinutes);
+    } else {
+      this._stopPingTimer();
     }
   }
 
   // ── Toast ────────────────────────────────────────────────────────────
-  showToast(msg: string, _type: string) {
+  showToast(msg: string, _type: ToastType): void {
     if (this._toastTimer) clearTimeout(this._toastTimer);
     this.geoToast.set(msg);
     this._toastTimer = setTimeout(() => this.geoToast.set(''), 4500);
   }
 
-  // ── Helpers ──────────────────────────────────────────────────────────
-  private _haversineM(lat1: number, lng1: number, lat2: number, lng2: number): number {
-    const R = 6371000;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) ** 2 +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLng / 2) ** 2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  }
-
-  private _formatDuration(ms: number): string {
-    const s = Math.floor(ms / 1000);
-    const m = Math.floor(s / 60);
-    const h = Math.floor(m / 60);
-    if (h > 0) return `${h}h ${m % 60}m`;
-    if (m > 0) return `${m}m ${s % 60}s`;
-    return `${s}s`;
-  }
-
-  private _sendNotification(title: string, body: string) {
-    if (!('Notification' in window)) return;
-    if (Notification.permission === 'granted') {
-      new Notification(title, { body, icon: '/favicon.ico' });
-    } else if (Notification.permission !== 'denied') {
-      Notification.requestPermission().then(p => {
-        if (p === 'granted') new Notification(title, { body, icon: '/favicon.ico' });
-      });
-    }
-  }
-
-  ngOnDestroy() {
-    this._stopGeo();
-    this._stopAutoTimer();
+  ngOnDestroy(): void {
+    this._stopPingTimer();
     if (this._toastTimer) clearTimeout(this._toastTimer);
   }
 }

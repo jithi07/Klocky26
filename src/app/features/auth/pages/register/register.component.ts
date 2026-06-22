@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import {
   FormBuilder,
@@ -13,16 +13,22 @@ import { AuthStateService } from '../../services/auth-state.service';
 import { OtpStepComponent } from '../../components/otp-step/otp-step.component';
 import { UiSelectComponent } from '../../../../shared/components/ui-select/ui-select.component';
 import { OrgThemeService } from '../../../../core/services/org-theme.service';
+import { OrgAuthService } from '../../../../core/services/org-auth.service';
+import { UserAuthService } from '../../../../core/services/user-auth.service';
 import {
   INDUSTRIES,
   COMPANY_SIZES,
-  TIMEZONE_STRINGS,
+  TIMEZONE_OPTIONS,
+  COUNTRIES,
+  COUNTRY_DEFAULT_TIMEZONE,
   WEEKDAYS,
 } from '../../../../core/config/form-options.const';
+import { SelectOption } from '../../../../shared/components/ui-select/ui-select.component';
+import { ORG_SLUG_PATTERN } from '../../../../core/utils/org-slug.util';
 
 type RegStep = 'org-info' | 'admin-email' | 'otp' | 'org-profile' | 'done';
 
-const SLUG_PATTERN = /^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$|^[a-z0-9]$/;
+const SLUG_PATTERN = ORG_SLUG_PATTERN;
 
 @Component({
   selector: 'klocky-register',
@@ -36,14 +42,47 @@ export class RegisterComponent implements OnInit {
   loading = false;
   error = '';
 
+  /** Single-use token from verify-otp (4h validity), needed by the final register call */
+  private verificationToken = '';
+
   readonly authState = inject(AuthStateService);
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private orgTheme = inject(OrgThemeService);
+  private orgAuth = inject(OrgAuthService);
+  private userAuth = inject(UserAuthService);
 
   ngOnInit(): void {
     this.orgTheme.reset();
+
+    // GET /api/tenant/options (§1.6) — populate countries/timezones from the
+    // server's fixed list; keep the local constants as a fallback if the
+    // call fails (industry/companySize aren't part of this response, so
+    // those stay on the local constants permanently).
+    this.orgAuth.getTenantOptions().subscribe({
+      next: (res) => {
+        if (res.data.countries?.length) this.countries.set(res.data.countries);
+        if (res.data.timezones?.length) this.timezones.set(res.data.timezones);
+      },
+      error: () => { /* keep the local fallback lists */ },
+    });
+
+    // Auto-fill the timezone once a country is picked (client-side default —
+    // see COUNTRY_DEFAULT_TIMEZONE). Only overwrites if the timezone field is
+    // still empty or still holds the last value *this* auto-fill set, so a
+    // manual override afterward sticks.
+    this.profileForm.get('country')!.valueChanges.subscribe((country: string) => {
+      const tz = COUNTRY_DEFAULT_TIMEZONE[country];
+      if (!tz) return;
+      const tzControl = this.profileForm.get('timezone')!;
+      if (!tzControl.value || tzControl.value === this._lastAutoTimezone) {
+        tzControl.setValue(tz);
+        this._lastAutoTimezone = tz;
+      }
+    });
   }
+
+  private _lastAutoTimezone = '';
 
   // ── Form groups per step ──────────────────────────────────────
   readonly orgInfoForm: FormGroup = this.fb.group({
@@ -81,11 +120,19 @@ export class RegisterComponent implements OnInit {
 
   onSlugFocus(): void { this.slugTouched = true; }
 
-  // ── Reference data (from shared constants) ───────────────────
+  // ── Reference data ──────────────────────────────────────────────
+  // industry/companySize have no server-side list (not in §1.6) — local only.
   readonly industries  = INDUSTRIES;
   readonly companySizes = COMPANY_SIZES;
-  readonly timezones   = TIMEZONE_STRINGS;
   readonly weekdays    = WEEKDAYS;
+  // country/timezone start from the local constants, replaced once
+  // GET /api/tenant/options resolves (see ngOnInit). Timezone defaults to the
+  // {label,value} form so the submitted value is the IANA id (e.g.
+  // "Asia/Kolkata", what RegisterOrgRequest.defaultTimezone expects) while
+  // still showing a friendly label — plain label strings were being
+  // submitted as the value before this.
+  readonly countries = signal<string[]>(COUNTRIES);
+  readonly timezones = signal<SelectOption[]>(TIMEZONE_OPTIONS);
 
   // ── Validation helpers ────────────────────────────────────────
   isInvalid(form: FormGroup, field: string): boolean {
@@ -93,62 +140,117 @@ export class RegisterComponent implements OnInit {
     return ctrl.invalid && (ctrl.dirty || ctrl.touched);
   }
 
+  /** Temp password shown exactly once after registration succeeds */
+  temporaryPassword = '';
+
   // ── Step 1 ───────────────────────────────────────────────────
-  async submitOrgInfo(): Promise<void> {
+  submitOrgInfo(): void {
     this.orgInfoForm.markAllAsTouched();
     if (this.orgInfoForm.invalid || this.loading) return;
     this.error = '';
-    this.loading = true;
-    await this.delay(700);
-    this.loading = false;
     const { orgName, orgSlug } = this.orgInfoForm.value;
-    console.log('[Register] Step 1 — Org Info:', { orgName, orgSlug });
     this.authState.setOrg(orgSlug, orgName.trim());
     this.step = 'admin-email';
   }
 
-  // ── Step 2 ───────────────────────────────────────────────────
-  async submitAdminEmail(): Promise<void> {
+  // ── Step 2 — sends the OTP ────────────────────────────────────
+  submitAdminEmail(): void {
     this.adminForm.markAllAsTouched();
     if (this.adminForm.invalid || this.loading) return;
     this.error = '';
     this.loading = true;
-    await this.delay(900);
-    this.loading = false;
-    console.log('[Register] Step 2 — Admin:', this.adminForm.value);
-    this.authState.setEmail(this.adminForm.value.adminEmail.trim());
-    this.step = 'otp';
+    const email = this.adminForm.value.adminEmail.trim();
+    this.authState.setEmail(email);
+
+    this.orgAuth.sendOtp({ organisationName: this.authState.orgDisplayName(), email }).subscribe({
+      next: () => {
+        this.loading = false;
+        this.step = 'otp';
+      },
+      error: (err) => {
+        this.loading = false;
+        this.error = err?.error?.message ?? 'Could not send the verification code. Please try again.';
+      },
+    });
   }
 
   // ── Step 3: OTP verified ──────────────────────────────────────
-  onOtpVerified(): void { this.step = 'org-profile'; }
+  onOtpVerified(verificationToken: string): void {
+    this.verificationToken = verificationToken;
+    this.step = 'org-profile';
+  }
 
-  // ── Step 4: org profile ───────────────────────────────────────
-  async submitOrgProfile(): Promise<void> {
+  // ── Step 4: org profile → final registration call ────────────
+  submitOrgProfile(): void {
     this.profileForm.markAllAsTouched();
     if (this.profileForm.invalid || this.loading) return;
     this.error = '';
     this.loading = true;
-    await this.delay(1000);
-    this.loading = false;
-    console.log('[Register] Step 4 — Org Profile:', this.profileForm.value);
-    console.log('[Register] Full registration payload:', {
-      ...this.orgInfoForm.value,
-      ...this.adminForm.value,
-      ...this.profileForm.value,
+
+    const { orgName, orgSlug } = this.orgInfoForm.value;
+    const { adminEmail } = this.adminForm.value;
+    const { industry, companySize, country, timezone, workWeekStart, workWeekEnd, website } =
+      this.profileForm.value;
+
+    this.orgAuth.registerOrg({
+      verificationToken: this.verificationToken,
+      organisationName: orgName.trim(),
+      displayName: orgName.trim(),
+      primaryEmail: adminEmail.trim(),
+      industry,
+      companySize,
+      country,
+      defaultTimezone: timezone,
+      emailDomain: adminEmail.split('@')[1] ?? '',
+      website: website || undefined,
+
+      clockInMethods: ['web'],
+      weekStartDay: (workWeekStart ?? 'Monday').toLowerCase(),
+      weekEndDay: (workWeekEnd ?? 'Friday').toLowerCase(),
+      workHours: 8,
+      checkInRuleType: 'none',
+      halfDayThresholdHrs: 4,
+      lateThresholdMins: 15,
+      locationPolicy: 'no_restrictions',
+      overtimeEnabled: false,
+      requirePhotoOnClockIn: false,
+      ipRestrictionEnabled: false,
+      selfieVerificationEnabled: false,
+      autoCheckoutEnabled: false,
+      currency: 'INR',
+    }).subscribe({
+      next: (res) => {
+        this.loading = false;
+        this.temporaryPassword = res.data.temporaryPassword ?? '';
+        this.step = 'done';
+      },
+      error: (err) => {
+        this.loading = false;
+        this.error = err?.error?.message ?? 'Registration failed. Please try again.';
+      },
     });
-    this.step = 'done';
   }
 
   skipProfile(): void { this.step = 'done'; }
 
-  // ── Step 5: done ──────────────────────────────────────────────
-  async goToDashboard(): Promise<void> {
+  // ── Step 5: done — log straight into the app as the new admin ─
+  goToDashboard(): void {
     if (this.loading) return;
     this.loading = true;
-    await this.delay(600);
-    const orgSlug = this.authState.regOrgSlug() || 'demo';
-    this.router.navigate([`/${orgSlug}/app/dashboard`]);
+    const orgSlug = this.orgInfoForm.value.orgSlug;
+    const email = this.adminForm.value.adminEmail.trim();
+
+    this.userAuth.login({ orgSlug, email, password: this.temporaryPassword }).subscribe({
+      next: () => {
+        this.loading = false;
+        this.router.navigate([`/${orgSlug}/app/dashboard`]);
+      },
+      error: () => {
+        // Auto-login failed for any reason — fall back to the normal login screen.
+        this.loading = false;
+        this.router.navigate(['/login']);
+      },
+    });
   }
 
   goBack(): void {
@@ -161,7 +263,5 @@ export class RegisterComponent implements OnInit {
   stepIndex(): number {
     return { 'org-info': 1, 'admin-email': 2, 'otp': 3, 'org-profile': 4, 'done': 5 }[this.step];
   }
-
-  private delay(ms: number) { return new Promise(r => setTimeout(r, ms)); }
 }
 

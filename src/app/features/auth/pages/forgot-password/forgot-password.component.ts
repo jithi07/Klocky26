@@ -2,7 +2,6 @@ import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthShellComponent } from '../../components/auth-shell/auth-shell.component';
-import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'klocky-forgot-password',
@@ -13,7 +12,6 @@ import { AuthService } from '../../../../core/services/auth.service';
 })
 export class ForgotPasswordComponent {
   private router = inject(Router);
-  private authService = inject(AuthService);
 
   email = '';
   error = signal('');
@@ -35,12 +33,12 @@ export class ForgotPasswordComponent {
     this.loading.set(true);
 
     try {
-      // Simulated API call - replace with real authService.forgotPassword() when ready
+      // NOTE: the backend (INTEGRATION_GUIDE.md §3) defines no forgot-password
+      // endpoint for employees — only change-password (current + new) while
+      // logged in. This screen is intentionally not wired to a real call yet;
+      // do not fake success once a real endpoint exists, replace this delay.
       await this.delay(1500);
-      
-      // Real implementation:
-      // await this.authService.forgotPassword(this.email).toPromise();
-      
+
       this.success.set(true);
       this.loading.set(false);
     } catch (err: any) {

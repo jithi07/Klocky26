@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiResponse, PaginationParams } from '../models/api-response.model';
 
@@ -23,9 +23,17 @@ import { ApiResponse, PaginationParams } from '../models/api-response.model';
 //     return this.api.post<ApiResponse<Employee>>('/employees', payload);
 //   }
 //
+// Pass `{ context }` (see core/http/auth-scope.context.ts) when a call needs
+// the org-admin or platform-admin token instead of the default employee token:
+//   this.api.post(path, body, { context: new HttpContext().set(AUTH_SCOPE, 'org') })
+//
 // The api-url interceptor prepends `environment.apiBaseUrl` automatically,
 // so pass only the path portion here (e.g. '/employees', NOT the full URL).
 // ─────────────────────────────────────────────────────────────────────────────
+
+export interface ApiCallOptions {
+  context?: HttpContext;
+}
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -38,32 +46,36 @@ export class ApiService {
    * @param path   API path, e.g. '/employees' or '/employees/123'
    * @param params Optional query params (pagination, filters, search)
    */
-  get<T>(path: string, params?: PaginationParams | Record<string, unknown>): Observable<T> {
-    return this.http.get<T>(path, { params: this._buildParams(params) });
+  get<T>(
+    path: string,
+    params?: PaginationParams | Record<string, unknown>,
+    options?: ApiCallOptions,
+  ): Observable<T> {
+    return this.http.get<T>(path, { params: this._buildParams(params), context: options?.context });
   }
 
   // ── POST ──────────────────────────────────────────────────────────────────
 
-  post<T>(path: string, body: unknown): Observable<T> {
-    return this.http.post<T>(path, body);
+  post<T>(path: string, body: unknown, options?: ApiCallOptions): Observable<T> {
+    return this.http.post<T>(path, body, { context: options?.context });
   }
 
   // ── PUT ───────────────────────────────────────────────────────────────────
 
-  put<T>(path: string, body: unknown): Observable<T> {
-    return this.http.put<T>(path, body);
+  put<T>(path: string, body: unknown, options?: ApiCallOptions): Observable<T> {
+    return this.http.put<T>(path, body, { context: options?.context });
   }
 
   // ── PATCH ─────────────────────────────────────────────────────────────────
 
-  patch<T>(path: string, body: unknown): Observable<T> {
-    return this.http.patch<T>(path, body);
+  patch<T>(path: string, body: unknown, options?: ApiCallOptions): Observable<T> {
+    return this.http.patch<T>(path, body, { context: options?.context });
   }
 
   // ── DELETE ────────────────────────────────────────────────────────────────
 
-  delete<T>(path: string): Observable<T> {
-    return this.http.delete<T>(path);
+  delete<T>(path: string, options?: ApiCallOptions): Observable<T> {
+    return this.http.delete<T>(path, { context: options?.context });
   }
 
   // ── File Upload ───────────────────────────────────────────────────────────

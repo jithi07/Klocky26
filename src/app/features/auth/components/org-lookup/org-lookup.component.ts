@@ -1,8 +1,9 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthStateService } from '../../services/auth-state.service';
 import { OrgThemeService } from '../../../../core/services/org-theme.service';
+import { OrgAuthService } from '../../../../core/services/org-auth.service';
 
 /** Secret code that bypasses the normal org flow and goes straight to the admin panel */
 const ADMIN_CODE = 'klock2026';
@@ -27,6 +28,8 @@ export class OrgLookupComponent {
 
   form: FormGroup;
 
+  private orgAuth = inject(OrgAuthService);
+
   constructor(
     private state: AuthStateService,
     private orgTheme: OrgThemeService,
@@ -38,34 +41,41 @@ export class OrgLookupComponent {
     });
   }
 
-  async proceed(): Promise<void> {
+  proceed(): void {
     this.form.markAllAsTouched();
     if (this.form.invalid || this.loading) return;
     this.error = '';
-    this.loading = true;
 
     const raw: string = this.form.value.orgInput.trim();
 
     // Secret admin code — navigate straight to the admin panel, skip org flow
     if (raw === ADMIN_CODE) {
-      this.loading = false;
       this.orgTheme.reset();
       this.router.navigate(['/klocky-admin']);
       return;
     }
 
-    await this.delay(900);
-    this.loading = false;
-
+    this.loading = true;
     const slug = raw.toLowerCase().replace(/\s+/g, '-');
-    this.state.setOrg(slug, raw);
 
-    // Apply the org's colour theme immediately — unknown slugs fall back to
-    // default; the 'klocky' slug is explicitly mapped to the default theme.
-    this.orgTheme.apply(slug);
-
-    this.found.emit();
+    this.orgAuth.validateSlug(slug).subscribe({
+      next: (res) => {
+        this.loading = false;
+        if (!res.data.isValid) {
+          this.error = `We couldn't find a workspace at "${slug}". Check the spelling, or register a new organisation.`;
+          return;
+        }
+        this.state.setOrg(res.data.orgSlug, res.data.companyName);
+        // Org colour theme is applied once the credentials step succeeds and
+        // the org's accentColor is known — stay on the default theme here.
+        this.found.emit();
+      },
+      error: (err) => {
+        this.loading = false;
+        this.error = err?.status === 404
+          ? `We couldn't find a workspace at "${slug}". Check the spelling, or register a new organisation.`
+          : (err?.error?.message ?? 'Something went wrong. Please try again.');
+      },
+    });
   }
-
-  private delay(ms: number) { return new Promise(r => setTimeout(r, ms)); }
 }

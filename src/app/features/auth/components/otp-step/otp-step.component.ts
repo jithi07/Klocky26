@@ -5,6 +5,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { SlicePipe } from '@angular/common';
 import { AuthStateService } from '../../services/auth-state.service';
+import { OrgAuthService } from '../../../../core/services/org-auth.service';
 
 @Component({
   selector: 'klocky-otp-step',
@@ -15,7 +16,8 @@ import { AuthStateService } from '../../services/auth-state.service';
 })
 export class OtpStepComponent {
   @ViewChildren('otpBox') otpBoxes!: QueryList<ElementRef<HTMLInputElement>>;
-  @Output() verified = new EventEmitter<void>();
+  /** Emits the single-use verificationToken (4h validity) once verify-otp succeeds. */
+  @Output() verified = new EventEmitter<string>();
   @Output() back = new EventEmitter<void>();
   /** Context label shown in the success state — pass org display name */
   @Input() orgName = '';
@@ -23,6 +25,7 @@ export class OtpStepComponent {
   @Input() isRegistration = false;
 
   private cdr = inject(ChangeDetectorRef);
+  private orgAuth = inject(OrgAuthService);
 
   otp: string[] = ['', '', '', '', '', ''];
   loading = false;
@@ -45,27 +48,29 @@ export class OtpStepComponent {
 
   get otpComplete(): boolean { return this.otp.every(d => d !== ''); }
 
-  async verifyOtp(): Promise<void> {
+verifyOtp(): void {
     if (!this.otpComplete || this.loading) return;
     this.error = '';
     this.loading = true;
-    await this.delay(2000);
-    this.loading = false;
 
     const code = this.otp.join('');
-    if (code != '111111') {
-      this.error = 'Invalid code. Please check and try again.';
-      this.otp = ['', '', '', '', '', ''];
-      this.cdr.markForCheck();
-      setTimeout(() => {
-        this.otpBoxes.toArray().forEach(b => { b.nativeElement.value = ''; });
-        this.otpBoxes.first?.nativeElement.focus();
-      }, 50);
-      return;
-    }
-
-    this.success = true;
-    this.verified.emit();
+    this.orgAuth.verifyOtp({ email: this.state.email(), otp: code }).subscribe({
+      next: (res) => {
+        this.loading = false;
+        this.success = true;
+        this.verified.emit(res.data.verificationToken);
+      },
+      error: (err) => {
+        this.loading = false;
+        this.error = err?.error?.message ?? 'Invalid code. Please check and try again.';
+        this.otp = ['', '', '', '', '', ''];
+        this.cdr.markForCheck();
+        setTimeout(() => {
+          this.otpBoxes.toArray().forEach(b => { b.nativeElement.value = ''; });
+          this.otpBoxes.first?.nativeElement.focus();
+        }, 50);
+      },
+    });
   }
 
   startResendTimer(): void {
@@ -78,15 +83,23 @@ export class OtpStepComponent {
     }, 1000);
   }
 
-  async resendOtp(): Promise<void> {
+  resendOtp(): void {
     if (this.resendSeconds > 0) return;
     this.otp = ['', '', '', '', '', ''];
     this.error = '';
     this.loading = true;
-    await this.delay(800);
-    this.loading = false;
-    this.startResendTimer();
-    setTimeout(() => this.otpBoxes.first?.nativeElement.focus(), 50);
+    this.orgAuth.sendOtp({ organisationName: this.orgName, email: this.state.email() }).subscribe({
+      next: () => {
+        this.loading = false;
+        this.startResendTimer();
+        setTimeout(() => this.otpBoxes.first?.nativeElement.focus(), 50);
+      },
+      error: (err) => {
+        this.loading = false;
+        // 409 = 30s resend cooldown still active server-side
+        this.error = err?.error?.message ?? 'Could not resend code. Please try again shortly.';
+      },
+    });
   }
 
   onOtpInput(event: Event, index: number): void {
@@ -124,6 +137,4 @@ export class OtpStepComponent {
     this.otpBoxes.toArray()[focusIdx]?.nativeElement.focus();
     if (digits.length === 6) setTimeout(() => this.verifyOtp(), 200);
   }
-
-  private delay(ms: number) { return new Promise(r => setTimeout(r, ms)); }
 }

@@ -6,6 +6,8 @@ import { UiToastContainerComponent, UiModalOutletComponent } from '../../shared/
 import { Subscription, filter } from 'rxjs';
 import { OrgThemeService } from '../../core/services/org-theme.service';
 import { AppStateService } from '../../core/services/app-state.service';
+import { RealtimeService } from '../../core/services/realtime.service';
+import { AttendanceStateService } from '../../core/services/attendance-state.service';
 
 @Component({
   selector: 'klocky-shell',
@@ -18,11 +20,15 @@ export class ShellComponent implements OnInit, OnDestroy {
   isSidebarOpen = false;
   private _routerSub?: Subscription;
 
-  // Computed organization name from the org slug
+  // Human-facing org name — prefer the real displayName from GET /me (§3.3).
+  // Only fall back to guessing one from the URL slug before /me has loaded
+  // (e.g. first paint right after redirecting in from login).
   orgName = computed(() => {
+    const user = this.appState.user();
+    if (user?.displayName) return user.displayName;
+
     const slug = this.appState.orgSlug();
     if (!slug) return '';
-    // Convert slug to display name (e.g., 'acme-corp' -> 'Acme Corp')
     return slug
       .split('-')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -37,14 +43,23 @@ export class ShellComponent implements OnInit, OnDestroy {
   }
 
   constructor(
-    private router: Router, 
+    private router: Router,
     private orgTheme: OrgThemeService,
-    private appState: AppStateService
+    private appState: AppStateService,
+    private realtime: RealtimeService,
+    private attendance: AttendanceStateService,
   ) {}
 
   ngOnInit() {
     // Restore org theme from previous session so accent/colors are correct on reload
     this.orgTheme.restoreFromStorage();
+
+    // A full page reload kills the SignalR socket — reconnect using the
+    // still-valid persisted access token.
+    this.realtime.connect();
+
+    // Source of truth for "am I currently clocked in" — SignalR keeps it live after this.
+    this.attendance.refreshToday();
 
     this._routerSub = this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))

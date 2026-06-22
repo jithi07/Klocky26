@@ -1,8 +1,8 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { CryptoService }              from './crypto.service';
 import { AppState, DEFAULT_APP_STATE } from '../models/app-state.model';
-import { User }                        from '../models/user.model';
-import { LoginResponse }               from '../models/user.model';
+import { EmployeeUser, LoginResponse, RefreshTokenResponse } from '../models/user.model';
+import { OrgLoginResponse }            from '../models/org-auth.model';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // AppStateService — Single encrypted global state
@@ -13,11 +13,19 @@ import { LoginResponse }               from '../models/user.model';
 //  • Signals expose reactive slices to templates and services
 //  • `init()` must be called via APP_INITIALIZER before the app renders
 //
+// Holds TWO independent tokens:
+//  • accessToken/refreshToken  — the employee token (auth_type: "user"), used
+//    for day-to-day work by everyone including admins.
+//  • orgAdminToken             — a short-lived step-up token (auth_type: "org"),
+//    obtained via org registration or POST /api/org/auth/login. Only used for
+//    /api/org/auth/* and /api/tenant/register-complete. Never sent unless a
+//    request explicitly opts into AUTH_SCOPE 'org'.
+//
 // Usage:
 //   private appState = inject(AppStateService);
-//   this.appState.user()           // current user signal
+//   this.appState.user()            // current employee signal
 //   this.appState.isAuthenticated() // computed boolean
-//   await this.appState.setSession(loginResponse);
+//   await this.appState.setEmployeeSession(loginResponse);
 //   await this.appState.clearState();
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -34,19 +42,22 @@ export class AppStateService {
 
   // ── Public reactive slices ────────────────────────────────────────────────
 
-  /** Currently authenticated user (null = logged out) */
+  /** Currently authenticated employee (null = logged out) */
   readonly user         = computed(() => this._state().user);
 
-  /** Raw JWT access token */
+  /** Raw employee JWT access token */
   readonly accessToken  = computed(() => this._state().accessToken);
 
-  /** Raw JWT refresh token */
+  /** Raw employee refresh token */
   readonly refreshToken = computed(() => this._state().refreshToken);
 
   /** Active org slug */
   readonly orgSlug      = computed(() => this._state().orgSlug);
 
-  /** True when a non-expired access token is present */
+  /** Raw org-admin step-up token */
+  readonly orgAdminToken = computed(() => this._state().orgAdminToken);
+
+  /** True when a non-expired employee access token is present */
   readonly isAuthenticated = computed(() => {
     const s = this._state();
     if (!s.accessToken) return false;
@@ -54,8 +65,19 @@ export class AppStateService {
     return true;
   });
 
-  /** User's role (convenience shorthand) */
+  /** True when a non-expired org-admin step-up token is present */
+  readonly isOrgAdminAuthenticated = computed(() => {
+    const s = this._state();
+    if (!s.orgAdminToken) return false;
+    if (s.orgAdminTokenExpiresAt && Date.now() >= s.orgAdminTokenExpiresAt) return false;
+    return true;
+  });
+
+  /** Employee's role (convenience shorthand) */
   readonly userRole = computed(() => this._state().user?.role ?? null);
+
+  /** Employee's permission level (1/2/3) — prefer this over role strings for write-gating */
+  readonly permissionLevel = computed(() => this._state().user?.permissionLevel ?? null);
 
   // ── Initialisation (called by APP_INITIALIZER) ────────────────────────────
 
@@ -81,44 +103,70 @@ export class AppStateService {
     }
   }
 
-  // ── Write operations ──────────────────────────────────────────────────────
+  // ── Employee session ──────────────────────────────────────────────────────
 
   /**
-   * Persists login response into encrypted state.
-   * Call this immediately after a successful /auth/login API response.
+   * Persists an employee login response into encrypted state.
+   * Call immediately after POST /api/users/auth/login — the full profile
+   * (`user`) isn't known yet, follow up with `updateUser()` from GET /me.
    */
-  async setSession(response: LoginResponse): Promise<void> {
-    const patch: AppState = {
-      user:         response.user,
-      accessToken:  response.accessToken,
-      refreshToken: response.refreshToken,
-      orgSlug:      response.user.orgSlug,
-      expiresAt:    Date.now() + response.expiresIn * 1000,
-    };
-    await this._persist(patch);
-  }
-
-  /**
-   * Updates the access token after a token refresh.
-   */
-  async refreshSession(accessToken: string, expiresIn: number): Promise<void> {
+  async setEmployeeSession(response: LoginResponse): Promise<void> {
     await this._persist({
       ...this._state(),
-      accessToken,
-      expiresAt: Date.now() + expiresIn * 1000,
+      accessToken:  response.accessToken,
+      refreshToken: response.refreshToken,
+      orgSlug:      response.orgSlug,
+      expiresAt:    new Date(response.expiresAt).getTime(),
+    });
+  }
+
+  /** Updates both tokens after POST /api/users/auth/refresh. */
+  async refreshEmployeeSession(response: RefreshTokenResponse): Promise<void> {
+    await this._persist({
+      ...this._state(),
+      accessToken:  response.accessToken,
+      refreshToken: response.refreshToken,
+      expiresAt:    new Date(response.accessTokenExpiresAt).getTime(),
+    });
+  }
+
+  /** Stores the hydrated profile from GET /api/users/auth/me (also used after PUT /me). */
+  async updateUser(user: EmployeeUser): Promise<void> {
+    await this._persist({ ...this._state(), user });
+  }
+
+  // ── Org-admin step-up session ─────────────────────────────────────────────
+
+  /** Stores the org-admin token from registration (1.3) or org-admin login (2.1). */
+  async setOrgAdminSession(response: OrgLoginResponse): Promise<void> {
+    await this._persist({
+      ...this._state(),
+      orgAdminToken:           response.accessToken,
+      orgAdminTokenExpiresAt:  new Date(response.expiresAt).getTime(),
+      // Registration only: no employee session exists yet, but the org slug is known.
+      orgSlug: this._state().orgSlug ?? response.orgSlug,
+    });
+  }
+
+  /** Drops the org-admin step-up token only — employee session is untouched. */
+  async clearOrgAdminSession(): Promise<void> {
+    await this._persist({
+      ...this._state(),
+      orgAdminToken: null,
+      orgAdminTokenExpiresAt: null,
     });
   }
 
   /**
    * Merges an arbitrary partial state patch and persists.
-   * Prefer typed helpers (setSession, refreshSession, clearState) over this.
+   * Prefer the typed helpers above over this.
    */
   async patch(partial: Partial<AppState>): Promise<void> {
     await this._persist({ ...this._state(), ...partial });
   }
 
   /**
-   * Clears all state and removes the localStorage entry.
+   * Clears all state (employee + org-admin) and removes the localStorage entry.
    * Call on logout.
    */
   async clearState(): Promise<void> {
@@ -128,12 +176,17 @@ export class AppStateService {
 
   // ── Convenience getters (sync — for interceptors / guards) ────────────────
 
-  /** Sync access token read — use when async is not possible (e.g. interceptors) */
+  /** Sync employee access token read — use when async is not possible (e.g. interceptors) */
   getAccessTokenSync(): string | null {
     return this._state().accessToken;
   }
 
-  /** Returns true if the current access token is expired */
+  /** Sync org-admin token read — use when async is not possible (e.g. interceptors) */
+  getOrgAdminTokenSync(): string | null {
+    return this._state().orgAdminToken;
+  }
+
+  /** Returns true if the current employee access token is expired */
   isTokenExpired(): boolean {
     const { expiresAt } = this._state();
     if (!expiresAt) return true;

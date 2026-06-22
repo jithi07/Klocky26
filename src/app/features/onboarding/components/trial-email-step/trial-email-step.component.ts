@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthShellComponent } from '../../../auth/components/auth-shell/auth-shell.component';
 
@@ -74,18 +74,24 @@ export interface TrialStartData {
           @if (emailError) { <p class="lk-error-msg">{{ emailError }}</p> }
         </div>
 
+        @if (serverError) {
+          <p class="lk-error-msg">{{ serverError }}</p>
+        }
+
         <button
           class="lk-btn"
           type="button"
-          [disabled]="!orgName.trim() || !email.trim()"
+          [disabled]="!orgName.trim() || !email.trim() || submitting"
           (click)="submit()"
         >
-          Get Started
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2.5"
-               stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
+          {{ submitting ? 'Sending code…' : 'Get Started' }}
+          @if (!submitting) {
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          }
         </button>
 
         <p class="lk-legal">
@@ -111,6 +117,11 @@ export class TrialEmailStepComponent {
   @Output() emailSubmitted = new EventEmitter<TrialStartData>();
   @Output() signIn = new EventEmitter<void>();
   @Output() goHome = new EventEmitter<void>();
+
+  /** Set by the parent while the send-otp call is in flight. */
+  @Input() submitting = false;
+  /** Set by the parent if send-otp fails (e.g. org/email already taken). */
+  @Input() serverError = '';
 
   orgName    = '';
   email      = '';

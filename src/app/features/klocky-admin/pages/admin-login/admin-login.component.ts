@@ -7,11 +7,7 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { OrgThemeService } from '../../../../core/services/org-theme.service';
-
-// In production this would be validated server-side.
-// Never embed credentials in a client — this is a placeholder pattern.
-const TEAM_EMAIL    = 'admin.klock@gmail.com';
-const TEAM_PASSWORD = 'Klock2026';
+import { PlatformAdminService } from '../../../../core/services/platform-admin.service';
 
 @Component({
   selector: 'klocky-admin-login',
@@ -31,8 +27,10 @@ export class AdminLoginComponent {
     private fb: FormBuilder,
     private router: Router,
     private orgTheme: OrgThemeService,
+    private platformAdmin: PlatformAdminService,
   ) {
-    // Ensure default theme while on the admin login screen
+    // Klocky's own panel always uses the default green theme, regardless of
+    // any org theme left over from a previous session.
     this.orgTheme.reset();
 
     this.form = this.fb.group({
@@ -46,22 +44,23 @@ export class AdminLoginComponent {
     return ctrl.invalid && (ctrl.dirty || ctrl.touched);
   }
 
-  async submit(): Promise<void> {
+  submit(): void {
     this.form.markAllAsTouched();
     if (this.form.invalid || this.submitting()) return;
 
     this.loginError.set('');
     this.submitting.set(true);
-    await this.delay(800);
-    this.submitting.set(false);
 
     const { email, password } = this.form.value;
-    if (email === TEAM_EMAIL && password === TEAM_PASSWORD) {
-      this.router.navigate(['/klocky-admin/dashboard']);
-    } else {
-      this.loginError.set('Invalid email or password. Please try again.');
-    }
+    this.platformAdmin.login({ email, password }).subscribe({
+      next: () => {
+        this.submitting.set(false);
+        this.router.navigate(['/klocky-admin/dashboard']);
+      },
+      error: (err) => {
+        this.submitting.set(false);
+        this.loginError.set(err?.error?.message ?? 'Invalid email or password. Please try again.');
+      },
+    });
   }
-
-  private delay(ms: number) { return new Promise(r => setTimeout(r, ms)); }
 }

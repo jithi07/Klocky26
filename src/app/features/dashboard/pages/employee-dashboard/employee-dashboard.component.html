@@ -31,7 +31,7 @@
     <!-- Quick clock-in / clock-out - Prominent -->
     <div class="ed-hero-actions">
       @if (!isClockedIn()) {
-        <button class="ed-btn-clockin-hero" (click)="openFaceModal()">
+        <button class="ed-btn-clockin-hero" (click)="clockIn()">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                stroke="currentColor" stroke-width="2.2"
                stroke-linecap="round" stroke-linejoin="round">
@@ -40,7 +40,7 @@
           </svg>
           <div class="ed-btn-content">
             <span class="ed-btn-title">Clock In Now</span>
-            <span class="ed-btn-subtitle">Face recognition ready</span>
+            <span class="ed-btn-subtitle">Tap to clock in</span>
           </div>
         </button>
       } @else {
@@ -50,15 +50,12 @@
             <span class="ed-clock-dot-hero"></span>
             <div class="ed-clock-info">
               <span class="ed-clock-status">Clocked In</span>
-              @if (attendanceSvc.clockInFaceId()) {
-                <code class="ed-face-id">{{ attendanceSvc.clockInFaceId() }}</code>
-              }
               @if (geoStatus() === 'watching') {
                 <span class="ed-geo-tag">📍 Location Tracked</span>
               }
             </div>
           </div>
-          <button class="ed-btn-clockout-hero" (click)="openFaceModal()">
+          <button class="ed-btn-clockout-hero" (click)="attendanceSvc.manualClockOut()">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2.5"
                  stroke-linecap="round" stroke-linejoin="round">
@@ -72,115 +69,6 @@
       }
     </div>
   </div>
-
-  <!-- ── Face scan modal ──────────────────────────────────────────── -->
-  @if (faceModalOpen()) {
-    <div class="ed-face-overlay">
-
-      <!-- Always-visible close button -->
-      <button class="ed-face-close-fab" (click)="closeFaceModal()" aria-label="Close">✕</button>
-
-      @if (!faceConsent()) {
-        <!-- ── Consent screen ─────────────────────────────── -->
-        <div class="ed-face-consent-card">
-          <div class="ed-face-privacy-icon">🔒</div>
-          <h3 class="ed-face-consent-title">Camera Permission</h3>
-          <p class="ed-face-privacy-text">
-            Your camera feed stays <strong>entirely on your device</strong>.
-            A perceptual hash is computed locally — no images leave your browser.
-          </p>
-          <button class="ed-face-allow-btn" (click)="grantConsentAndStart()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-              <path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/>
-            </svg>
-            Allow Camera &amp; Start
-          </button>
-        </div>
-
-      } @else {
-        <!-- ── Full-screen camera view (always visible while cam is active) ── -->
-        <div class="ed-face-fullcam">
-          <!-- The video fills the entire area -->
-          <video #edVideo autoplay playsinline muted class="ed-face-video-full"></video>
-          <canvas #edCanvas style="display:none"></canvas>
-
-          <!-- Top label -->
-          <div class="ed-face-top-bar">
-            <span class="ed-face-top-title">Face Scan Clock-In</span>
-            @if (faceStatus()) {
-              <span class="ed-face-live-badge">
-                <span class="ed-face-cam-dot"></span>LIVE
-              </span>
-            }
-          </div>
-
-          <!-- Scanning overlay (only while camera is live) -->
-          @if (faceMode() === 'cam') {
-            <div class="ed-face-scan-frame">
-              <div class="ed-corner ed-corner--tl"></div>
-              <div class="ed-corner ed-corner--tr"></div>
-              <div class="ed-corner ed-corner--bl"></div>
-              <div class="ed-corner ed-corner--br"></div>
-              <div class="ed-face-oval"></div>
-              <div class="ed-scan-line"></div>
-            </div>
-            <p class="ed-face-hint-center">Align your face · then tap the button below</p>
-          }
-
-          <!-- idle: starting spinner overlay -->
-          @if (faceMode() === 'idle') {
-            <div class="ed-face-fullcam-overlay">
-              @if (faceCamErr()) {
-                <div class="ed-face-err ed-face-err--dark">⚠ {{ faceCamErr() }}</div>
-                <button class="ed-face-allow-btn" (click)="startFaceCam()">Retry Camera</button>
-              } @else {
-                <div class="ed-face-spinner"></div>
-                <p class="ed-face-proc-text">Starting front camera…</p>
-              }
-            </div>
-          }
-
-          <!-- processing: scanning spinner overlay -->
-          @if (faceMode() === 'processing') {
-            <div class="ed-face-fullcam-overlay">
-              <div class="ed-face-spinner"></div>
-              <p class="ed-face-proc-text">Reading your face…</p>
-              <p class="ed-face-proc-sub">Computing unique Face ID</p>
-            </div>
-          }
-
-          <!-- success: clocked-in confirmation overlay (briefly shown before close) -->
-          @if (faceMode() === 'success') {
-            <div class="ed-face-fullcam-overlay ed-face-fullcam-overlay--success">
-              <div class="ed-face-ok-icon">✓</div>
-              <strong class="ed-face-ok-name">Welcome, {{ faceName() }}!</strong>
-              <code class="ed-face-id-code">{{ faceId() }}</code>
-            </div>
-          }
-
-          <!-- fail: not in roster -->
-          @if (faceMode() === 'fail') {
-            <div class="ed-face-fullcam-overlay ed-face-fullcam-overlay--fail">
-              <div class="ed-face-fail-icon">✕</div>
-              <strong class="ed-face-fail-text">Face not recognised</strong>
-              <p class="ed-face-proc-sub">Please enrol via Attendance → Face Roster</p>
-              <button class="ed-face-allow-btn" (click)="closeFaceModal()">Close</button>
-            </div>
-          }
-
-          <!-- Bottom capture button -->
-          @if (faceMode() === 'cam') {
-            <div class="ed-face-bottom-bar">
-              <button class="ed-face-shutter" (click)="captureAndVerify()" aria-label="Capture">
-                <span class="ed-face-shutter-inner"></span>
-              </button>
-            </div>
-          }
-        </div>
-      }
-
-    </div>
-  }
 
   <!-- ── Quick Action Cards ───────────────────────────────────────── -->
   <div class="ed-quick-actions">

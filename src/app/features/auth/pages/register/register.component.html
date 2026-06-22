@@ -201,7 +201,7 @@
   @if (step === 'otp') {
     <klocky-otp-step
       [orgName]="authState.orgDisplayName()"
-      (verified)="onOtpVerified()"
+      (verified)="onOtpVerified($event)"
       (back)="goBack()"
     />
   }
@@ -250,24 +250,17 @@
       }
 
       <!-- Country -->
-      <div class="lk-field">
-        <label class="lk-label" for="country">Country <span class="lk-required">*</span></label>
-        <div class="lk-input-wrap" [class.lk-input-error]="isInvalid(profileForm, 'country')">
-          <svg class="lk-input-icon" width="16" height="16" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2"
-               stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="2" y1="12" x2="22" y2="12"/>
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-          </svg>
-          <input id="country" class="lk-input" type="text"
-                 placeholder="e.g. India, United States…"
-                 formControlName="country" />
-        </div>
-        @if (isInvalid(profileForm, 'country')) {
-          <p class="lk-error-msg">Please enter your country.</p>
-        }
-      </div>
+      <ui-select
+        [dark]="true"
+        [searchable]="true"
+        label="Country *"
+        placeholder="Select country"
+        [options]="countries()"
+        formControlName="country"
+      />
+      @if (isInvalid(profileForm, 'country')) {
+        <p class="lk-error-msg" style="margin-top:-12px;margin-bottom:12px">Please select your country.</p>
+      }
 
       <!-- Timezone -->
       <ui-select
@@ -275,7 +268,7 @@
         [searchable]="true"
         label="Timezone *"
         placeholder="Select timezone"
-        [options]="timezones"
+        [options]="timezones()"
         formControlName="timezone"
       />
       @if (isInvalid(profileForm, 'timezone')) {
@@ -388,6 +381,13 @@
             <div class="lk-success-org">{{ authState.orgDisplayName() }}.klock · Admin</div>
           </div>
         </div>
+
+        @if (temporaryPassword) {
+          <p class="lk-success-sub" style="margin-top: 16px;">
+            Temporary password (shown once — change it after you sign in):<br>
+            <strong>{{ temporaryPassword }}</strong>
+          </p>
+        }
 
       </div>
 

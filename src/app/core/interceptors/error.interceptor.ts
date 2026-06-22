@@ -3,19 +3,23 @@ import { inject }                               from '@angular/core';
 import { Router }                               from '@angular/router';
 import { catchError, switchMap, throwError, from } from 'rxjs';
 import { AppStateService }                      from '../services/app-state.service';
-import { AuthService }                          from '../services/auth.service';
+import { UserAuthService }                      from '../services/user-auth.service';
+import { AUTH_SCOPE }                           from '../http/auth-scope.context';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Error Interceptor
 //
 // Handles HTTP error responses globally:
 //
-//  401 Unauthorized
-//    → Attempt a silent token refresh (one retry)
+//  401 Unauthorized (AUTH_SCOPE 'user' only)
+//    → Attempt a silent employee-token refresh (one retry)
 //    → If refresh fails, clear state and redirect to /login
+//    → For 'org'/'platform' scope, the step-up session simply expired — there
+//      is no refresh token for those, so the error just propagates and the
+//      caller re-prompts for a password.
 //
 //  403 Forbidden
-//    → Redirect to /app/dashboard (user is authenticated but lacks permission)
+//    → Redirect to /404 (user is authenticated but lacks permission)
 //
 //  404 Not Found
 //    → Pass through — let the calling service/component handle it
@@ -35,7 +39,7 @@ let isRefreshing = false;
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const appState   = inject(AppStateService);
-  const authSvc    = inject(AuthService);
+  const userAuth   = inject(UserAuthService);
   const router     = inject(Router);
 
   return next(req).pipe(
@@ -49,11 +53,12 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         }));
       }
 
-      // ── 401 Unauthorized — try silent token refresh ────────────────────────
-      if (error.status === 401 && !isRefreshing) {
+      // ── 401 Unauthorized — try silent token refresh (employee scope only) ──
+      const scope = req.context.get(AUTH_SCOPE);
+      if (error.status === 401 && scope === 'user' && !isRefreshing) {
         isRefreshing = true;
 
-        return authSvc.refreshToken().pipe(
+        return userAuth.refreshToken().pipe(
           switchMap(() => {
             isRefreshing = false;
 
@@ -95,7 +100,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         }));
       }
 
-      // ── All other errors (404, 422, 429, etc.) — pass through ──────────────
+      // ── All other errors (402, 404, 409, 422, 429, etc.) — pass through ────
+      // 409 in particular carries the exact server-side message (e.g. geofence
+      // distance, "already clocked in") in error.error.message — surface it
+      // verbatim in the calling component rather than a generic toast.
       return throwError(() => error);
     }),
   );

@@ -1,4 +1,4 @@
-﻿import { Component, EventEmitter, Input, Output, OnDestroy, ChangeDetectionStrategy, inject, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnDestroy, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { IconBellComponent, IconSearchComponent } from '../../shared/icons';
@@ -31,7 +31,7 @@ export class HeaderComponent implements OnDestroy {
 
   /** Pending geo confirmation — true after location is found, before user confirms */
   geoConfirmPending = signal(false);
-  private _pendingGeoId = '';
+  private _pendingPosition: GeolocationPosition | null = null;
 
   get isJv(): boolean { return !!this.orgName; }
   get accentColor(): string {
@@ -48,21 +48,21 @@ export class HeaderComponent implements OnDestroy {
 
   private _geoClockIn() {
     if (!navigator.geolocation) {
+      this._pendingPosition = null;
       this.geoConfirmPending.set(true);
-      this._pendingGeoId = 'MANUAL';
       this.attendance.showToast('📍 Geo not available — confirm manual clock-in.', 'info');
       return;
     }
     this.attendance.geoStatus.set('locating');
 
     navigator.geolocation.getCurrentPosition(
-      (_pos) => {
-        this._pendingGeoId = 'GEO-' + Date.now().toString(36).toUpperCase();
+      (pos) => {
+        this._pendingPosition = pos;
         this.attendance.geoStatus.set('idle'); // reset until confirmed
         this.geoConfirmPending.set(true);
       },
       () => {
-        this._pendingGeoId = 'MANUAL';
+        this._pendingPosition = null;
         this.attendance.geoStatus.set('idle');
         this.geoConfirmPending.set(true);
         this.attendance.showToast('📍 Location unavailable — confirm manual clock-in.', 'warn');
@@ -73,13 +73,17 @@ export class HeaderComponent implements OnDestroy {
 
   confirmGeoClockIn() {
     this.geoConfirmPending.set(false);
-    this.attendance.clockIn(this._pendingGeoId);
-    this._pendingGeoId = '';
+    const pos = this._pendingPosition;
+    this.attendance.clockIn('mobile', pos ? {
+      latitude: pos.coords.latitude,
+      longitude: pos.coords.longitude,
+    } : {});
+    this._pendingPosition = null;
   }
 
   cancelGeoClockIn() {
     this.geoConfirmPending.set(false);
-    this._pendingGeoId = '';
+    this._pendingPosition = null;
     this.attendance.geoStatus.set('idle');
     this.attendance.showToast('Clock-in cancelled.', 'info');
   }

@@ -1,42 +1,23 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthShellComponent } from '../../components/auth-shell/auth-shell.component';
 import { OrgLookupComponent } from '../../components/org-lookup/org-lookup.component';
 import { EmailStepComponent } from '../../components/email-step/email-step.component';
 import { AuthStateService } from '../../services/auth-state.service';
 import { OrgThemeService } from '../../../../core/services/org-theme.service';
 import { AppStateService } from '../../../../core/services/app-state.service';
-import { DEMO_THEME_SLUGS } from '../../../../core/config/org-themes.const';
-
-// ── API integration reference ──────────────────────────────────────────────
-// When wiring real login:
-//
-//   private authService = inject(AuthService);   // core/services/auth.service.ts
-//   private appState    = inject(AppStateService); // core/services/app-state.service.ts
-//
-//   // Replace onLoggedIn() with:
-//   onLoggedIn(): void {
-//     const payload: LoginRequest = {
-//       email:   this.authState.email(),
-//       password: this.password,        // from EmailStepComponent @Output
-//       orgSlug: this.authState.orgIdentifier(),
-//     };
-//     this.authService.login(payload).subscribe({
-//       next: () => {
-//         this.loginSuccess = true;
-//         setTimeout(() => this.router.navigate(['/app/dashboard']), 1400);
-//       },
-//       error: (err) => this.error = err.error?.message ?? 'Login failed',
-//     });
-//   }
-// ──────────────────────────────────────────────────────────────────────────────
+import { UserAuthService } from '../../../../core/services/user-auth.service';
+import { RealtimeService } from '../../../../core/services/realtime.service';
+import { UiModalComponent } from '../../../../shared/components/ui-modal/ui-modal.component';
+import { UiInputComponent } from '../../../../shared/components/ui-input/ui-input.component';
 
 type LoginStep = 'org' | 'credentials' | 'loading';
 
 @Component({
   selector: 'klocky-login',
   standalone: true,
-  imports: [AuthShellComponent, OrgLookupComponent, EmailStepComponent],
+  imports: [AuthShellComponent, OrgLookupComponent, EmailStepComponent, ReactiveFormsModule, UiModalComponent, UiInputComponent],
   template: `
     <klocky-auth-shell
       [orgName]="authState.orgDisplayName()"
@@ -58,10 +39,30 @@ type LoginStep = 'org' | 'credentials' | 'loading';
         }
       }
     </klocky-auth-shell>
+
+    <!-- Non-dismissible: the temp/old password was just exposed in plaintext, close the window now. -->
+    <ui-modal [open]="mustChangePassword()" [closeOnBackdrop]="false" title="Set a new password">
+      <form [formGroup]="changePasswordForm" (ngSubmit)="submitChangePassword()">
+        <ui-input
+          label="Current password" type="password" [required]="true"
+          formControlName="currentPassword"
+        />
+        <ui-input
+          label="New password" type="password" [required]="true" hint="At least 8 characters"
+          formControlName="newPassword"
+        />
+        @if (changePasswordError()) {
+          <p class="login-loading-text" style="color:#ef4444; margin-top: 8px;">{{ changePasswordError() }}</p>
+        }
+        <button class="lk-btn" type="submit" style="margin-top: 16px; width: 100%;" [disabled]="changingPassword()">
+          {{ changingPassword() ? 'Saving…' : 'Save & continue' }}
+        </button>
+      </form>
+    </ui-modal>
   `,
   styles: [`
     :host { display: block; height: 100dvh; overflow: hidden; }
-    
+
     .login-loading {
       display: flex;
       flex-direction: column;
@@ -109,10 +110,27 @@ export class LoginComponent implements OnInit {
   step: LoginStep = 'org';
   loginSuccess = false;
 
+  readonly mustChangePassword = signal(false);
+  readonly changingPassword = signal(false);
+  readonly changePasswordError = signal('');
+  changePasswordForm: FormGroup;
+
   readonly authState = inject(AuthStateService);
   private router    = inject(Router);
   private orgTheme  = inject(OrgThemeService);
   private appState  = inject(AppStateService);
+  private userAuth  = inject(UserAuthService);
+  private realtime  = inject(RealtimeService);
+  private fb        = inject(FormBuilder);
+
+  private orgSlugForNav = '';
+
+  constructor() {
+    this.changePasswordForm = this.fb.group({
+      currentPassword: ['', Validators.required],
+      newPassword: ['', [Validators.required, Validators.minLength(8)]],
+    });
+  }
 
   ngOnInit(): void {
     this.orgTheme.reset();
@@ -126,40 +144,53 @@ export class LoginComponent implements OnInit {
     }
   }
 
-  async onLoggedIn(): Promise<void> {
-    // Show loading screen
+  onLoggedIn(): void {
     this.step = 'loading';
-    const randomSlug = DEMO_THEME_SLUGS[Math.floor(Math.random() * DEMO_THEME_SLUGS.length)];
-    
-    // ── Demo session — replace with real API call when backend is ready ──
-    await this.appState.patch({
-      accessToken:  'demo-token',
-      refreshToken: 'demo-refresh',
-      expiresAt:    Date.now() + 8 * 60 * 60 * 1000, // 8 hours
-      orgSlug:      this.authState.orgIdentifier() || 'demo',
-      user: {
-        id:        'demo-user',
-        firstName: 'Demo',
-        lastName:  'User',
-        email:     this.authState.email() || 'demo@klocky.app',
-        role:      'admin',
-        orgId:     'demo-org',
-        orgSlug:   this.authState.orgIdentifier() || 'demo',
-        isActive:  true,
-        createdAt: new Date().toISOString(),
+    this.orgSlugForNav = this.appState.orgSlug() || this.authState.orgIdentifier();
+
+    this.userAuth.getMe().subscribe({
+      next: (res) => {
+        if (res.data.accentColor) {
+          this.orgTheme.apply(this.orgTheme.generateThemeFromColor(res.data.accentColor));
+        }
+        this.realtime.connect();
+
+        if (res.data.mustChangePassword) {
+          this.mustChangePassword.set(true);
+          return;
+        }
+        this.finishLogin();
+      },
+      error: () => {
+        // /me failed even though login succeeded — fall back to the credentials step
+        this.step = 'credentials';
       },
     });
-    // ─────────────────────────────────────────────────────────────────────
+  }
 
-    // Show loading state for 2 seconds before navigating
-    await this.delay(2000);
+  submitChangePassword(): void {
+    this.changePasswordForm.markAllAsTouched();
+    if (this.changePasswordForm.invalid || this.changingPassword()) return;
+    this.changePasswordError.set('');
+    this.changingPassword.set(true);
+
+    this.userAuth.changePassword(this.changePasswordForm.value).subscribe({
+      next: () => {
+        this.changingPassword.set(false);
+        this.mustChangePassword.set(false);
+        this.finishLogin();
+      },
+      error: (err) => {
+        this.changingPassword.set(false);
+        this.changePasswordError.set(err?.error?.message ?? 'Could not change password. Please try again.');
+      },
+    });
+  }
+
+  private async finishLogin(): Promise<void> {
     this.loginSuccess = true;
     await this.delay(600);
-    
-    // Navigate to org-scoped dashboard
-    const orgSlug = this.authState.orgIdentifier() || 'demo';
-    await this.router.navigate([`/${orgSlug}/app/dashboard`]); 
-    this.orgTheme.apply(randomSlug);
+    await this.router.navigate([`/${this.orgSlugForNav}/app/dashboard`]);
   }
 
   goRegister(): void {
@@ -168,4 +199,3 @@ export class LoginComponent implements OnInit {
 
   private delay(ms: number) { return new Promise(r => setTimeout(r, ms)); }
 }
-

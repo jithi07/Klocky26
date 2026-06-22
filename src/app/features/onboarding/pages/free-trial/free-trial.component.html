@@ -2,6 +2,8 @@
 
   @case ('email') {
     <ob-trial-email-step
+      [submitting]="emailStepSubmitting()"
+      [serverError]="emailStepError()"
       (emailSubmitted)="onEmailSubmitted($event)"
       (signIn)="goLogin()"
       (goHome)="goHome()"
@@ -11,7 +13,8 @@
   @case ('otp') {
     <klocky-auth-shell>
       <klocky-otp-step
-        (verified)="onOtpVerified()"
+        [orgName]="orgName()"
+        (verified)="onOtpVerified($event)"
         (back)="step.set('email')"
         [isRegistration]="true"
       />
@@ -19,10 +22,13 @@
   }
 
   @case ('setup') {
+    @if (setupError()) {
+      <p class="lk-error-msg" style="text-align:center; margin-bottom: 8px;">{{ setupError() }}</p>
+    }
     <ob-company-setup
       [adminEmail]="adminEmail()"
       [orgName]="orgName()"
-      (completed)="onSetupComplete()"
+      (completed)="onSetupComplete($event)"
     />
   }
 

@@ -471,7 +471,7 @@
 
             <div class="op-form-row">
               <ui-select [dark]="false" label="Country" placeholder="Select country…"
-                [options]="countries"
+                [options]="countries()"
                 [searchable]="true"
                 [(ngModel)]="offices[i].country" (ngModelChange)="markDirty()">
               </ui-select>
@@ -621,18 +621,19 @@
                 <span class="op-number-unit">hrs / day</span>
               </div>
             </div>
-            <div class="op-field">
-              <p class="op-field-label">Working Days</p>
-              <div class="op-band-grid op-band-grid-sm">
-                @for (opt of workingDayOptions; track opt.value) {
-                  <button type="button" class="op-band-btn"
-                          [class.selected]="workingDays === opt.value"
-                          (click)="workingDays = opt.value; markDirty()">
-                    {{ opt.label }}
-                  </button>
-                }
-              </div>
-            </div>
+          </div>
+
+          <!-- Working week — matches the registration screen exactly (two
+               explicit weekdays, what the API actually stores). -->
+          <div class="op-form-row">
+            <ui-select [dark]="false" label="Week Starts On"
+              [options]="weekdays"
+              [(ngModel)]="workWeekStartDay" (ngModelChange)="markDirty()">
+            </ui-select>
+            <ui-select [dark]="false" label="Week Ends On"
+              [options]="weekdays"
+              [(ngModel)]="workWeekEndDay" (ngModelChange)="markDirty()">
+            </ui-select>
           </div>
 
           <div class="op-form-row">
@@ -1099,5 +1100,21 @@
       </div>
     </div>
   }
+
+  <!-- ── Org-admin step-up — required once per session before saving policy/details ── -->
+  <ui-modal [open]="stepUpOpen()" [closeOnBackdrop]="false" title="Confirm it's you">
+    <p class="op-section-desc">
+      Organisation settings need a quick re-confirmation of your admin password before saving.
+    </p>
+    <form [formGroup]="stepUpForm" (ngSubmit)="submitStepUp()">
+      <ui-input label="Password" type="password" [required]="true" formControlName="password" />
+      @if (stepUpError()) {
+        <p class="op-section-desc" style="color:#ef4444;">{{ stepUpError() }}</p>
+      }
+      <button type="submit" class="op-save-btn" style="margin-top: 12px; width: 100%;" [disabled]="stepUpSubmitting()">
+        {{ stepUpSubmitting() ? 'Verifying…' : 'Confirm' }}
+      </button>
+    </form>
+  </ui-modal>
 
 </div>

@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { platformAdminGuard } from '../../core/guards/platform-admin.guard';
 
 export const klockyAdminRoutes: Routes = [
   {
@@ -8,6 +9,7 @@ export const klockyAdminRoutes: Routes = [
   },
   {
     path: 'dashboard',
+    canActivate: [platformAdminGuard],
     loadComponent: () =>
       import('./layout/admin-shell/admin-shell.component').then(m => m.AdminShellComponent),
     children: [

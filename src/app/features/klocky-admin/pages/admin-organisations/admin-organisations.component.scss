@@ -13,6 +13,89 @@ $accent: #0d9488;
   position: relative;
 }
 
+/* ── Shared-grid card (dark, matches the admin surface) ─────────────── */
+.ao-grid-card {
+  background: $surface;
+  border-radius: 16px;
+  border: 1px solid $border;
+  padding: 14px;
+  margin-top: 4px;
+}
+.ao-grid-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.ao-grid-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 220px;
+  max-width: 420px;
+  padding: 0 12px;
+  height: 40px;
+  border: 1.5px solid $border;
+  border-radius: 10px;
+  background: rgba(255,255,255,.04);
+  color: rgba(255,255,255,.4);
+  &:focus-within { border-color: $accent; background: rgba(255,255,255,.06); }
+  input {
+    flex: 1; border: none; outline: none; background: transparent;
+    font-size: 14px; color: $text; min-width: 0;
+  }
+  input::placeholder { color: rgba(255,255,255,.3); }
+}
+.ao-grid-filter { width: 200px; }
+.ao-grid-foot {
+  margin-top: 12px;
+  font-size: 12.5px;
+  color: $text-muted;
+  text-align: right;
+}
+
+/* ── Edit modal helpers (light UiFormModal) ────────────────────────── */
+.ao-rename-row { display: flex; gap: 10px; align-items: center; }
+.ao-rename-input { flex: 1; }
+.ao-inline-btn {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+  color: var(--accent, #0d9488);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+  &:hover:not(:disabled) { background: color-mix(in srgb, var(--accent, #0d9488) 8%, #fff); border-color: color-mix(in srgb, var(--accent, #0d9488) 40%, #e2e8f0); }
+  &:disabled { opacity: .6; cursor: not-allowed; }
+}
+.ao-num-input {
+  width: 100%; box-sizing: border-box;
+  height: 42px; padding: 0 12px;
+  border: 1.5px solid #e2e8f0; border-radius: 10px;
+  font-size: 14px; color: #1e293b; outline: none;
+  &:focus { border-color: var(--accent, #0d9488); }
+}
+.ao-toggle-field {
+  --ui-toggle-label: #1e293b;
+  --ui-toggle-hint: #94a3b8;
+  --ui-toggle-track: #cbd5e1;
+  border: 1.5px solid #eef1f5; border-radius: 12px; padding: 2px 16px; background: #fbfcfe;
+}
+.ao-modal-hint { margin: 8px 0 0; font-size: 12px; color: #94a3b8; }
+.ao-modal-err { margin: 8px 0 0; font-size: 13px; color: #dc2626; font-weight: 500; }
+.ao-modal-banner {
+  font-family: ui-monospace, monospace; font-size: 14px; font-weight: 600;
+  background: color-mix(in srgb, var(--accent, #0d9488) 10%, #fff);
+  border: 1.5px dashed color-mix(in srgb, var(--accent, #0d9488) 40%, #e5e7eb);
+  color: #0f172a; padding: 10px 14px; border-radius: 10px;
+}
+
 // ── Header ────────────────────────────────────────────────────────────
 .ao-header {
   display: flex;

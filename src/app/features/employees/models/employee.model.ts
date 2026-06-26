@@ -33,6 +33,10 @@ export interface EmployeeRow {
   email: string;
   phone: string;
   role: EmployeeRole;
+  /** Org/hierarchy role name (e.g. CEO, Manager) — shown in the grid instead of the system role. */
+  orgRoleName?: string | null;
+  /** Employment type (full_time, part_time, permanent, contract, intern). */
+  employmentType?: string | null;
   department: string;
   designation: string;
   reportingManagerId: string | null;
@@ -44,6 +48,12 @@ export interface EmployeeRow {
   avatarColor: string;
   isActive: boolean;
   status: EmployeeStatus;
+  /** Identity flag (spec §3/§7) — render a "Guest" badge when true. */
+  isGuest?: boolean;
+  /** Payroll figures — null unless the caller is admin/HR (spec §3). */
+  basicSalary?: number | null;
+  allowances?: number | null;
+  otherDeductions?: number | null;
 }
 
 export const DEPARTMENTS = [

@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { permissionGuard } from '../../core/guards/permission.guard';
 
 export const routes: Routes = [
   {
@@ -27,6 +28,15 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/org-structure/org-structure.component').then(
         m => m.OrgStructureComponent
+      ),
+  },
+  {
+    path: 'permissions',
+    // Permission matrix editor needs full access (spec §2 — PUT needs level 3).
+    canActivate: [permissionGuard('permissions.manage', 3)],
+    loadComponent: () =>
+      import('./pages/permissions/permissions.component').then(
+        m => m.PermissionsComponent
       ),
   },
   {

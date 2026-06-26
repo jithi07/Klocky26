@@ -180,6 +180,39 @@
   border: 1px solid rgba(0,0,0,0.08);
 }
 
+/* ─── Row action icon buttons ───────────────────────────── */
+.os-row-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+.os-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  border: 1.5px solid #e7ebf1;
+  background: #fff;
+  color: #64748b;
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s, box-shadow .15s;
+
+  &:hover {
+    color: var(--accent, #6366f1);
+    border-color: color-mix(in srgb, var(--accent, #6366f1) 45%, #e7ebf1);
+    background: color-mix(in srgb, var(--accent, #6366f1) 7%, #fff);
+  }
+  &:active { transform: translateY(0.5px); }
+
+  &--danger:hover {
+    color: #dc2626;
+    border-color: #fecaca;
+    background: #fef2f2;
+  }
+}
+
 /* ─── Badges ────────────────────────────────────────────── */
 .os-badge {
   display: inline-flex;
@@ -271,6 +304,16 @@
   border: 1.5px solid #e5e7eb;
   border-radius: 9px;
   cursor: pointer;
+}
+
+/* ─── Table wrapper with pagination ─────────────────────── */
+.os-table-wrap {
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  border: 1.5px solid #e5e7eb;
+  background: #fff;
+  overflow: hidden;
 }
 
 /* ─── Responsive ────────────────────────────────────────── */

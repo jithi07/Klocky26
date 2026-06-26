@@ -6,6 +6,8 @@
 export interface CreateOrgRoleRequest {
   name: string;
   hierarchyLevel: number;
+  /** Optional department this role belongs to (server-side mapping, being added). */
+  departmentId?: string | null;
 }
 
 /** POST /api/org-roles/assign request body — orgRoleId: null unassigns */
@@ -21,4 +23,7 @@ export interface OrgRole {
   hierarchyLevel: number;
   isSystemDefault: boolean;
   memberCount: number;
+  /** Department this role is mapped to (server-side, being added) — may be null/absent. */
+  departmentId?: string | null;
+  departmentName?: string | null;
 }

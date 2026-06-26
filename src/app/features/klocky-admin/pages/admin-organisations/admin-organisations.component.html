@@ -43,85 +43,36 @@
     </div>
   </div>
 
-  <!-- ── Table card ────────────────────────────────────────────────── -->
-  <div class="ao-table-card">
-    <div class="ao-table-toolbar">
-      <div class="ao-search-wrap">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+  <!-- ── Grid card (shared ui-data-grid) ───────────────────────────── -->
+  <div class="ao-grid-card">
+    <div class="ao-grid-toolbar">
+      <div class="ao-grid-search">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2.5"
              stroke-linecap="round" stroke-linejoin="round">
           <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
         </svg>
-        <input class="ao-search" type="text" placeholder="Search by name, slug, email…"
+        <input type="text" placeholder="Search by name, slug, email…"
                [value]="search()" (input)="onSearch($event)" />
       </div>
-      <div class="ao-filters">
-        <select class="ao-filter" [value]="subscriptionFilter()" (change)="onSubscriptionFilter($event)">
-          <option value="all">All subscriptions</option>
-          <option value="trial">Trial</option>
-          <option value="active">Active</option>
-          <option value="expired">Expired</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
+      <div class="ao-grid-filter">
+        <ui-select [dark]="true" [options]="subscriptionFilterOptions" placeholder="All subscriptions"
+                   [ngModel]="subscriptionFilter()" (ngModelChange)="subscriptionFilter.set($event)"></ui-select>
       </div>
     </div>
 
-    <div class="ao-table-scroll">
-      <table class="ao-table">
-        <thead>
-          <tr>
-            <th>Organisation</th>
-            <th>Admin</th>
-            <th>Industry</th>
-            <th>Subscription</th>
-            <th>Status</th>
-            <th>Registered</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          @if (loading()) {
-            <tr><td colspan="7" class="ao-empty">Loading organisations…</td></tr>
-          } @else {
-            @for (org of filtered(); track org.orgSlug) {
-              <tr class="ao-tr" (click)="viewOrg(org)">
-                <td>
-                  <div class="ao-org-cell">
-                    <div class="ao-avatar">{{ org.companyName.slice(0, 2).toUpperCase() }}</div>
-                    <div>
-                      <div class="ao-org-name">{{ org.companyName }}</div>
-                      <div class="ao-org-slug">/{{ org.orgUrlName }}/app</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="ao-muted">{{ org.primaryEmail }}</td>
-                <td class="ao-muted">{{ org.industry || '—' }}</td>
-                <td><span class="ao-plan-chip">{{ subscriptionLabel(org.subscriptionStatus) }}</span></td>
-                <td><span class="ao-status-chip" [class.ao-status-chip--active]="org.isActive" [class.ao-status-chip--suspended]="!org.isActive">{{ org.isActive ? 'active' : 'deactivated' }}</span></td>
-                <td class="ao-muted">{{ formatDate(org.createdAt) }}</td>
-                <td (click)="$event.stopPropagation()" style="display:flex; gap:6px;">
-                  <button class="ao-action-btn" type="button" (click)="openEdit(org)">Edit</button>
-                  <button class="ao-action-btn"
-                          [class.ao-action-btn--danger]="org.isActive"
-                          type="button"
-                          (click)="toggleActive(org)">
-                    {{ org.isActive ? 'Deactivate' : 'Activate' }}
-                  </button>
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="7" class="ao-empty">No organisations match your filters.</td>
-              </tr>
-            }
-          }
-        </tbody>
-      </table>
-    </div>
+    <ui-data-grid
+      [dark]="true"
+      [columns]="orgColumns"
+      [rows]="filtered()"
+      [actions]="orgActions"
+      [trackBy]="orgTrackBy"
+      [loading]="loading()"
+      emptyMessage="No organisations match your filters."
+      (rowClick)="viewOrg($event)"
+    ></ui-data-grid>
 
-    <div class="ao-table-footer">
-      Showing {{ filtered().length }} of {{ totalOrgs() }} organisations
-    </div>
+    <div class="ao-grid-foot">Showing {{ filtered().length }} of {{ totalOrgs() }} organisations</div>
   </div>
 
   <!-- ── Detail drawer ─────────────────────────────────────────────── -->
@@ -194,237 +145,97 @@
     </aside>
   }
 
-  <!-- ── Edit organisation modal ──────────────────────────────────── -->
-  @if (editingOrg()) {
-    <div class="ao-overlay" (click)="closeEdit()"></div>
-    <aside class="ao-modal" aria-label="Edit organisation">
-      <div class="ao-drawer-head">
-        <div class="ao-drawer-avatar">{{ editingOrg()!.companyName.slice(0, 2).toUpperCase() }}</div>
-        <div class="ao-drawer-info">
-          <h2 class="ao-drawer-name">Edit {{ editingOrg()!.companyName }}</h2>
-          <p class="ao-drawer-slug">{{ editingOrg()!.orgSlug }} &bull; PUT /api/platform/organisations/&#123;slug&#125;</p>
-        </div>
-        <button class="ao-drawer-close" type="button" (click)="closeEdit()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2.5"
-               stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
-      </div>
-
-      <div class="ao-drawer-body ao-modal-grid">
-
-        <!-- URL name — Klock-admin-only rename, separate action from the rest
-             (renaming has its own 400/409 semantics, distinct from the bulk save below). -->
-        <div class="ao-section">
-          <div class="ao-section-head">
-            <span class="ao-section-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l1.93-1.93a5 5 0 0 0-7.07-7.07L10.5 5.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-1.93 1.93a5 5 0 0 0 7.07 7.07L13.5 18.5"/></svg>
-            </span>
-            <div>
-              <p class="ao-section-title">URL Name</p>
-              <p class="ao-section-note">klock.vercel.app/&lt;this&gt;/app/… &bull; Klock-admin only</p>
-            </div>
-          </div>
-
-          <div class="ao-field-row">
-            <div class="ao-field" style="flex:1;">
-              <input class="ao-field-input" type="text" [(ngModel)]="editOrgUrlName" placeholder="acme" />
-            </div>
-            <button class="ao-action-btn" type="button" [disabled]="renameSubmitting()" (click)="submitRename()">
-              {{ renameSubmitting() ? 'Renaming…' : 'Rename' }}
-            </button>
-          </div>
-          <p class="ao-field-hint">Login code (orgSlug, unaffected by rename): {{ editingOrg()!.orgSlug }}</p>
-          @if (renameError()) { <p class="ao-error-text">{{ renameError() }}</p> }
-        </div>
-
-        <!-- Identity -->
-        <div class="ao-section">
-          <div class="ao-section-head">
-            <span class="ao-section-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 9h6M9 13h6M9 17h3"/></svg>
-            </span>
-            <p class="ao-section-title">Identity</p>
-          </div>
-
-          <div class="ao-field">
-            <span class="ao-field-label">Company Name</span>
-            <input class="ao-field-input" type="text" [(ngModel)]="editCompanyName" />
-          </div>
-          <div class="ao-field">
-            <span class="ao-field-label">Accent Color</span>
-            <input class="ao-field-input" type="text" [(ngModel)]="editAccentColor" placeholder="#0d9488" />
-          </div>
-          <div class="ao-toggle-row">
-            <span class="ao-field-label">Active</span>
-            <label class="ao-toggle">
-              <input type="checkbox" [(ngModel)]="editIsActive" />
-              <span class="ao-toggle-track"><span class="ao-toggle-thumb"></span></span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Payment / subscription -->
-        <div class="ao-section">
-          <div class="ao-section-head">
-            <span class="ao-section-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-            </span>
-            <p class="ao-section-title">Subscription &amp; Billing</p>
-          </div>
-
-          <div class="ao-field">
-            <span class="ao-field-label">Payment Status</span>
-            <div class="ao-segmented">
-              @for (s of subscriptionStatusOptions; track s) {
-                <button type="button" class="ao-segmented-opt" [class.is-active]="editSubscriptionStatus === s" (click)="editSubscriptionStatus = s">{{ s }}</button>
-              }
-            </div>
-          </div>
-          <div class="ao-field">
-            <span class="ao-field-label">Subscription Plan</span>
-            <input class="ao-field-input" type="text" [(ngModel)]="editSubscriptionPlan" placeholder="e.g. pro, enterprise" />
-          </div>
-          <div class="ao-field-row">
-            <ui-datepicker [dark]="true" label="Trial Ends At" [(ngModel)]="editTrialEndsAt"></ui-datepicker>
-            <ui-datepicker [dark]="true" label="Subscription Expires At" [(ngModel)]="editSubscriptionExpiresAt"></ui-datepicker>
-          </div>
-        </div>
-
-        <!-- Limits -->
-        <div class="ao-section">
-          <div class="ao-section-head">
-            <span class="ao-section-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-            </span>
-            <p class="ao-section-title">Limits</p>
-          </div>
-
-          <div class="ao-field-row">
-            <div class="ao-field">
-              <span class="ao-field-label">Max Employees</span>
-              <input class="ao-field-input" type="number" [(ngModel)]="editMaxEmployees" placeholder="unlimited" />
-            </div>
-            <div class="ao-field">
-              <span class="ao-field-label">Max Admin Accounts</span>
-              <input class="ao-field-input" type="number" [(ngModel)]="editMaxAdminAccounts" placeholder="unlimited" />
-            </div>
-          </div>
-          <div class="ao-field">
-            <span class="ao-field-label">Inactivity Retention (days)</span>
-            <input class="ao-field-input" type="number" [(ngModel)]="editInactivityRetentionDays" />
-          </div>
-        </div>
-
-        @if (editError()) { <p class="ao-error-text">{{ editError() }}</p> }
-
-        <button class="ao-drawer-action" type="button" [disabled]="editSubmitting()" (click)="submitEdit()">
-          {{ editSubmitting() ? 'Saving…' : 'Save Changes' }}
-        </button>
-
-        <hr class="ao-divider" />
-
-        <!-- Admin password — real passwords are never retrievable (hashed
-             everywhere). This generates a fresh one-time temp password
-             instead. Requires a server endpoint that doesn't exist yet. -->
-        <div class="ao-section">
-          <div class="ao-section-head">
-            <span class="ao-section-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            </span>
-            <p class="ao-section-title">Org Admin Password</p>
-          </div>
-          <p class="ao-field-hint">
-            The real password can never be viewed (it's hashed). This resets it and
-            shows a fresh one-time temporary password instead.
-          </p>
-          @if (resetPwResult()) {
-            <div class="ao-result-banner">{{ resetPwResult() }}</div>
-          } @else {
-            <button class="ao-action-btn" type="button" [disabled]="resetPwSubmitting()" (click)="resetAdminPassword()">
-              {{ resetPwSubmitting() ? 'Resetting…' : 'Reset Admin Password' }}
-            </button>
-          }
-          @if (resetPwError()) { <p class="ao-error-text">{{ resetPwError() }}</p> }
-        </div>
-
-        <!-- Send email — REQUESTED, no backend endpoint exists yet
-             (SERVER_CHANGES_REQUEST.md §0d). Welcome/subscription emails are
-             only ever sent automatically server-side today; this is an
-             on-demand version. -->
-        <div class="ao-section ao-section--placeholder">
-          <div class="ao-section-head">
-            <span class="ao-section-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-            </span>
-            <p class="ao-section-title">Send Email</p>
-            <span class="ao-pill-soon">Coming soon</span>
-          </div>
-          <p class="ao-field-hint">To {{ editingOrg()!.primaryEmail }} — UI ready, backend endpoint not built yet.</p>
-
-          <div class="ao-field">
-            <ui-select [dark]="true" [options]="emailTypeOptions" [(ngModel)]="emailType"></ui-select>
-          </div>
-          @if (emailType === 'custom') {
-            <div class="ao-field">
-              <input class="ao-field-input" type="text" [(ngModel)]="emailCustomSubject" placeholder="Subject" />
-            </div>
-            <div class="ao-field">
-              <textarea class="ao-field-input" [(ngModel)]="emailCustomMessage" placeholder="Message" rows="3"></textarea>
-            </div>
-          }
-          <button class="ao-action-btn" type="button" [disabled]="emailSubmitting()" (click)="sendEmail()">
-            {{ emailSubmitting() ? 'Sending…' : 'Send ' + emailTypeLabel(emailType) }}
+  <!-- ── Edit organisation (shared UiFormModal) ────────────────────── -->
+  <ui-form-modal
+    [open]="!!editingOrg()"
+    [title]="editingOrg() ? ('Edit ' + editingOrg()!.companyName) : 'Edit organisation'"
+    subtitle="Update profile, subscription and limits."
+    submitLabel="Save changes"
+    size="xl"
+    [busy]="editSubmitting()"
+    (submit)="submitEdit()"
+    (cancel)="closeEdit()"
+  >
+    @if (editingOrg(); as org) {
+      <!-- URL name -->
+      <ui-form-section title="URL name" description="klock.vercel.app/<this>/app — Klock-admin only.">
+        <div class="ao-rename-row">
+          <ui-input class="ao-rename-input" [(ngModel)]="editOrgUrlName" placeholder="acme" />
+          <button type="button" class="ao-inline-btn" [disabled]="renameSubmitting()" (click)="submitRename()">
+            {{ renameSubmitting() ? 'Renaming…' : 'Rename' }}
           </button>
-          @if (emailSent()) { <p class="ao-field-hint" style="color:#6ee7b7;">{{ emailSent() }}</p> }
-          @if (emailError()) { <p class="ao-error-text">{{ emailError() }}</p> }
         </div>
+        <p class="ao-modal-hint">Login code (orgSlug, unaffected by rename): {{ org.orgSlug }}</p>
+        @if (renameError()) { <p class="ao-modal-err">{{ renameError() }}</p> }
+      </ui-form-section>
 
-        <!-- Database configuration — UI shell only. Not wired to any backend
-             on purpose: no endpoint exists, and raw DB credentials shouldn't
-             transit a web admin panel. See SERVER_CHANGES_REQUEST.md §0. -->
-        <div class="ao-section ao-section--placeholder">
-          <div class="ao-section-head">
-            <span class="ao-section-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>
-            </span>
-            <p class="ao-section-title">Database Configuration</p>
-            <span class="ao-pill-soon">Not connected</span>
-          </div>
-          <div class="ao-field-row">
-            <div class="ao-field"><input class="ao-field-input" type="text" [(ngModel)]="dbHost" placeholder="Host" /></div>
-            <div class="ao-field"><input class="ao-field-input" type="text" [(ngModel)]="dbName" placeholder="Database name" /></div>
-          </div>
-          <div class="ao-field-row">
-            <div class="ao-field"><input class="ao-field-input" type="text" [(ngModel)]="dbUsername" placeholder="Username" /></div>
-            <div class="ao-field"><input class="ao-field-input" type="password" [(ngModel)]="dbPassword" placeholder="Password" /></div>
-          </div>
-          <button class="ao-action-btn" type="button" (click)="saveDbConfig()">Save</button>
-          @if (dbConfigNotice()) { <p class="ao-field-hint" style="color:#fcd34d;">{{ dbConfigNotice() }}</p> }
-        </div>
+      <!-- Identity -->
+      <ui-form-section title="Identity">
+        <ui-form-grid [columns]="2">
+          <ui-form-field label="Company name">
+            <ui-input [(ngModel)]="editCompanyName" />
+          </ui-form-field>
+          <ui-form-field label="Accent color">
+            <ui-input [(ngModel)]="editAccentColor" placeholder="#0d9488" />
+          </ui-form-field>
+          <ui-form-field [full]="true">
+            <div class="ao-toggle-field">
+              <ui-toggle [row]="true" label="Active" hint="Inactive organisations can't sign in."
+                         [(ngModel)]="editIsActive"></ui-toggle>
+            </div>
+          </ui-form-field>
+        </ui-form-grid>
+      </ui-form-section>
 
-        <!-- Agent integration status — UI shell only, no backend endpoint
-             exists yet. See SERVER_CHANGES_REQUEST.md §0. -->
-        <div class="ao-section ao-section--placeholder">
-          <div class="ao-section-head">
-            <span class="ao-section-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M9 8V5a3 3 0 0 1 6 0v3"/><circle cx="9" cy="14" r="1"/><circle cx="15" cy="14" r="1"/></svg>
-            </span>
-            <p class="ao-section-title">Agent Integration Status</p>
-            <span class="ao-pill-soon">Not connected</span>
-          </div>
-          <div class="ao-field">
-            <ui-select [dark]="true" [options]="agentStatusOptions" [(ngModel)]="agentStatus"></ui-select>
-          </div>
-          <button class="ao-action-btn" type="button" (click)="saveAgentStatus()">Save</button>
-          @if (agentStatusNotice()) { <p class="ao-field-hint" style="color:#fcd34d;">{{ agentStatusNotice() }}</p> }
-        </div>
+      <!-- Subscription -->
+      <ui-form-section title="Subscription &amp; billing">
+        <ui-form-grid [columns]="2">
+          <ui-form-field label="Payment status">
+            <ui-select [options]="subscriptionSelectOptions" [(ngModel)]="editSubscriptionStatus"></ui-select>
+          </ui-form-field>
+          <ui-form-field label="Subscription plan">
+            <ui-input [(ngModel)]="editSubscriptionPlan" placeholder="e.g. pro, enterprise" />
+          </ui-form-field>
+          <ui-form-field label="Trial ends at">
+            <ui-datepicker [(ngModel)]="editTrialEndsAt"></ui-datepicker>
+          </ui-form-field>
+          <ui-form-field label="Subscription expires at">
+            <ui-datepicker [(ngModel)]="editSubscriptionExpiresAt"></ui-datepicker>
+          </ui-form-field>
+        </ui-form-grid>
+      </ui-form-section>
 
-      </div>
-    </aside>
-  }
+      <!-- Limits -->
+      <ui-form-section title="Limits">
+        <ui-form-grid [columns]="3">
+          <ui-form-field label="Max employees">
+            <input class="ao-num-input" type="number" [(ngModel)]="editMaxEmployees" placeholder="unlimited" />
+          </ui-form-field>
+          <ui-form-field label="Max admin accounts">
+            <input class="ao-num-input" type="number" [(ngModel)]="editMaxAdminAccounts" placeholder="unlimited" />
+          </ui-form-field>
+          <ui-form-field label="Inactivity retention (days)">
+            <input class="ao-num-input" type="number" [(ngModel)]="editInactivityRetentionDays" />
+          </ui-form-field>
+        </ui-form-grid>
+      </ui-form-section>
+
+      <!-- Org admin password -->
+      <ui-form-section title="Org admin password"
+                       description="The real password is hashed and can't be viewed — this resets it and shows a one-time temporary password.">
+        @if (resetPwResult()) {
+          <div class="ao-modal-banner">{{ resetPwResult() }}</div>
+        } @else {
+          <button type="button" class="ao-inline-btn" [disabled]="resetPwSubmitting()" (click)="resetAdminPassword()">
+            {{ resetPwSubmitting() ? 'Resetting…' : 'Reset admin password' }}
+          </button>
+        }
+        @if (resetPwError()) { <p class="ao-modal-err">{{ resetPwError() }}</p> }
+      </ui-form-section>
+
+      @if (editError()) { <p class="ao-modal-err">{{ editError() }}</p> }
+    }
+  </ui-form-modal>
 
   <!-- ── Add organisation modal ───────────────────────────────────── -->
   @if (showAdd()) {

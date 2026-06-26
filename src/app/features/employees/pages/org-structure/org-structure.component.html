@@ -19,13 +19,6 @@
     </button>
     <button
       class="os-tab"
-      [class.os-tab--active]="activeTab() === 'designations'"
-      (click)="setTab('designations')"
-      type="button">
-      Designations
-    </button>
-    <button
-      class="os-tab"
       [class.os-tab--active]="activeTab() === 'roles'"
       (click)="setTab('roles')"
       type="button">
@@ -54,91 +47,35 @@
       }
 
       @if (!departmentsLoading() && !departmentsError()) {
-        <div class="el-table-wrap">
-          <table class="el-table">
-            <thead>
-              <tr>
-                <th class="el-th">Department</th>
-                <th class="el-th">Manager</th>
-                <th class="el-th">Members</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (dept of departments(); track dept.departmentId) {
-                <tr class="el-row">
-                  <td class="el-td">
-                    <div class="os-name-cell">
-                      <span class="os-color-swatch" [style.background]="dept.color || '#94a3b8'"></span>
-                      <span class="el-cell-primary">{{ dept.name }}</span>
-                    </div>
-                  </td>
-                  <td class="el-td">{{ dept.managerFullName || '—' }}</td>
-                  <td class="el-td">{{ dept.memberCount }}</td>
-                </tr>
-              }
-              @if (departments().length === 0) {
-                <tr>
-                  <td colspan="3" class="el-empty">
-                    <p>No departments yet</p>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      }
-    </div>
-  }
+        <div class="os-table-wrap">
+          <ui-data-grid
+            [columns]="departmentColumns"
+            [rows]="deptPaged()"
+            [trackBy]="departmentTrackBy"
+            [emptyMessage]="'No departments yet'"
+            [loading]="departmentsLoading()"
+          >
+            <ng-template gridColumn="actions" let-row>
+              <div class="os-row-actions">
+                <button class="os-icon-btn" type="button" title="Edit department" (click)="editDepartment(row)">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                <button class="os-icon-btn os-icon-btn--danger" type="button" title="Delete department" (click)="deleteDepartment(row)">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+              </div>
+            </ng-template>
+          </ui-data-grid>
 
-  <!-- ═══════════ Designations panel ═══════════ -->
-  @if (activeTab() === 'designations') {
-    <div class="os-panel">
-      <div class="os-panel__header">
-        <h2 class="os-panel__title">Designations</h2>
-        <button class="el-btn el-btn--primary" (click)="openAddDesignation()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          <span>Add Designation</span>
-        </button>
-      </div>
-
-      @if (designationsLoading()) {
-        <div class="el-empty"><p>Loading designations…</p></div>
-      }
-      @if (designationsError()) {
-        <div class="el-empty"><p>{{ designationsError() }}</p></div>
-      }
-
-      @if (!designationsLoading() && !designationsError()) {
-        <div class="el-table-wrap">
-          <table class="el-table">
-            <thead>
-              <tr>
-                <th class="el-th">Title</th>
-                <th class="el-th">Members</th>
-                <th class="el-th"></th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (d of designations(); track d.designationId) {
-                <tr class="el-row">
-                  <td class="el-td">{{ d.title }}</td>
-                  <td class="el-td">{{ d.memberCount }}</td>
-                  <td class="el-td el-td--actions">
-                    <button class="el-btn el-btn--ghost el-btn--sm" (click)="deleteDesignation(d)">Delete</button>
-                  </td>
-                </tr>
-              }
-              @if (designations().length === 0) {
-                <tr>
-                  <td colspan="3" class="el-empty">
-                    <p>No designations yet</p>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
+          <ui-pagination
+            [currentPage]="deptCurrentPage()"
+            [totalPages]="deptTotalPages()"
+            [pageSize]="deptPageSize()"
+            [pageSizeOptions]="pageSizeOptions"
+            [resultLabel]="departments().length + ' total department' + (departments().length !== 1 ? 's' : '')"
+            (pageChange)="setDeptPage($event)"
+            (pageSizeChange)="setDeptPageSize($event)"
+          ></ui-pagination>
         </div>
       }
     </div>
@@ -165,43 +102,39 @@
       }
 
       @if (!orgRolesLoading() && !orgRolesError()) {
-        <div class="el-table-wrap">
-          <table class="el-table">
-            <thead>
-              <tr>
-                <th class="el-th">Role</th>
-                <th class="el-th">Hierarchy Level</th>
-                <th class="el-th">Members</th>
-                <th class="el-th"></th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (role of orgRoles(); track role.id) {
-                <tr class="el-row">
-                  <td class="el-td">
-                    <span class="el-cell-primary">{{ role.name }}</span>
-                    @if (role.isSystemDefault) {
-                      <span class="os-badge os-badge--system">System</span>
-                    }
-                  </td>
-                  <td class="el-td">{{ role.hierarchyLevel }}</td>
-                  <td class="el-td">{{ role.memberCount }}</td>
-                  <td class="el-td el-td--actions">
-                    @if (!role.isSystemDefault) {
-                      <button class="el-btn el-btn--ghost el-btn--sm" (click)="deleteOrgRole(role)">Delete</button>
-                    }
-                  </td>
-                </tr>
+        <div class="os-table-wrap">
+          <ui-data-grid
+            [columns]="roleColumns"
+            [rows]="rolePaged()"
+            [trackBy]="roleTrackBy"
+            [emptyMessage]="'No custom roles yet'"
+            [loading]="orgRolesLoading()"
+          >
+            <ng-template gridColumn="actions" let-row>
+              @if (!row.isSystemDefault) {
+                <div class="os-row-actions">
+                  <button class="os-icon-btn" type="button" title="Edit role" (click)="editRole(row)">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                  <button class="os-icon-btn os-icon-btn--danger" type="button" title="Delete role" (click)="deleteOrgRole(row)">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  </button>
+                </div>
+              } @else {
+                <span class="os-badge os-badge--system">System</span>
               }
-              @if (orgRoles().length === 0) {
-                <tr>
-                  <td colspan="4" class="el-empty">
-                    <p>No custom roles yet</p>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
+            </ng-template>
+          </ui-data-grid>
+
+          <ui-pagination
+            [currentPage]="roleCurrentPage()"
+            [totalPages]="roleTotalPages()"
+            [pageSize]="rolePageSize()"
+            [pageSizeOptions]="pageSizeOptions"
+            [resultLabel]="orgRoles().length + ' total role' + (orgRoles().length !== 1 ? 's' : '')"
+            (pageChange)="setRolePage($event)"
+            (pageSizeChange)="setRolePageSize($event)"
+          ></ui-pagination>
         </div>
       }
     </div>
@@ -209,123 +142,60 @@
 
 </div>
 
-<!-- Add Department modal -->
-@if (showAddDepartment()) {
-  <div class="el-modal-overlay" (click)="cancelAddDepartment()">
-    <div class="el-modal" (click)="$event.stopPropagation()">
-      <h3>Add Department</h3>
+<!-- Add / Edit Department modal -->
+<ui-form-modal
+  [open]="showAddDepartment()"
+  [title]="editingDeptId() ? 'Edit department' : 'Add department'"
+  subtitle="Group employees and apply a shared clock-in policy."
+  [submitLabel]="editingDeptId() ? 'Save changes' : 'Create department'"
+  size="md"
+  [busy]="savingDepartment()"
+  [submitDisabled]="!newDepartmentName().trim()"
+  (submit)="submitAddDepartment()"
+  (cancel)="cancelAddDepartment()"
+>
+  <ui-form-grid [columns]="1">
+    <ui-form-field label="Name" [required]="true">
+      <ui-input placeholder="e.g. Engineering"
+        [ngModel]="newDepartmentName()" (ngModelChange)="newDepartmentName.set($event)" />
+    </ui-form-field>
+    <ui-form-field label="Color">
+      <input type="color" class="os-color-input"
+        [ngModel]="newDepartmentColor()" (ngModelChange)="newDepartmentColor.set($event)" />
+    </ui-form-field>
+    @if (editingDeptId()) {
+      <ui-form-field label="Manager" hint="Pick the department's manager.">
+        <ui-select [options]="managerOptions()" placeholder="No manager"
+          [ngModel]="newDepartmentManagerId()" (ngModelChange)="newDepartmentManagerId.set($event)" />
+      </ui-form-field>
+    }
+  </ui-form-grid>
+</ui-form-modal>
 
-      <div class="os-form-field">
-        <label>Name *</label>
-        <input
-          type="text"
-          class="os-input"
-          placeholder="e.g. Engineering"
-          [ngModel]="newDepartmentName()"
-          (ngModelChange)="newDepartmentName.set($event)"
-        />
-      </div>
-
-      <div class="os-form-field">
-        <label>Color</label>
-        <input
-          type="color"
-          class="os-color-input"
-          [ngModel]="newDepartmentColor()"
-          (ngModelChange)="newDepartmentColor.set($event)"
-        />
-      </div>
-
-      <div class="os-form-field">
-        <label>Manager ID <span class="os-optional">(optional)</span></label>
-        <input
-          type="text"
-          class="os-input"
-          placeholder="Manager's user ID"
-          [ngModel]="newDepartmentManagerId()"
-          (ngModelChange)="newDepartmentManagerId.set($event)"
-        />
-      </div>
-
-      <div class="el-modal__actions">
-        <button class="el-btn el-btn--ghost" (click)="cancelAddDepartment()">Cancel</button>
-        <button
-          class="el-btn el-btn--primary"
-          [disabled]="!newDepartmentName().trim() || savingDepartment()"
-          (click)="submitAddDepartment()">
-          {{ savingDepartment() ? 'Saving…' : 'Add Department' }}
-        </button>
-      </div>
-    </div>
-  </div>
-}
-
-<!-- Add Designation modal -->
-@if (showAddDesignation()) {
-  <div class="el-modal-overlay" (click)="cancelAddDesignation()">
-    <div class="el-modal" (click)="$event.stopPropagation()">
-      <h3>Add Designation</h3>
-
-      <div class="os-form-field">
-        <label>Title *</label>
-        <input
-          type="text"
-          class="os-input"
-          placeholder="e.g. Senior Software Engineer"
-          [ngModel]="newDesignationTitle()"
-          (ngModelChange)="newDesignationTitle.set($event)"
-        />
-      </div>
-
-      <div class="el-modal__actions">
-        <button class="el-btn el-btn--ghost" (click)="cancelAddDesignation()">Cancel</button>
-        <button
-          class="el-btn el-btn--primary"
-          [disabled]="!newDesignationTitle().trim() || savingDesignation()"
-          (click)="submitAddDesignation()">
-          {{ savingDesignation() ? 'Saving…' : 'Add Designation' }}
-        </button>
-      </div>
-    </div>
-  </div>
-}
-
-<!-- Add Role modal -->
-@if (showAddRole()) {
-  <div class="el-modal-overlay" (click)="cancelAddRole()">
-    <div class="el-modal" (click)="$event.stopPropagation()">
-      <h3>Add Custom Role</h3>
-
-      <div class="os-form-field">
-        <label>Name *</label>
-        <input
-          type="text"
-          class="os-input"
-          placeholder="e.g. Team Lead"
-          [ngModel]="newRoleName()"
-          (ngModelChange)="newRoleName.set($event)"
-        />
-      </div>
-
-      <div class="os-form-field">
-        <label>Hierarchy Level</label>
-        <input
-          type="number"
-          class="os-input"
-          [ngModel]="newRoleHierarchyLevel()"
-          (ngModelChange)="newRoleHierarchyLevel.set(+$event)"
-        />
-      </div>
-
-      <div class="el-modal__actions">
-        <button class="el-btn el-btn--ghost" (click)="cancelAddRole()">Cancel</button>
-        <button
-          class="el-btn el-btn--primary"
-          [disabled]="!newRoleName().trim() || savingRole()"
-          (click)="submitAddRole()">
-          {{ savingRole() ? 'Saving…' : 'Add Role' }}
-        </button>
-      </div>
-    </div>
-  </div>
-}
+<!-- Add / Edit Role modal -->
+<ui-form-modal
+  [open]="showAddRole()"
+  [title]="editingRoleId() ? 'Edit role' : 'Add custom role'"
+  subtitle="Define a hierarchy role for org-chart classification."
+  [submitLabel]="editingRoleId() ? 'Save changes' : 'Create role'"
+  size="md"
+  [busy]="savingRole()"
+  [submitDisabled]="!newRoleName().trim()"
+  (submit)="submitAddRole()"
+  (cancel)="cancelAddRole()"
+>
+  <ui-form-grid [columns]="2">
+    <ui-form-field label="Name" [required]="true" [full]="true">
+      <ui-input placeholder="e.g. Team Lead"
+        [ngModel]="newRoleName()" (ngModelChange)="newRoleName.set($event)" />
+    </ui-form-field>
+    <ui-form-field label="Hierarchy level" hint="Positive rank — 1 = most senior.">
+      <ui-input type="number" inputmode="numeric" [min]="1"
+        [ngModel]="newRoleHierarchyLevel()" (ngModelChange)="setRoleLevel($event)" />
+    </ui-form-field>
+    <ui-form-field label="Department" hint="Optional — map this role to a department.">
+      <ui-select [options]="departmentRoleOptions()" placeholder="No department"
+        [ngModel]="newRoleDepartmentId()" (ngModelChange)="newRoleDepartmentId.set($event)" />
+    </ui-form-field>
+  </ui-form-grid>
+</ui-form-modal>

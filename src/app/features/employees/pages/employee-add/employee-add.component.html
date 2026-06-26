@@ -8,9 +8,16 @@
       </svg>
       Back to Employees
     </button>
-    <div class="ea-header__title">
-      <h1>{{ isEdit() ? 'Edit Employee' : 'Add New Employee' }}</h1>
-      <p>{{ isEdit() ? 'Update employee information' : 'Fill in the details to add a new team member' }}</p>
+    <div class="ea-header__main">
+      <div class="ea-header__icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>
+        </svg>
+      </div>
+      <div class="ea-header__title">
+        <h1>{{ isEdit() ? 'Edit employee' : 'Add new employee' }}</h1>
+        <p>{{ isEdit() ? 'Update profile, classification and payroll' : 'Create a profile and place them in the org' }}</p>
+      </div>
     </div>
   </div>
 
@@ -46,95 +53,153 @@
   }
 
   @if (!temporaryPassword()) {
+
+  <!-- Tabs -->
+  <div class="ea-tabs">
+    <button type="button" class="ea-tab" [class.ea-tab--active]="tab() === 'general'" (click)="setTab('general')">General</button>
+    <button type="button" class="ea-tab" [class.ea-tab--active]="tab() === 'classification'" (click)="setTab('classification')">Department &amp; Role</button>
+    @if (showPayrollTab()) {
+      <button type="button" class="ea-tab" [class.ea-tab--active]="tab() === 'payroll'" (click)="setTab('payroll')">Payroll</button>
+    }
+  </div>
+
+  @if (tab() !== 'payroll') {
   <form class="ea-form" (ngSubmit)="submit()" #empForm="ngForm" novalidate>
 
-    <!-- Section: Basic Info -->
-    <div class="ea-section">
-      <div class="ea-section__head">
-        <h2>Basic Information</h2>
-      </div>
-      <div class="ea-grid">
-        <div class="ea-field">
-          <label for="ea-code">Employee Code</label>
-          <input id="ea-code" class="ea-input" type="text" [ngModel]="form().employeeCode" (ngModelChange)="patch('employeeCode', $event)" name="code" placeholder="EMP001" />
-        </div>
-        <div class="ea-field" [class.ea-field--error]="errors()['firstName']">
-          <label for="ea-firstName">First Name <span class="req">*</span></label>
-          <input id="ea-firstName" class="ea-input" type="text" [ngModel]="form().firstName" (ngModelChange)="patch('firstName', $event)" name="firstName" placeholder="First name" />
-          @if (errors()['firstName']) { <span class="ea-error-msg">{{ errors()['firstName'] }}</span> }
-        </div>
-        <div class="ea-field" [class.ea-field--error]="errors()['lastName']">
-          <label for="ea-lastName">Last Name <span class="req">*</span></label>
-          <input id="ea-lastName" class="ea-input" type="text" [ngModel]="form().lastName" (ngModelChange)="patch('lastName', $event)" name="lastName" placeholder="Last name" />
-          @if (errors()['lastName']) { <span class="ea-error-msg">{{ errors()['lastName'] }}</span> }
-        </div>
-        <div class="ea-field" [class.ea-field--error]="errors()['email']">
-          <label for="ea-email">Work Email <span class="req">*</span></label>
-          <input id="ea-email" class="ea-input" type="email" [ngModel]="form().email" (ngModelChange)="patch('email', $event)" name="email" placeholder="name@company.com" [readonly]="isEdit()" />
-          @if (errors()['email']) { <span class="ea-error-msg">{{ errors()['email'] }}</span> }
-        </div>
-        <div class="ea-field">
-          <label for="ea-phone">Phone</label>
-          <input id="ea-phone" class="ea-input" type="tel" [ngModel]="form().phone" (ngModelChange)="patch('phone', $event)" name="phone" placeholder="+91 98765 43210" />
-        </div>
-      </div>
-    </div>
+    @if (tab() === 'general') {
+      <!-- Section: Basic Info -->
+      <ui-form-section title="Basic information" description="Identity and contact details for this team member.">
+        <ui-form-grid [columns]="2">
+          <ui-form-field label="Employee code" [error]="errors()['employeeCode']">
+            <ui-input placeholder="EMP001" [ngModel]="form().employeeCode" (ngModelChange)="patch('employeeCode', $event)" name="code" />
+          </ui-form-field>
+          <ui-form-field label="Phone">
+            <ui-input type="tel" inputmode="tel" placeholder="+91 98765 43210" [ngModel]="form().phone" (ngModelChange)="patch('phone', $event)" name="phone" />
+          </ui-form-field>
+          <ui-form-field label="First name" [required]="true" [error]="errors()['firstName']">
+            <ui-input placeholder="First name" [ngModel]="form().firstName" (ngModelChange)="patch('firstName', $event)" name="firstName" />
+          </ui-form-field>
+          <ui-form-field label="Last name" [required]="true" [error]="errors()['lastName']">
+            <ui-input placeholder="Last name" [ngModel]="form().lastName" (ngModelChange)="patch('lastName', $event)" name="lastName" />
+          </ui-form-field>
+          <ui-form-field label="Work email" [required]="true" [error]="errors()['email']" [full]="true"
+                         [hint]="isEdit() ? 'Email cannot be changed after creation.' : ''">
+            <ui-input type="email" inputmode="email" placeholder="name@company.com" [disabled]="isEdit()"
+                      [ngModel]="form().email" (ngModelChange)="patch('email', $event)" name="email" />
+          </ui-form-field>
+        </ui-form-grid>
+      </ui-form-section>
 
-    <!-- Section: Role & Dept -->
-    <div class="ea-section">
-      <div class="ea-section__head">
-        <h2>Role & Department</h2>
-      </div>
-      <div class="ea-grid">
-        <div class="ea-field">
-          <ui-select label="Department" [options]="departmentOptions()"
-                     [ngModel]="form().departmentId" (ngModelChange)="patch('departmentId', $event)" name="department"></ui-select>
-        </div>
-        <div class="ea-field">
-          <ui-select label="Designation" [options]="designationOptions()"
-                     [ngModel]="form().designationId" (ngModelChange)="patch('designationId', $event)" name="designation"></ui-select>
-        </div>
-        <div class="ea-field">
-          <ui-select label="Role" [options]="roleOptions"
-                     [ngModel]="form().role" (ngModelChange)="patch('role', $event)" name="role"></ui-select>
-        </div>
-        <div class="ea-field">
-          <ui-select label="Reporting Manager" [options]="managerOptions()"
-                     [ngModel]="form().reportingManagerId" (ngModelChange)="patch('reportingManagerId', $event)" name="manager"></ui-select>
-        </div>
-      </div>
-    </div>
+      <!-- Section: Work Details -->
+      <ui-form-section title="Work details" description="Joining date, location and account type.">
+        <ui-form-grid [columns]="2">
+          <ui-form-field label="Employment type">
+            <ui-select [options]="employmentTypeOptions"
+                       [ngModel]="form().employmentType" (ngModelChange)="patch('employmentType', $event)" name="employmentType"></ui-select>
+          </ui-form-field>
+          <ui-form-field label="Office location">
+            <ui-select [options]="officeOptions()"
+                       [ngModel]="form().overrideOfficeId" (ngModelChange)="patch('overrideOfficeId', $event)" name="office"></ui-select>
+          </ui-form-field>
+          <ui-form-field label="Date of joining" [required]="true" [error]="errors()['dateOfJoining']">
+            <ui-datepicker [ngModel]="form().dateOfJoining" (ngModelChange)="patch('dateOfJoining', $event)" name="doj"></ui-datepicker>
+          </ui-form-field>
+          <ui-form-field [full]="true">
+            <div class="ea-guest-toggle">
+              <ui-toggle [row]="true" label="Guest user"
+                         hint="Mark a consultant, auditor or vendor as a guest. Identity flag only — does not change permissions."
+                         [ngModel]="form().isGuest" (ngModelChange)="patch('isGuest', $event)" name="isGuest"></ui-toggle>
+            </div>
+          </ui-form-field>
+          @if (form().isGuest) {
+            <ui-form-field label="Guest access expires" hint="Optional — limits the account after this date.">
+              <ui-datepicker [ngModel]="form().guestExpiresAt" (ngModelChange)="patch('guestExpiresAt', $event)" name="guestExp"></ui-datepicker>
+            </ui-form-field>
+          }
+        </ui-form-grid>
+      </ui-form-section>
+    }
 
-    <!-- Section: Work Details -->
-    <div class="ea-section">
-      <div class="ea-section__head">
-        <h2>Work Details</h2>
-      </div>
-      <div class="ea-grid">
-        <div class="ea-field">
-          <ui-select label="Office Location" [options]="officeOptions()"
-                     [ngModel]="form().overrideOfficeId" (ngModelChange)="patch('overrideOfficeId', $event)" name="office"></ui-select>
-        </div>
-        <div class="ea-field" [class.ea-field--error]="errors()['dateOfJoining']">
-          <ui-datepicker label="Date of Joining" [required]="true"
-                         [ngModel]="form().dateOfJoining" (ngModelChange)="patch('dateOfJoining', $event)" name="doj"></ui-datepicker>
-          @if (errors()['dateOfJoining']) { <span class="ea-error-msg">{{ errors()['dateOfJoining'] }}</span> }
-        </div>
-      </div>
-    </div>
-
-    <!-- Actions -->
-    <div class="ea-actions">
-      <button type="button" class="ea-btn ea-btn--ghost" (click)="cancel()">Cancel</button>
-      <button type="submit" class="ea-btn ea-btn--primary" [disabled]="loading() || saved()">
-        @if (loading()) {
-          <span class="ea-spinner"></span> Saving…
-        } @else {
-          {{ isEdit() ? 'Update Employee' : 'Add Employee' }}
-        }
-      </button>
-    </div>
-
+    @if (tab() === 'classification') {
+      <!-- Section: Department & role (department, org role and manager together) -->
+      <ui-form-section title="Department &amp; role" description="The department this person belongs to, their org role, and who they report to.">
+        <ui-form-grid [columns]="2">
+          <ui-form-field label="Department" [required]="true" [error]="errors()['departmentId']">
+            <ui-select [options]="departmentOptions()" [searchable]="true" placeholder="Select a department"
+                       [ngModel]="form().departmentId" (ngModelChange)="patch('departmentId', $event)" name="department"></ui-select>
+          </ui-form-field>
+          <ui-form-field label="Org role" hint="Roles mapped to the department." [error]="errors()['orgRoleId']">
+            <ui-select [options]="orgRoleOptions()" [searchable]="true"
+                       [ngModel]="form().orgRoleId" (ngModelChange)="patch('orgRoleId', $event)" name="orgRole"></ui-select>
+          </ui-form-field>
+          <ui-form-field label="Reporting manager" [hint]="managerHint()" [full]="true">
+            <ui-select [options]="managerOptions()" [searchable]="true"
+                       [ngModel]="form().reportingManagerId" (ngModelChange)="patch('reportingManagerId', $event)" name="manager"></ui-select>
+          </ui-form-field>
+        </ui-form-grid>
+      </ui-form-section>
+    }
   </form>
+  }
+
+  <!-- Floating save bar — appears only when the form has unsaved changes -->
+  <ui-save-bar
+    [visible]="isDirty() && tab() !== 'payroll' && !saved()"
+    [saving]="loading()"
+    [saveLabel]="isEdit() ? 'Save changes' : 'Add employee'"
+    (save)="submit()"
+    (discard)="discardChanges()"
+  ></ui-save-bar>
+
+  @if (tab() === 'payroll') {
+    <div class="ea-payroll">
+      @if (payrollLoading()) {
+        <p class="ea-pay-state">Loading payroll…</p>
+      } @else if (payrollError()) {
+        <p class="ea-pay-state ea-pay-state--err">{{ payrollError() }}</p>
+      } @else {
+        <ui-form-section title="Payroll" description="Salary components — visible to admin & HR only.">
+          <ui-form-grid [columns]="3">
+            <ui-form-field label="Basic salary">
+              <ui-input type="number" inputmode="decimal" [ngModel]="payrollForm().basicSalary" (ngModelChange)="patchPayroll('basicSalary', $event)" />
+            </ui-form-field>
+            <ui-form-field label="Allowances">
+              <ui-input type="number" inputmode="decimal" [ngModel]="payrollForm().allowances" (ngModelChange)="patchPayroll('allowances', $event)" />
+            </ui-form-field>
+            <ui-form-field label="Other deductions">
+              <ui-input type="number" inputmode="decimal" [ngModel]="payrollForm().otherDeductions" (ngModelChange)="patchPayroll('otherDeductions', $event)" />
+            </ui-form-field>
+          </ui-form-grid>
+
+          <div class="ea-calc">
+            <span class="ea-calc-title">Calculate a month</span>
+            <div class="ea-calc-row">
+              <select class="ea-calc-sel" [ngModel]="calcMonth()" (ngModelChange)="calcMonth.set(+$event)">
+                @for (m of months; track m.value) { <option [value]="m.value">{{ m.label }}</option> }
+              </select>
+              <input class="ea-calc-yr" type="number" [ngModel]="calcYear()" (ngModelChange)="calcYear.set(+$event)" />
+              <button type="button" class="ea-btn ea-btn--ghost" [disabled]="calculating()" (click)="calculatePayroll()">
+                {{ calculating() ? 'Calculating…' : 'Calculate' }}
+              </button>
+            </div>
+            @if (payrollCalc(); as c) {
+              <div class="ea-calc-result">
+                <div class="ea-calc-line"><span>Gross pay</span><strong>{{ c.grossPay | number:'1.0-2' }}</strong></div>
+                <div class="ea-calc-line"><span>Deductions</span><strong>− {{ c.otherDeductions | number:'1.0-2' }}</strong></div>
+                <div class="ea-calc-line ea-calc-line--net"><span>Net pay</span><strong>{{ c.netPay | number:'1.0-2' }}</strong></div>
+              </div>
+            }
+          </div>
+        </ui-form-section>
+
+        <div class="ea-actions">
+          <button type="button" class="ea-btn ea-btn--ghost" (click)="cancel()">Back</button>
+          <button type="button" class="ea-btn ea-btn--primary" [disabled]="payrollSaving()" (click)="savePayroll()">
+            {{ payrollSaving() ? 'Saving…' : 'Save payroll' }}
+          </button>
+        </div>
+      }
+    </div>
+  }
   }
 </div>

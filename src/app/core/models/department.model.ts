@@ -11,6 +11,13 @@ export interface CreateDepartmentRequest {
   managerId?: string;
 }
 
+/** PUT /api/departments/{id} request body */
+export interface UpdateDepartmentRequest {
+  name: string;
+  color?: string | null;
+  managerId?: string | null;
+}
+
 /** POST /api/departments/assignDepartment request body — departmentId: null removes them from any department */
 export interface AssignDepartmentRequest {
   userId: string;

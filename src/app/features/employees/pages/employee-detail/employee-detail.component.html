@@ -23,16 +23,25 @@
           <span class="ed-code">{{ emp.employeeCode }}</span>
         </div>
       </div>
-      <div style="display:flex; gap:8px;">
-        @if (emp.isActive) {
-          <button class="ed-edit-btn" (click)="deactivateEmployee()">Deactivate</button>
-        } @else {
-          <button class="ed-edit-btn" (click)="activateEmployee()">Activate</button>
+      <div class="ed-actions">
+        @if (canManage()) {
+          <button class="ed-edit-btn" (click)="generatePassword()">Generate Password</button>
+          @if (emp.isActive) {
+            <button class="ed-edit-btn" (click)="deactivateEmployee()">Deactivate</button>
+          } @else {
+            <button class="ed-edit-btn" (click)="activateEmployee()">Activate</button>
+          }
         }
         <button class="ed-edit-btn" (click)="editEmp()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           Edit
         </button>
+        @if (canManage()) {
+          <button class="ed-edit-btn ed-edit-btn--danger" (click)="softDelete()">Delete</button>
+        }
+        @if (canHardDelete()) {
+          <button class="ed-edit-btn ed-edit-btn--danger" (click)="hardDeleteOpen.set(true)">Delete permanently</button>
+        }
       </div>
     </div>
   </div>
@@ -66,9 +75,25 @@
       <div class="ed-card">
         <h3>Work Information</h3>
         <div class="ed-field-row"><span>Department</span><span>{{ emp.departmentName || '—' }}</span></div>
-        <div class="ed-field-row"><span>Designation</span><span>{{ emp.designationTitle || '—' }}</span></div>
-        <div class="ed-field-row"><span>Role</span><span>{{ emp.role.charAt(0).toUpperCase() + emp.role.slice(1) }}</span></div>
+        <div class="ed-field-row"><span>Employment</span><span>{{ empTypeLabel(emp.employmentType) }}</span></div>
+        <div class="ed-field-row"><span>Role</span><span>{{ emp.orgRoleName || (emp.role.charAt(0).toUpperCase() + emp.role.slice(1)) }}</span></div>
         <div class="ed-field-row"><span>Reports To</span><span>{{ emp.reportingManagerName ?? 'No manager' }}</span></div>
+        @if (emp.basicSalary != null) {
+          <div class="ed-field-row">
+            <span>Basic Salary</span>
+            <span class="ed-salary">
+              <span>{{ salaryRevealed() ? emp.basicSalary.toLocaleString() : '••••••' }}</span>
+              <button type="button" class="ed-salary-eye" (click)="salaryRevealed.set(!salaryRevealed())"
+                      [title]="salaryRevealed() ? 'Hide' : 'Show'">
+                @if (salaryRevealed()) {
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                } @else {
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                }
+              </button>
+            </span>
+          </div>
+        }
       </div>
     </div>
   }
@@ -139,6 +164,26 @@
   }
 
 </div>
+
+<!-- Generate-password result dialog (spec §5) -->
+<app-temp-password-dialog
+  [open]="!!tempPassword()"
+  [password]="tempPassword() || ''"
+  [employeeName]="emp.fullName"
+  (closed)="tempPassword.set(null)"
+></app-temp-password-dialog>
+
+<!-- Permanent (hard) delete — type-to-confirm (spec §4) -->
+<ui-confirm-danger
+  [open]="hardDeleteOpen()"
+  title="Delete permanently"
+  [message]="'This permanently removes ' + emp.fullName + ' and all their data. This cannot be undone.'"
+  [confirmWord]="emp.fullName"
+  confirmLabel="Delete permanently"
+  [busy]="hardDeleting()"
+  (confirm)="doHardDelete()"
+  (cancel)="hardDeleteOpen.set(false)"
+></ui-confirm-danger>
 }
 } @else {
   <div class="ed-not-found">Employee not found. <button (click)="goBack()">Go back</button></div>

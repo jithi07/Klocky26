@@ -179,8 +179,6 @@ export class EmployeeListComponent implements OnInit {
         key: 'employmentType', label: 'Employment', type: 'text',
         value: (r) => this.empTypeLabel(r.employmentType),
       },
-      // Guest identity flag (spec §3) — custom cell renders a chip only when guest.
-      { key: 'type', label: 'Type', type: 'custom', width: '90px' },
     ];
 
     if (this.canSeePayroll()) {

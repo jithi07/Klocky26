@@ -70,6 +70,8 @@ export interface UpdatePlatformOrgRequest {
   industry?: string;
   /** Klock-admin-only rename — ORG_URL_NAME_INTEGRATION.md §3. 400 if format invalid, 409 if taken. */
   orgUrlName?: string;
+  /** Klock-admin-only login-code change. 400 if format invalid, 409 if taken. Signs out current sessions. */
+  orgSlug?: string;
   accentColor?: string;
   inactivityRetentionDays?: number;
   subscriptionStatus?: SubscriptionStatus;

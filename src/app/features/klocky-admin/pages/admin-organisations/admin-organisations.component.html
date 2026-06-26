@@ -165,8 +165,23 @@
             {{ renameSubmitting() ? 'Renaming…' : 'Rename' }}
           </button>
         </div>
-        <p class="ao-modal-hint">Login code (orgSlug, unaffected by rename): {{ org.orgSlug }}</p>
         @if (renameError()) { <p class="ao-modal-err">{{ renameError() }}</p> }
+      </ui-form-section>
+
+      <!-- Login code (orgSlug) — `.klock` is a fixed suffix, only the prefix is editable -->
+      <ui-form-section title="Login code (slug)" description="The org's sign-in identifier — Klock-admin only.">
+        <div class="ao-rename-row">
+          <ui-input class="ao-rename-input" [(ngModel)]="editOrgSlug" placeholder="acme">
+            <span suffix class="ao-slug-suffix">.klock</span>
+          </ui-input>
+          <button type="button" class="ao-inline-btn" [disabled]="slugSubmitting()" (click)="submitSlug()">
+            {{ slugSubmitting() ? 'Saving…' : 'Change code' }}
+          </button>
+        </div>
+        <p class="ao-modal-hint ao-modal-warn">
+          ⚠ Changing the login code signs out everyone currently logged into this org — they must sign in again with the new code.
+        </p>
+        @if (slugError()) { <p class="ao-modal-err">{{ slugError() }}</p> }
       </ui-form-section>
 
       <!-- Identity -->

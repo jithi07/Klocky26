@@ -98,15 +98,6 @@
     (sortChange)="onGridSortChange($event)"
     (rowClick)="onGridRowClick($event)"
   >
-    <!-- Guest identity chip (spec §3) -->
-    <ng-template gridColumn="type" let-row>
-      @if (row.isGuest) {
-        <span class="el-guest-chip">Guest</span>
-      } @else {
-        <span class="el-type-dash">—</span>
-      }
-    </ng-template>
-
     <!-- Basic salary — masked with a reveal toggle -->
     <ng-template gridColumn="basicSalary" let-row>
       @if (row.basicSalary == null) {

@@ -127,6 +127,11 @@ export class AdminOrganisationsComponent implements OnInit {
   readonly renameError      = signal('');
   editOrgUrlName = '';
 
+  // ── Change orgSlug (login code) — Klock-admin-only; signs out current sessions ──
+  readonly slugSubmitting = signal(false);
+  readonly slugError      = signal('');
+  editOrgSlug = '';
+
   // ── Database configuration — UI shell only, NOT wired to any backend.
   // No endpoint exists for this anywhere in INTEGRATION_GUIDE.md, and tenant
   // DB credentials shouldn't transit a web UI at all (see SERVER_CHANGES_REQUEST.md
@@ -263,6 +268,9 @@ export class AdminOrganisationsComponent implements OnInit {
 
     this.renameError.set('');
     this.editOrgUrlName = org.orgUrlName;
+    this.slugError.set('');
+    // `.klock` is a fixed suffix — edit only the prefix.
+    this.editOrgSlug = org.orgSlug.replace(/\.klock$/i, '');
 
     this.editCompanyName = org.companyName;
     this.editAccentColor = org.accentColor ?? '';
@@ -340,6 +348,39 @@ export class AdminOrganisationsComponent implements OnInit {
           err?.status === 409
             ? 'That name is already taken by another organisation.'
             : (err?.error?.message ?? 'Could not rename — check the format (lowercase letters/numbers/hyphens, 2-40 chars).'),
+        );
+      },
+    });
+  }
+
+  /**
+   * PUT /api/platform/organisations/{slug} { orgSlug } — changes the org's login
+   * code (Klock-admin only). Anyone currently logged into the org keeps a token
+   * with the old slug, so they're effectively signed out until they log in again.
+   */
+  submitSlug(): void {
+    const org = this.editingOrg();
+    // Only the prefix is editable; `.klock` is appended as a constant suffix.
+    const prefix = this.editOrgSlug.trim().replace(/\.klock$/i, '');
+    const next = prefix ? `${prefix}.klock` : '';
+    if (!org || this.slugSubmitting() || !next || next === org.orgSlug) return;
+    this.slugError.set('');
+    this.slugSubmitting.set(true);
+
+    this.platformAdmin.updateOrganisation(org.orgSlug, { orgSlug: next }).subscribe({
+      next: (res) => {
+        this.slugSubmitting.set(false);
+        this.orgs.update(list => list.map(o => o.orgSlug === org.orgSlug ? res.data : o));
+        this.editingOrg.set(res.data);
+        this.editOrgSlug = res.data.orgSlug.replace(/\.klock$/i, '');
+        if (this.selectedOrg()?.orgSlug === org.orgSlug) this.selectedOrg.set(res.data);
+      },
+      error: (err) => {
+        this.slugSubmitting.set(false);
+        this.slugError.set(
+          err?.status === 409
+            ? 'That login code is already in use by another organisation.'
+            : (err?.error?.message ?? 'Could not change the login code — check the format (lowercase letters/numbers/hyphens/dots).'),
         );
       },
     });

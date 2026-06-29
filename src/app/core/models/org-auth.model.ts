@@ -45,6 +45,13 @@ export interface RegisterOrgRequest {
   weekStartDay: string;
   weekEndDay: string;
   workHours: number;
+  /** Office hours — "HH:mm" in the org timezone. workDayEnd must be after workDayStart. */
+  workDayStart: string;
+  workDayEnd: string;
+  /** Minutes after workDayEnd before auto clock-out fires (default 0). */
+  autoCheckoutBufferMins: number;
+  /** Cooldown between punches, either direction (default 2). */
+  minPunchGapMins: number;
   checkInRuleType: CheckInRuleType;
   checkInCustomMinutes?: number | null;
   halfDayThresholdHrs: number;
@@ -108,6 +115,11 @@ export interface RegisterCompleteRequest {
   weekStartDay: string;
   weekEndDay: string;
   workHours: number;
+  /** Office hours — "HH:mm" in the org timezone. workDayEnd must be after workDayStart. */
+  workDayStart: string;
+  workDayEnd: string;
+  autoCheckoutBufferMins: number;
+  minPunchGapMins: number;
   checkInRuleType: CheckInRuleType;
   halfDayThresholdHrs: number;
   locationPolicy: LocationPolicy;
@@ -227,6 +239,13 @@ export interface TenantSettings {
   weekStartDay: string;
   weekEndDay: string;
   workHours: number;
+  /** Office hours — "HH:mm" in the org timezone. workDayEnd must be after workDayStart. */
+  workDayStart: string;
+  workDayEnd: string;
+  /** Minutes after workDayEnd before auto clock-out fires (default 0). */
+  autoCheckoutBufferMins: number;
+  /** Cooldown between punches, either direction (default 2). */
+  minPunchGapMins: number;
   checkInRuleType: CheckInRuleType;
   checkInCustomMinutes: number | null;
   halfDayThresholdHrs: number;

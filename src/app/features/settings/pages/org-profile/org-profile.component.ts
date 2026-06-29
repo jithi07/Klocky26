@@ -264,6 +264,10 @@ export class OrgProfileComponent implements OnInit {
     this.weekStart         = this.workWeekStartDay;
 
     this.workHoursPerDay  = s.workHours;
+    this.workDayStart     = s.workDayStart ? s.workDayStart.slice(0, 5) : this.workDayStart;
+    this.workDayEnd       = s.workDayEnd ? s.workDayEnd.slice(0, 5) : this.workDayEnd;
+    this.autoCheckoutBufferMins = s.autoCheckoutBufferMins ?? this.autoCheckoutBufferMins;
+    this.minPunchGapMins  = s.minPunchGapMins ?? this.minPunchGapMins;
     this.gracePeriodMins   = s.checkInRuleType === 'none'
       ? 0
       : s.checkInRuleType === 'custom'
@@ -407,6 +411,11 @@ export class OrgProfileComponent implements OnInit {
   workHoursPerDay      = 8;
   workWeekStartDay     = 'Monday';
   workWeekEndDay       = 'Friday';
+  // Office hours — drive auto clock-out & overtime server-side ("HH:mm").
+  workDayStart         = '09:00';
+  workDayEnd           = '18:00';
+  autoCheckoutBufferMins = 0;
+  minPunchGapMins      = 2;
   gracePeriodMins      = 10;
   halfDayThresholdHrs  = 4;
   overtimeEnabled      = false;
@@ -798,6 +807,10 @@ export class OrgProfileComponent implements OnInit {
       weekStartDay: this.workWeekStartDay.toLowerCase(),
       weekEndDay: this.workWeekEndDay.toLowerCase(),
       workHours: this.workHoursPerDay,
+      workDayStart: this.workDayStart,
+      workDayEnd: this.workDayEnd,
+      autoCheckoutBufferMins: this.autoCheckoutBufferMins,
+      minPunchGapMins: this.minPunchGapMins,
       checkInRuleType,
       checkInCustomMinutes,
       halfDayThresholdHrs: this.halfDayThresholdHrs,

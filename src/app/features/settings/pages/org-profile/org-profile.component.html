@@ -623,6 +623,42 @@
             </div>
           </div>
 
+          <!-- Office hours — auto clock-out & overtime are computed from these
+               server-side (overtime = time worked past Office End). -->
+          <div class="op-form-row">
+            <div class="op-field">
+              <p class="op-field-label">Office Start Time</p>
+              <input type="time" [(ngModel)]="workDayStart" (ngModelChange)="markDirty()"
+                     name="workDayStart" style="max-width:160px" />
+            </div>
+            <div class="op-field">
+              <p class="op-field-label">Office End Time</p>
+              <input type="time" [(ngModel)]="workDayEnd" (ngModelChange)="markDirty()"
+                     name="workDayEnd" style="max-width:160px" />
+            </div>
+          </div>
+
+          <div class="op-form-row">
+            <div class="op-field">
+              <p class="op-field-label">Auto Clock-out Buffer</p>
+              <div class="op-number-wrap">
+                <input type="number" class="op-stepper-val" style="max-width:120px"
+                       [(ngModel)]="autoCheckoutBufferMins" (ngModelChange)="markDirty()"
+                       name="autoCheckoutBufferMins" min="0" max="240" />
+                <span class="op-number-unit">min after Office End</span>
+              </div>
+            </div>
+            <div class="op-field">
+              <p class="op-field-label">Min Gap Between Punches</p>
+              <div class="op-number-wrap">
+                <input type="number" class="op-stepper-val" style="max-width:120px"
+                       [(ngModel)]="minPunchGapMins" (ngModelChange)="markDirty()"
+                       name="minPunchGapMins" min="0" max="120" />
+                <span class="op-number-unit">min cooldown</span>
+              </div>
+            </div>
+          </div>
+
           <!-- Working week — matches the registration screen exactly (two
                explicit weekdays, what the API actually stores). -->
           <div class="op-form-row">

@@ -6,6 +6,8 @@ import { FormsModule } from '@angular/forms';
 import { UiSelectComponent } from '../../../../shared/components';
 import { ToastService } from '../../../../shared/components/ui-toast/toast.service';
 import { AttendanceRequestService } from '../../../../core/services/attendance-request.service';
+import { OfficeService } from '../../../../core/services/office.service';
+import { AppStateService } from '../../../../core/services/app-state.service';
 import {
   AttendanceRequestResponse,
   AttendanceRequestType,
@@ -23,6 +25,8 @@ import {
 export class AttendanceRequestsComponent implements OnInit {
 
   private readonly svc = inject(AttendanceRequestService);
+  private readonly officeSvc = inject(OfficeService);
+  private readonly appState = inject(AppStateService);
   private readonly toast = inject(ToastService);
 
   /** Max selectable date — regularization can't be for a future day. */
@@ -33,11 +37,21 @@ export class AttendanceRequestsComponent implements OnInit {
   type     = signal<AttendanceRequestType>('missed_punch');
   clockIn  = signal('');
   clockOut = signal('');
+  officeId = signal('');
   reason   = signal('');
   submitting = signal(false);
 
   readonly typeOptions = (Object.keys(ATTENDANCE_REQUEST_TYPE_LABELS) as AttendanceRequestType[])
     .map(v => ({ label: ATTENDANCE_REQUEST_TYPE_LABELS[v], value: v }));
+
+  /** Office picker (optional) — populated from GET /api/offices. */
+  officeOptions = signal<{ label: string; value: string }[]>([{ label: 'No specific office', value: '' }]);
+
+  /** Approvals queue is manager/HR-only — gate the call so employees don't 403. */
+  readonly canApprove = (() => {
+    const u = this.appState.user();
+    return !!(u?.isManager || u?.isHr || u?.isAdmin);
+  })();
 
   readonly canSubmit = computed(() =>
     !!this.date() && !!this.clockIn() && this.date() <= this.todayIso && !this.submitting());
@@ -55,7 +69,20 @@ export class AttendanceRequestsComponent implements OnInit {
 
   ngOnInit() {
     this.loadMine();
-    this.loadPending();
+    this.loadOffices();
+    // Only managers/HR may call pending-approval (it 403s otherwise, which the
+    // error interceptor would turn into a /404 redirect).
+    if (this.canApprove) this.loadPending();
+  }
+
+  private loadOffices() {
+    this.officeSvc.getAll().subscribe({
+      next: (res) => this.officeOptions.set([
+        { label: 'No specific office', value: '' },
+        ...(res.data ?? []).map(o => ({ label: o.name, value: o.id })),
+      ]),
+      error: () => { /* offices optional — leave the default */ },
+    });
   }
 
   loadMine() {
@@ -82,12 +109,13 @@ export class AttendanceRequestsComponent implements OnInit {
       type: this.type(),
       clockIn: this.clockIn(),
       clockOut: this.clockOut() || undefined,
+      officeId: this.officeId() || undefined,
       reason: this.reason() || undefined,
     }).subscribe({
       next: () => {
         this.submitting.set(false);
         this.toast.success('Request submitted', 'Your attendance request is awaiting approval.');
-        this.clockIn.set(''); this.clockOut.set(''); this.reason.set('');
+        this.clockIn.set(''); this.clockOut.set(''); this.reason.set(''); this.officeId.set('');
         this.loadMine();
       },
       error: (err) => {

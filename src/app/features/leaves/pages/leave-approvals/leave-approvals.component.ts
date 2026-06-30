@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UiSelectComponent } from '../../../../shared/components';
 import { LeaveService } from '../../../../core/services/leave.service';
+import { AppStateService } from '../../../../core/services/app-state.service';
 import { LeaveApprovalStage, LeaveRequestView } from '../../../../core/models/leave.model';
 
 @Component({
@@ -18,6 +19,13 @@ import { LeaveApprovalStage, LeaveRequestView } from '../../../../core/models/le
 export class LeaveApprovalsComponent implements OnInit {
 
   private readonly leaveSvc = inject(LeaveService);
+  private readonly appState = inject(AppStateService);
+
+  /** Approvals are manager/HR-only; gate the call so employees don't 403 → /404. */
+  private readonly canApprove = (() => {
+    const u = this.appState.user();
+    return !!(u?.isManager || u?.isHr || u?.isAdmin);
+  })();
 
   // Manager/HR queue — GET /leave-requests/pending-approval returns only what the
   // caller can act on at the current stage.
@@ -54,6 +62,11 @@ export class LeaveApprovalsComponent implements OnInit {
   ngOnInit() { this.load(); }
 
   load() {
+    if (!this.canApprove) {
+      this.loadError.set('You don’t have access to leave approvals.');
+      this.loading.set(false);
+      return;
+    }
     this.loading.set(true);
     this.loadError.set(null);
     this.leaveSvc.pendingApproval().subscribe({

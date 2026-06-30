@@ -105,6 +105,7 @@ export class SidebarComponent {
       expanded: false,
       items: [
         { label: 'Attendance', route: 'app/attendance', icon: 'clock', exact: true },
+        { label: 'Regularization', route: 'app/attendance/requests', icon: 'clock' },
         { label: 'Shifts & Roster', route: 'app/shifts', icon: 'repeat', roles: MANAGEMENT_ROLES },
         { label: 'Geo-fencing', route: 'app/attendance/geofence', icon: 'map-pin', roles: ADMIN_ONLY_ROLES },
         { label: 'Face Scan', route: 'app/attendance/face-scan', icon: 'scan' },

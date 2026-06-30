@@ -101,14 +101,20 @@ export class AttendanceRequestsComponent implements OnInit {
     });
   }
 
+  /** <input type="time"> gives "HH:mm"; the API's time field needs "HH:mm:ss". */
+  private toApiTime(t: string): string | undefined {
+    if (!t) return undefined;
+    return t.length === 5 ? `${t}:00` : t;
+  }
+
   submit() {
     if (!this.canSubmit()) return;
     this.submitting.set(true);
     this.svc.create({
       date: this.date(),
       type: this.type(),
-      clockIn: this.clockIn(),
-      clockOut: this.clockOut() || undefined,
+      clockIn: this.toApiTime(this.clockIn())!,
+      clockOut: this.toApiTime(this.clockOut()),
       officeId: this.officeId() || undefined,
       reason: this.reason() || undefined,
     }).subscribe({

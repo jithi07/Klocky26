@@ -92,7 +92,8 @@ export class SidebarComponent {
       expanded: false,
       items: [
         { label: 'Employees', route: 'app/employees', icon: 'users', exact: true, roles: MANAGEMENT_ROLES, permKey: 'employees', permLevel: 1 },
-        { label: 'Org Tree', route: 'app/employees/tree', icon: 'tree', roles: MANAGEMENT_ROLES },
+        // Org Tree is view-only org structure — visible to anyone with employees view access (level 1).
+        { label: 'Org Tree', route: 'app/employees/tree', icon: 'tree', permKey: 'employees', permLevel: 1 },
         { label: 'Departments & Roles', route: 'app/employees/org-structure', icon: 'sitemap', roles: ADMIN_ONLY_ROLES },
         // Single canonical Roles & Permissions editor (the old duplicate "Permissions" link was removed).
         { label: 'Roles & Permissions', route: 'app/roles', icon: 'shield', roles: ADMIN_ONLY_ROLES, permKey: 'permissions', permLevel: 3 },

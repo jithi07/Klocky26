@@ -642,7 +642,7 @@
             <div class="op-field">
               <p class="op-field-label">Auto Clock-out Buffer</p>
               <div class="op-number-wrap">
-                <input type="number" class="op-stepper-val" style="max-width:120px"
+                <input type="number" style="max-width:110px"
                        [(ngModel)]="autoCheckoutBufferMins" (ngModelChange)="markDirty()"
                        name="autoCheckoutBufferMins" min="0" max="240" />
                 <span class="op-number-unit">min after Office End</span>
@@ -651,7 +651,7 @@
             <div class="op-field">
               <p class="op-field-label">Min Gap Between Punches</p>
               <div class="op-number-wrap">
-                <input type="number" class="op-stepper-val" style="max-width:120px"
+                <input type="number" style="max-width:110px"
                        [(ngModel)]="minPunchGapMins" (ngModelChange)="markDirty()"
                        name="minPunchGapMins" min="0" max="120" />
                 <span class="op-number-unit">min cooldown</span>

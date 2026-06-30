@@ -15,9 +15,13 @@ import { UiTextareaComponent } from '../../../../shared/components/ui-textarea/u
 import { UiSelectComponent } from '../../../../shared/components/ui-select/ui-select.component';
 import { UiToggleComponent } from '../../../../shared/components/ui-toggle/ui-toggle.component';
 import { UiModalComponent } from '../../../../shared/components/ui-modal/ui-modal.component';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { OrgThemeService } from '../../../../core/services/org-theme.service';
 import { AppStateService } from '../../../../core/services/app-state.service';
 import { OrgAuthService } from '../../../../core/services/org-auth.service';
+import { OfficeService } from '../../../../core/services/office.service';
+import { OfficeRequest, Office as OfficeRecord } from '../../../../core/models/office.model';
 import {
   TenantSettings,
   UpdateTenantSettingsRequest,
@@ -128,6 +132,7 @@ export class OrgProfileComponent implements OnInit {
   private readonly orgThemeService = inject(OrgThemeService);
   private readonly appState        = inject(AppStateService);
   private readonly orgAuth         = inject(OrgAuthService);
+  private readonly officeSvc       = inject(OfficeService);
   private readonly fb              = inject(FormBuilder);
   private readonly location        = inject(Location);
   private readonly router          = inject(Router);
@@ -196,6 +201,9 @@ export class OrgProfileComponent implements OnInit {
     if (currentTheme?.accent) {
       this.accentColor = currentTheme.accent.toLowerCase();
     }
+
+    // Offices come from their own endpoint (no dummy data).
+    this._loadOffices();
 
     // GET /api/tenant/options (§1.6) — replace the local country list and
     // the clock-in method choices with the server's; never hardcode the
@@ -373,17 +381,10 @@ export class OrgProfileComponent implements OnInit {
   phone            = '';
   billingEmail     = '';
 
-  // Offices
-  offices: Office[] = [
-    {
-      id: '1',
-      name: 'Headquarters',
-      address: '123 Main Street',
-      city: 'Mumbai',
-      country: 'India',
-      timezone: 'Asia/Kolkata',
-    },
-  ];
+  // Offices — loaded from GET /api/offices (no dummy data) and persisted via the
+  // dedicated /api/offices CRUD on save. New rows get a 'new-' id until created.
+  offices: Office[] = [];
+  private _removedOfficeIds: string[] = [];
 
   // Team
   employeeCount  = '51–200';
@@ -656,17 +657,57 @@ export class OrgProfileComponent implements OnInit {
   }
 
   // ── Offices ────────────────────────────────────────────────────
+  private _loadOffices(): void {
+    this.officeSvc.getAll().subscribe({
+      next: (res) => {
+        this.offices = (res.data ?? []).map((o: OfficeRecord) => ({
+          id: o.id,
+          name: o.name,
+          address: o.address ?? '',
+          city: o.city ?? '',
+          country: o.country ?? '',
+          timezone: o.timezone ?? '',
+        }));
+        this._removedOfficeIds = [];
+      },
+      error: () => { this.offices = []; },
+    });
+  }
+
   addOffice(): void {
     this.offices = [
       ...this.offices,
-      { id: Date.now().toString(), name: '', address: '', city: '', country: '', timezone: '' },
+      { id: `new-${Date.now()}`, name: '', address: '', city: '', country: '', timezone: '' },
     ];
     this.markDirty();
   }
 
   removeOffice(id: string): void {
+    // Remember existing (server) offices so they're deleted on save; new rows just drop.
+    if (!id.startsWith('new-')) this._removedOfficeIds.push(id);
     this.offices = this.offices.filter(o => o.id !== id);
     this.markDirty();
+  }
+
+  /** Persist office adds/edits/deletes via the /api/offices CRUD. */
+  private _persistOffices() {
+    const ops = [
+      ...this._removedOfficeIds.map(id => this.officeSvc.delete(id).pipe(catchError(() => of(null)))),
+      ...this.offices
+        .filter(o => o.name.trim())
+        .map(o => {
+          const body: OfficeRequest = {
+            name: o.name.trim(),
+            address: o.address || undefined,
+            city: o.city || undefined,
+            country: o.country || undefined,
+            timezone: o.timezone || undefined,
+          };
+          return (o.id.startsWith('new-') ? this.officeSvc.create(body) : this.officeSvc.update(o.id, body))
+            .pipe(catchError(() => of(null)));
+        }),
+    ];
+    return ops.length ? forkJoin(ops) : of([]);
   }
 
   // ── Custom leave types ───────────────────────────────────────
@@ -844,8 +885,11 @@ export class OrgProfileComponent implements OnInit {
         this._applySettings(res.data);
         const completeTheme = this.orgThemeService.generateThemeFromColor(this.accentColor);
         this.orgThemeService.apply(completeTheme);
-        this.saving.set(false);
-        this.isDirty.set(false);
+        // Persist office adds/edits/deletes, then refresh from the server.
+        this._persistOffices().subscribe({
+          next: () => { this._loadOffices(); this.saving.set(false); this.isDirty.set(false); },
+          error: () => { this.saving.set(false); this.isDirty.set(false); },
+        });
       },
       error: () => { this.saving.set(false); },
     });

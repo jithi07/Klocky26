@@ -22,12 +22,13 @@ import { AppStateService } from '../../../../core/services/app-state.service';
 import { OrgAuthService } from '../../../../core/services/org-auth.service';
 import { OfficeService } from '../../../../core/services/office.service';
 import { ToastService } from '../../../../shared/components/ui-toast/toast.service';
-import { OfficeRequest, Office as OfficeRecord } from '../../../../core/models/office.model';
+import { Office as OfficeRecord } from '../../../../core/models/office.model';
 import {
   TenantSettings,
   UpdateTenantSettingsRequest,
   LeaveTypeDto,
   HolidayDto,
+  OfficeSettingDto,
 } from '../../../../core/models/org-auth.model';
 import {
   INDUSTRIES,
@@ -691,24 +692,23 @@ export class OrgProfileComponent implements OnInit {
     this.markDirty();
   }
 
-  /** Persist office adds/edits/deletes via the /api/offices CRUD. */
-  private _persistOffices() {
-    const ops = [
-      ...this._removedOfficeIds.map(id => this.officeSvc.delete(id).pipe(catchError(() => of(null)))),
-      ...this.offices
-        .filter(o => o.name.trim())
-        .map(o => {
-          const body: OfficeRequest = {
-            name: o.name.trim(),
-            address: o.address || undefined,
-            city: o.city || undefined,
-            country: o.country || undefined,
-            timezone: o.timezone || undefined,
-          };
-          return (o.id.startsWith('new-') ? this.officeSvc.create(body) : this.officeSvc.update(o.id, body))
-            .pipe(catchError(() => of(null)));
-        }),
-    ];
+  /** Office adds/edits are upserted via the tenant-settings `offices` array. */
+  private _toOfficeDtos(): OfficeSettingDto[] {
+    return this.offices
+      .filter(o => o.name.trim())
+      .map(o => ({
+        id: o.id.startsWith('new-') ? null : o.id,
+        name: o.name.trim(),
+        address: o.address || null,
+        city: o.city || null,
+        country: o.country || null,
+        timezone: o.timezone || null,
+      }));
+  }
+
+  /** Omitting an office does NOT delete it — removals go through DELETE /api/offices/{id}. */
+  private _deleteRemovedOffices() {
+    const ops = this._removedOfficeIds.map(id => this.officeSvc.delete(id).pipe(catchError(() => of(null))));
     return ops.length ? forkJoin(ops) : of([]);
   }
 
@@ -880,6 +880,7 @@ export class OrgProfileComponent implements OnInit {
       encashmentEnabled: this.encashmentEnabled,
       leaveTypes: this._toLeaveTypeDtos(),
       holidays: this._toHolidayDtos(),
+      offices: this._toOfficeDtos(),
     };
 
     this.orgAuth.updateTenantSettings(payload).subscribe({
@@ -887,8 +888,9 @@ export class OrgProfileComponent implements OnInit {
         this._applySettings(res.data);
         const completeTheme = this.orgThemeService.generateThemeFromColor(this.accentColor);
         this.orgThemeService.apply(completeTheme);
-        // Persist office adds/edits/deletes, then refresh from the server.
-        this._persistOffices().subscribe({
+        // Office adds/edits were upserted in the payload above; only removals
+        // need an explicit DELETE. Then refresh from the server.
+        this._deleteRemovedOffices().subscribe({
           next: () => {
             this._loadOffices();
             this.saving.set(false);
@@ -896,9 +898,10 @@ export class OrgProfileComponent implements OnInit {
             this.toast.success('Settings saved', 'Your organisation settings have been updated.');
           },
           error: () => {
+            this._loadOffices();
             this.saving.set(false);
             this.isDirty.set(false);
-            this.toast.success('Settings saved', 'Settings updated, but some office changes may not have saved.');
+            this.toast.success('Settings saved', 'Settings updated, but removing an office may have failed.');
           },
         });
       },
